@@ -41,7 +41,7 @@ def main(argv=[]):
     init.py or call util.print_stats_help()
 
     """
-    #print("This is trajognize stat. SVN revision:", trajognize.util.get_svn_info()['revision'])
+    print("This is trajognize stat. Version:", util.get_version_info())
     print("Current project is: %s" % project_str[PROJECT])
     phase = trajognize.util.phase_t()
     # create stat dictionary from implemented stat functions and classes

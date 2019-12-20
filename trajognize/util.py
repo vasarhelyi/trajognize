@@ -4,6 +4,7 @@ Miscellaneous utility functions.
 
 from trajognize.project import FPS, get_datetime_from_filename
 from trajognize.init import MFIX_STR, MFIX_DUMMY_LAST
+from trajognize.version import __version__
 
 # external imports
 import time
@@ -16,18 +17,10 @@ import gc
 import subprocess
 
 
-def get_svn_info():
-    """Get svn revision string."""
-    realpath = os.path.split(os.path.realpath(__file__))[0]
-    info = subprocess.Popen(['svn', 'info', realpath],
-            stdout = subprocess.PIPE).communicate()[0].split('\n')
-    infodict = {'revision': "unknown"}
-    for line in info:
-        x = line.split(':',1)
-        if len(x) == 2:
-            infodict[x[0].lower()] = x[1].strip()
-    return infodict
-
+def get_version_info():
+    """Get version info string."""
+    # TODO: add git revision
+    return __version__
 
 # get_datetime_from_filename() is moved to project.py as it is project-specific
 

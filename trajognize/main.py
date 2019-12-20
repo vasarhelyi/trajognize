@@ -52,7 +52,7 @@ def main(argv=[]):
     Main variable descriptions can be found in init.variable_t() class.
 
     """
-    #print("This is trajognize. SVN revision:", util.get_svn_info()['revision'])
+    print("This is trajognize. Version:", util.get_version_info())
     print("Current project is: %s\n" % project_str[PROJECT])
     v = variables_t()
     phase = util.phase_t()

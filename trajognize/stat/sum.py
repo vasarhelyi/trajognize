@@ -20,7 +20,7 @@ def write_results(outputfilename, stats, stat, substat, statobject, exps, exp,
     """Helper function to write results to file."""
     outputfile = open(outputfilename, 'w')
     # print other parameters to file
-    outputfile.write("SVN revision = %s\n" % trajognize.util.get_svn_info()['revision'])
+    outputfile.write("trajognize version = %s\n" % util.get_version_info())
     outputfile.write("%s_t object version = %d\n" % (stat, statobject.version))
     outputfile.write("results written on %s\n\n" % str(datetime.datetime.now()))
     # print stat help to file
@@ -56,7 +56,7 @@ def main(argv=[]):
     and summarizes them to get global statistics.
 
     """
-    #print("This is trajognize statsum. SVN revision:", trajognize.util.get_svn_info()['revision'])
+    print("This is trajognize statsum. Version:", util.get_version_info())
     print("Current project is: %s" % project_str[PROJECT])
     phase = trajognize.util.phase_t()
     # create stat dictionary from implemented stat functions and classes
