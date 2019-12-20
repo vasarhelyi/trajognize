@@ -22,7 +22,7 @@ except ImportError:
 
 # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
-    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", help="define barcode input file name (.ts.blobs.barcodes)")
+    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", help="define barcode input file name (.blobs.barcodes)")
     argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
     argparser.add_argument("-n", "--framenum", metavar="NUM", dest="framenum", default=0, help="define frame to read")
     options = argparser.parse_args()

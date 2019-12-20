@@ -120,10 +120,10 @@ def parse_colorid_file(inputfile='misc/5-3_28patek.xml'):
 
 
 def parse_blob_file(inputfile, lastframe=None):
-    """Parse a full .ts.blobs file created by ratognize.
+    """Parse a full .blobs file created by ratognize.
 
     Keyword arguments:
-    inputfile -- any *.ts.blobs file created by ratognize
+    inputfile -- any *.blobs file created by ratognize
     lastframe -- debug option not to parse the whole file, only the beginning
 
     Return value:
@@ -276,10 +276,10 @@ def parse_log_file(inputfile, lastframe=None):
     
 
 def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
-    """Parse a full .ts.blobs.barcodes file created by trajognize itself.
+    """Parse a full .blobs.barcodes file created by trajognize itself.
 
     Keyword arguments:
-    inputfile -- any *.ts.blobs.barcodes file created by trajognize
+    inputfile -- any *.blobs.barcodes file created by trajognize
     colorids  -- global colorid database created by parse_colorid_file()
     firstframe -- debug option not to parse wht whole file, only the end
     lastframe -- debug option not to parse the whole file, only the beginning

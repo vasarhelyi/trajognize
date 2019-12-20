@@ -72,7 +72,7 @@ def get_stat_from_filename(inputfile):
     """Return name of stat from input file name assuming conventions.
 
     :param inputfile: name of an input file in the following format:
-                      *.ts.blobs.barcodes.stat_[statname].zip
+                      *.blobs.barcodes.stat_[statname].zip
 
     """
     match = re.match(r'.*\.(?:ts|MTS|MP4)\.blobs\.barcodes\.stat_(.*)\.zip$', inputfile)

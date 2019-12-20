@@ -59,7 +59,7 @@ def main(argv=[]):
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__)
     argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output file")
-    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", help="define blob input file name (.ts.blobs)")
+    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", help="define blob input file name (.blobs)")
     argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for .barcodes output file")

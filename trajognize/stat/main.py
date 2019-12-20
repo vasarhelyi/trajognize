@@ -52,7 +52,7 @@ def main(argv=[]):
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
     argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["stats"]+sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["stats"]+sorted(stats.keys())))
     argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output files")
-    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", help="define barcode input file name (.ts.blobs.barcodes)")
+    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", help="define barcode input file name (.blobs.barcodes)")
     argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
     argparser.add_argument("-e", "--entrytimesfile", metavar="FILE", dest="entrytimesfile", help="define entry times input file name (.dat, .txt)")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")

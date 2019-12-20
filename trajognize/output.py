@@ -110,7 +110,7 @@ def logfile_init(filename):
     oftlog.write("# trajognize log file created on %s\n\n" % str(datetime.datetime.now()))
     oftlog.write("# Log file format: frame warningtype params\n")
     oftlog.write("# Log file entry types:\n")
-    oftlog.write("#   NUB blobcount list_of_blob_indices -- not used blob indices (pointing to .ts.blobs file)\n")
+    oftlog.write("#   NUB blobcount list_of_blob_indices -- not used blob indices (pointing to .blobs file)\n")
     oftlog.write("\n")
 
 
