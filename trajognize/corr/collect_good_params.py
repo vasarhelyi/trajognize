@@ -24,13 +24,13 @@ exps = trajognize.stat.experiments.get_initialized_experiments()
 def main(argv=[]):
     """Main entry point of the script."""
     if os.path.isfile(corrfile):
-        print "Correlation file already exists, remove it first:", corrfile
+        print("Correlation file already exists, remove it first:", corrfile)
         os.remove(corrfile)
     if os.path.isfile(corrfileall):
-        print "Correlation file already exists, remove it first:", corrfileall
+        print("Correlation file already exists, remove it first:", corrfileall)
         os.remove(corrfileall)
     # parse all data first
-    print "\nParsing all corr files to collect data...\n"
+    print("\nParsing all corr files to collect data...\n")
     alldata = defaultdict(lambda: defaultdict(dict)) # [exp][paramname][strid] = value
     alldataall = defaultdict(lambda: defaultdict(dict)) # [exp][paramname][strid] = value
     basedir = util.get_corr_basedir()
@@ -38,17 +38,17 @@ def main(argv=[]):
     expdirs = os.listdir(basedir)
     for expdir in expdirs:
         if expdir == 'exp_all' or os.path.isfile(os.path.join(basedir, expdir)): continue
-        print expdir
+        print(expdir)
         # get all group dirs
         groupdirs = os.listdir(os.path.join(basedir, expdir))
         for groupdir in groupdirs:
             if groupdir == 'all' or os.path.isfile(os.path.join(basedir, expdir, groupdir)): continue
-            print ' ', groupdir
+            print(' ', groupdir)
             # get all param files
             paramfiles = glob.glob(os.path.join(basedir, expdir, groupdir, "param*.txt"))
             for paramfile in paramfiles:
                 tail = os.path.split(paramfile)[1]
-                print '   ', tail
+                print('   ', tail)
                 headers, data = util.parse_corr_file(paramfile)
                 for paramname in data.keys():
                     # remove group entry from paramname if there is one in it
@@ -63,7 +63,7 @@ def main(argv=[]):
                     # collect good params
                     for s in good_params[tail]:
                         if re.match(s, paramname):
-                            print '     (good)', paramname
+                            print('     (good)', paramname)
                             # this is a good param, parse it into a common dict for all groups in that experiment
                             for i in xrange(len(headers)):
                                 alldata[expdir][goodparamname][headers[i]] = data[paramname][i]
@@ -71,18 +71,18 @@ def main(argv=[]):
                     # collect all params
                     for s in all_params[tail]:
                         if re.match(s, paramname):
-                            print '     (all)', paramname
+                            print('     (all)', paramname)
                             # this is a good param, parse it into a common dict for all groups in that experiment
                             for i in xrange(len(headers)):
                                 alldataall[expdir][goodparamname][headers[i]] = data[paramname][i]
                             break
 
     # write summarized data to common file
-    print "\nWriting summarized good data to", corrfile
-    print "Writing summarized all data to", corrfileall
+    print("\nWriting summarized good data to", corrfile)
+    print("Writing summarized all data to", corrfileall)
     expnames = sorted(exps.keys(), lambda a,b: exps[a]['number'] - exps[b]['number'])
     for exp in expnames:
-        print " ", exp
+        print(" ", exp)
         expdir = "exp_%s" % exp
         if expdir not in alldata: continue
         # add group line
@@ -102,7 +102,7 @@ def main(argv=[]):
             # check if all strids have been parsed...
             parsed_strids = sorted(alldata[expdir][paramname].keys())
             if parsed_strids != strids:
-                print "(good)", expdir, paramname, "is not complete, only %d entries found instead of %d!" % (len(parsed_strids), len(strids))
+                print("(good)", expdir, paramname, "is not complete, only %d entries found instead of %d!" % (len(parsed_strids), len(strids)))
                 continue
             corrline = "\t".join(["%d" % exps[exp]['number'], "%s__%s" % (expdir, paramname)] + \
                     ["%g" % alldata[expdir][paramname][strid] for strid in strids])
@@ -112,7 +112,7 @@ def main(argv=[]):
             # check if all strids have been parsed...
             parsed_strids = sorted(alldataall[expdir][paramname].keys())
             if parsed_strids != strids:
-                print "(all)", expdir, paramname, "is not complete, only %d entries found instead of %d!" % (len(parsed_strids), len(strids))
+                print("(all)", expdir, paramname, "is not complete, only %d entries found instead of %d!" % (len(parsed_strids), len(strids)))
                 continue
             corrline = "\t".join(["%d" % exps[exp]['number'], "%s__%s" % (expdir, paramname)] + \
                     ["%g" % alldataall[expdir][paramname][strid] for strid in strids])
@@ -123,7 +123,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

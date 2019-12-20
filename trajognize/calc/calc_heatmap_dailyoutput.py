@@ -45,7 +45,7 @@ def get_categories_from_name(name):
 def main(argv=[]):
     """Main entry point of the script."""
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     inputdir = argv[0]
     inputfiles = glob.glob(os.path.join(inputdir, "*/stat_heatmap.*__day_*.txt"))
@@ -59,7 +59,7 @@ def main(argv=[]):
     datatypes = set()
     # parse all data to create the full database
     for inputfile in inputfiles:
-        print "gathering info from", os.path.split(inputfile)[1]
+        print("gathering info from", os.path.split(inputfile)[1])
         day = trajognize.plot.plot.get_day_from_filename(inputfile)
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
         for index in xrange(len(alldata)):
@@ -87,7 +87,7 @@ def main(argv=[]):
         for group in exps[exp]['groups']:
             # save output in text format with header
             outputfile = os.path.join(outdir, tail + "__exp_%s__group_%s.txt" % (exp, group))
-            print "writing", os.path.split(outputfile)[1]
+            print("writing", os.path.split(outputfile)[1])
             outputfile = open(outputfile, "w")
             outputfile.write(trajognize.stat.experiments.get_formatted_description(exps[exp], "#"))
             outputfile.write("\n")
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

@@ -23,13 +23,13 @@ def parse_paintdates(inputfile='misc/paintdates.dat'):
         linesplit = line.split(' ', 3)
         # some error checking
         if linesplit[0] != 'PAINT' or len(linesplit) < 2:
-            print "WARNING - line #%d is probably bad:\n%s" % (linenum, line)
+            print("WARNING - line #%d is probably bad:\n%s" % (linenum, line))
             continue
         # convert line to datetime (and let datetime do the error handling)
         try:
             t = datetime.datetime.strptime(linesplit[1],"%Y-%m-%d_%H-%M-%S")
         except ValueError:
-            print "WARNING - format error in line %d:\n%s" % (linenum, line)
+            print("WARNING - format error in line %d:\n%s" % (linenum, line))
             raise
         paintdates.append(t)
     return paintdates
@@ -60,7 +60,7 @@ def parse_entry_times(inputfile='misc/entrytimes.dat'):
         linesplit = line.split('\t',3)
         # some error checking
         if len(linesplit) < 3:
-            print "WARNING - too few blocks in line %d:\n%s" % (linenum, line)
+            print("WARNING - too few blocks in line %d:\n%s" % (linenum, line))
             continue
         # convert line to date and time (and let datetime do the error handling)
         try:
@@ -68,7 +68,7 @@ def parse_entry_times(inputfile='misc/entrytimes.dat'):
             timefrom = datetime.datetime.strptime(linesplit[1],"%H:%M").time()
             timeto = datetime.datetime.strptime(linesplit[2],"%H:%M").time()
         except ValueError:
-            print "WARNING - format error in line %d:\n%s" % (linenum, line)
+            print("WARNING - format error in line %d:\n%s" % (linenum, line))
             raise
         if len(linesplit) > 3:
             comment = linesplit[3]
@@ -100,7 +100,7 @@ def parse_colorid_file(inputfile='misc/5-3_28patek.xml'):
     try:
         dom = xml.dom.minidom.parse(inputfile)
     except IOError:
-        print "ERROR: could not open colorid file."
+        print("ERROR: could not open colorid file.")
         return None
     colorids = []
     tempid = colorid_t('', '')
@@ -144,7 +144,7 @@ def parse_blob_file(inputfile, lastframe=None):
     try:
         i = int(deque(open(inputfile), 1)[0].split(None, 1)[0])
     except IndexError:
-        print "ERROR: could not read frame number from blob file."
+        print("ERROR: could not read frame number from blob file.")
         return (None, None, None)
     if lastframe is None or lastframe < 0 or lastframe > i:
         lastframe = i
@@ -162,7 +162,7 @@ def parse_blob_file(inputfile, lastframe=None):
         # skip empty lines (there is one at the end of each list/file)
         i = len(linesplit)
         if i < 3:
-            print "WARNING - too few blocks in line:\n%s" % line
+            print("WARNING - too few blocks in line:\n%s" % line)
             continue
         framenum = int(linesplit[0])
         if framenum > lastframe:
@@ -175,7 +175,7 @@ def parse_blob_file(inputfile, lastframe=None):
         j = 3
         if linetype == 'BLOB':
             #if framenum != len(color_blobs):
-            #    print "WARNING - framenum mismatch, framenum=%d, len(color_blobs)=%d" % (framenum, len(color_blobs))
+            #    print("WARNING - framenum mismatch, framenum=%d, len(color_blobs)=%d" % (framenum, len(color_blobs)))
             #color_blobs.append([ [] for x in color2int ])
             for i in range(blobcount):
                 color = int(linesplit[j][1:])
@@ -186,7 +186,7 @@ def parse_blob_file(inputfile, lastframe=None):
                 j += linetypes[linetype]
         elif linetype == 'BLOBE':
             #if framenum != len(color_blobs):
-            #    print "WARNING - framenum mismatch, framenum=%d, len(color_blobs)=%d" % (framenum, len(color_blobs))
+            #    print("WARNING - framenum mismatch, framenum=%d, len(color_blobs)=%d" % (framenum, len(color_blobs)))
             #color_blobs.append([ [] for x in color2int ])
             for i in range(blobcount):
                 color = int(linesplit[j][1:])
@@ -200,7 +200,7 @@ def parse_blob_file(inputfile, lastframe=None):
                 j += linetypes[linetype]
         elif linetype == 'MD':
             #if framenum != len(md_blobs):
-            #    print "WARNING - framenum mismatch, framenum=%d, len(md_blobs)=%d" % (framenum, len(md_blobs))
+            #    print("WARNING - framenum mismatch, framenum=%d, len(md_blobs)=%d" % (framenum, len(md_blobs)))
             #md_blobs.append([])
             for i in range(blobcount):
                 centerx = float(linesplit[j][1:])
@@ -212,7 +212,7 @@ def parse_blob_file(inputfile, lastframe=None):
                 j += linetypes[linetype]
         elif linetype == 'RAT':
             #if framenum != len(rat_blobs):
-            #    print "WARNING - framenum mismatch, framenum=%d, len(rat_blobs)=%d" % (framenum, len(rat_blobs))
+            #    print("WARNING - framenum mismatch, framenum=%d, len(rat_blobs)=%d" % (framenum, len(rat_blobs)))
             #rat_blobs.append([])
             for i in range(blobcount):
                 centerx = float(linesplit[j][1:])
@@ -248,7 +248,7 @@ def parse_log_file(inputfile, lastframe=None):
     try:
         i = int(deque(open(inputfile), 1)[0].split(None, 1)[0])
     except IndexError:
-        print "ERROR: could not read frame number from log file."
+        print("ERROR: could not read frame number from log file.")
         return (None, None)
     if lastframe is None or lastframe < 0 or lastframe > i:
         lastframe = i
@@ -293,11 +293,11 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
     try:
         i = int(deque(open(inputfile), 1)[0].split(None, 1)[0])
     except IndexError:
-        print "ERROR: could not read frame number from barcode file."
+        print("ERROR: could not read frame number from barcode file.")
         return None
     if firstframe < 0: firstframe = 0
     if firstframe:
-        print "WARNING: debug option firstframe specified, frame number will not be equal to list index in output!"
+        print("WARNING: debug option firstframe specified, frame number will not be equal to list index in output!")
         if firstframe > i: firstframe = i
     if lastframe is None or lastframe < firstframe or lastframe > i:
         lastframe = i
@@ -313,7 +313,7 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
         # skip empty lines (there is one at the end of each list/file)
         i = len(linesplit)
         if i < 2:
-            print "WARNING - too few blocks in line:\n%s" % line
+            print("WARNING - too few blocks in line:\n%s" % line)
             continue
         framenum = int(linesplit[0])
         if framenum < firstframe:
@@ -375,7 +375,7 @@ def parse_stat_output_file(inputfile, index=None):
             data.append([])
         # or check error
         elif emptylines == 1:
-            print "Error in data, only one line separates paragraphs in line #%d" % linenum
+            print("Error in data, only one line separates paragraphs in line #%d" % linenum)
             return None
         # or check this paragraph
         else:
@@ -384,14 +384,14 @@ def parse_stat_output_file(inputfile, index=None):
             lenthis = len(linesplit)
             # if size is decreasing, we throw an error
             if lenprev > lenthis:
-                print "Error in data, length mismatch in line #%d (%d > %d)" % (linenum, lenprev, lenthis)
+                print("Error in data, length mismatch in line #%d (%d > %d)" % (linenum, lenprev, lenthis))
                 return None
             # if greater, we insert empty values to previous entries and throw only warning
             # (e.g. heatmap dailyoutput uses this format that header line is only 1 entry long)
             elif lenprev < lenthis:
                 for i in xrange(len(data[p])):
                     data[p][i] += [""]*(lenthis-lenprev)
-#                print "Warning in data, length mismatch in line #%d (%d < %d)" % (linenum, lenprev, lenthis)
+#                print("Warning in data, length mismatch in line #%d (%d < %d)" % (linenum, lenprev, lenthis))
 #        if index is None or index == p:
         data[p].append(list(linesplit))
         emptylines = 0

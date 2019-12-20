@@ -2,7 +2,7 @@
 Constants and main classes are defined here, like blob, barcode, trajectory.
 """
 
-from project import *
+from .project import *
 
 from collections import namedtuple
 from math import atan2, sin, cos, pi

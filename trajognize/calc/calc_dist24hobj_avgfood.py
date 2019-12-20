@@ -221,7 +221,7 @@ class avgdist24hobj_t():
 def main(argv=[]):
     """Main entry point of the script."""
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     inputdir = argv[0]
     if len(argv) == 2:
@@ -242,9 +242,9 @@ def main(argv=[]):
         tail = os.path.split(inputfile)[1]
         (weekday, exp) = get_categories_from_filename(tail)
         if exp == 'all' or weekday == 'friday' or weekday == 'alldays':
-            print "  skipping", tail
+            print("  skipping", tail)
             continue
-        print "  gathering info from", tail
+        print("  gathering info from", tail)
         # initialize empty object
         dist24hobj = trajognize.stat.init.dist24hobj_t(id_count)
         # add new object (so that we have latest methods from latest version)
@@ -252,18 +252,18 @@ def main(argv=[]):
         database[exp][weekday] = dist24hobj
     # write results (assuming that all substats are available)
     if not database:
-        print "No input files found."
+        print("No input files found.")
         return
     outputdir = os.path.join(inputdir, os.path.splitext(os.path.split(__file__)[1])[0])
-    print "Writing results to .txt files in", outputdir
+    print("Writing results to .txt files in", outputdir)
     food_index = trajognize.stat.project.object_types.index('food')
     if not os.path.isdir(outputdir):
         os.makedirs(outputdir)
     for exp in database:
-        print ' ', exp
+        print(' ', exp)
         alltemp = avgdist24hobj_t(id_count)
         for weekday in database[exp]:
-            print '   ', weekday
+            print('   ', weekday)
             data = database[exp][weekday]
             wft = trajognize.stat.project.weekly_feeding_times[weekday]
             temp = avgdist24hobj_t(id_count)
@@ -288,7 +288,7 @@ def main(argv=[]):
                 alltemp += temp2
             substat = "avgfooddist24hobj.%s" % weekday
             temp.write_results(outputfile, colorids, exps, exp, substat)
-        print '    alldays'
+        print('    alldays')
         substat = "avgfooddist24hobj.alldays"
         outputfile = open(os.path.join(outputdir,
                 "calc_avgfooddist24hobj.alldays__exp_%s.txt" % exp), 'w')
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

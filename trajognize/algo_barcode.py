@@ -50,7 +50,7 @@ def barcode_is_free(barcodes, k, j, blobs):
 def check_barcode_blob_consistency(barcodes, blobs, colorids):
     """Debug function to check all blob indices of barcodes and all
     barcode indices of blobs whether they are consistent or not."""
-    print "Checking barcode-blob consistency...",
+    print("Checking barcode-blob consistency...", end=" ")
     for frame in xrange(len(barcodes)):
         # check from barcodes
         for k in xrange(len(colorids)):
@@ -66,7 +66,7 @@ def check_barcode_blob_consistency(barcodes, blobs, colorids):
             for ki in blob.barcodeindices:
                 if j not in barcodes[frame][ki.k][ki.i].blobindices:
                     raise ValueError("mismatch on frame %d, %s barcode #%d %s does not contain blob %d " % (frame, colorids[ki.k].strid, ki.i, mfix2str(barcode.mfix), j))
-    print "OK\n"
+    print("OK\n")
 
 
 def print_max_barcode_count(barcodes, colorids):
@@ -77,15 +77,15 @@ def print_max_barcode_count(barcodes, colorids):
             x = len(barcodes[frame][k])
             if x > count[k][0]:
                 count[k] = [x, frame, barcodes[frame][k]]
-    print "Max barcodes simultaneously:"
+    print("Max barcodes simultaneously:")
     sum = 0
     for k in xrange(len(colorids)):
         sum += count[k][0]
-        print " ", colorids[k].strid, count[k][0], "frame", count[k][1],
+        print(" ", colorids[k].strid, count[k][0], "frame", count[k][1], end=" ")
         for barcode in count[k][2]:
-            print "xy", int(barcode.centerx), int(barcode.centery), mfix2str(barcode.mfix),
+            print("xy", int(barcode.centerx), int(barcode.centery), mfix2str(barcode.mfix), end=" ")
         print
-    print "  sum max:", sum
+    print("  sum max:", sum)
     print
 
 
@@ -150,7 +150,7 @@ def find_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
             break
     if fullfound:
         blobchains = list(itertools.product(*candidates))
-        #print '  find_missing_unused_blob() found full:', currentframe, strid, [blobchains[x] for x in xrange(len(blobchains))]
+        #print('  find_missing_unused_blob() found full:', currentframe, strid, [blobchains[x] for x in xrange(len(blobchains))])
         candidate_blobchains = []
         for i in xrange(len(blobchains)):
             if is_blob_chain_appropriate_as_barcode([blobs[j] for j in blobchains[i]]):
@@ -159,12 +159,12 @@ def find_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
 
         # if there are more candidates, print warning
         if len(candidate_blobchains) > 1:
-            print "\n  WARNING#1 in find_missing_unused_blob(): frame", currentframe, 'color', int2color[color], 'in', strid, 'candidates', [blobchains[x] for x in candidate_blobchains], 'missingcolors', MCHIPS-len(containedcolors), 'storing first candidate'
+            print("\n  WARNING#1 in find_missing_unused_blob(): frame", currentframe, 'color', int2color[color], 'in', strid, 'candidates', [blobchains[x] for x in candidate_blobchains], 'missingcolors', MCHIPS-len(containedcolors), 'storing first candidate')
         # store first good candidate
         barcode.blobindices = list(blobchains[candidate_blobchains[0]])
 
     else:
-        #print '  partial', currentframe, strid, [candidates[x] for x in xrange(len(candidates))]
+        #print('  partial', currentframe, strid, [candidates[x] for x in xrange(len(candidates))])
         for i in xrange(len(strid)):
             candidate = candidates[i]
             if not candidate or containedindex[i]: continue
@@ -180,7 +180,7 @@ def find_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
                     if good == 1:
                         barcode.blobindices.append(blobi)
                     else:
-                        print "\n  WARNING#2 in find_missing_unused_blob(): frame", currentframe, 'color', int2color[color], 'in', strid, 'candidates', candidate, 'missingcolors', MCHIPS-len(containedcolors), 'storing first candidate'
+                        print("\n  WARNING#2 in find_missing_unused_blob(): frame", currentframe, 'color', int2color[color], 'in', strid, 'candidates', candidate, 'missingcolors', MCHIPS-len(containedcolors), 'storing first candidate')
     return 1
 
 
@@ -254,7 +254,7 @@ def calculate_params(barcode, strid, blobs):
         # source: http://mathworld.wolfram.com/LeastSquaresFitting.html
         xx=0; xy=0; yy=0
         for i in barcode.blobindices:
-            #print i, blobs[barcode.blobindices[i]].centerx, blobs[barcode.blobindices[i]].centery, barcode.centerx, barcode.centery
+            #print(i, blobs[barcode.blobindices[i]].centerx, blobs[barcode.blobindices[i]].centery, barcode.centerx, barcode.centery)
             xx += (blobs[i].centerx - barcode.centerx) * (blobs[i].centerx - barcode.centerx)
             xy += (blobs[i].centerx - barcode.centerx) * (blobs[i].centery - barcode.centery)
             yy += (blobs[i].centery - barcode.centery) * (blobs[i].centery - barcode.centery)

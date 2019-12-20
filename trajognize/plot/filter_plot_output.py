@@ -163,15 +163,15 @@ def main(argv=[]):
             for name in options.names:
                 group = exps[exp]['groupid'][name]
                 if group not in options.groups:
-                    print group, "group added to host", name, "in", exp
+                    print(group, "group added to host", name, "in", exp)
                     options.groups.append(group)
 
     # define output directory
     outdir = os.path.join(options.inputpath, linkdirprefix + "_".join(argv))
-    print "Using input path: '%s'" % options.inputpath
-    print "Using output path: '%s'\n" % outdir
+    print("Using input path: '%s'" % options.inputpath)
+    print("Using output path: '%s'\n" % outdir)
 
-    print "Finding matches for the given filter...",
+    print("Finding matches for the given filter...", end=" ")
     symlinks = []
     # check files that match filter
     for root, subfolders, files in os.walk(options.inputpath):
@@ -227,20 +227,20 @@ def main(argv=[]):
             src = os.path.relpath(src, outdir)
             # store symlink
             symlinks.append((src, dst))
-            print len(symlinks),
+            print(len(symlinks), end=" ")
             if len(symlinks) > options.max_symlinks and not options.verbose_only:
-                print "\nERROR: Too many matches found, exiting without creating symlinks."
+                print("\nERROR: Too many matches found, exiting without creating symlinks.")
                 return
 
     if options.verbose_only:
-        print "done\n\nSimulating symlinks..."
+        print("done\n\nSimulating symlinks...")
         # display symlinks
         for i, x in enumerate(symlinks, 1):
             print
-            print "%d. src:" % i, x[0]
-            print "%d. dst:" % i, x[1]
+            print("%d. src:" % i, x[0])
+            print("%d. dst:" % i, x[1])
     else:
-        print "done\n\nCreating symlinks..."
+        print("done\n\nCreating symlinks...")
         # create output directory
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
@@ -260,7 +260,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

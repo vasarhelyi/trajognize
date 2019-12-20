@@ -10,7 +10,7 @@ import time
 import sys
 import os
 import datetime
-import cPickle
+import pickle
 import gzip
 import gc
 import subprocess
@@ -82,7 +82,7 @@ def get_path_as_first_arg(argv):
 def exit(errorstr='', exitcode=0):
     """Exit execution with given exitcode, printing an error string."""
     if errorstr:
-        print errorstr
+        print(errorstr)
     sys.exit(exitcode)
 
 
@@ -109,7 +109,7 @@ class phase_t(object):
         self.starttime = time.clock()
         self.lasttime = self.starttime
         self.phase_status = 0
-        print msg
+        print(msg)
         sys.stdout.flush()
 
     def check_and_print_phase_status(self, direction, current, all):
@@ -124,16 +124,16 @@ class phase_t(object):
         # if too slow (>5s for one iteration)
         now = time.clock()
         if now-self.lasttime >= 1:
-            print "%d:%.1fs" % (current, now-self.lasttime),
+            print("%d:%.1fs" % (current, now-self.lasttime), end =" ")
         self.lasttime = now
         # print percentage
         if direction == 'forward':
             if current * 100 >= self.phase_status * all:
-                print "%d%%" % self.phase_status,
+                print("%d%%" % self.phase_status, end =" ")
                 self.phase_status += 1
         elif direction == 'backward':
             if current * 100 <= (100-self.phase_status) * all:
-                print "%d%%" % (100-self.phase_status),
+                print("%d%%" % (100-self.phase_status), end =" ")
                 self.phase_status += 1
         else:
             0/0
@@ -142,17 +142,17 @@ class phase_t(object):
     def end_phase(self, userstr=None, main=False):
         """Calculate elapsed time since last start_phase() call and print it."""
         if main:
-            if userstr: print "  %s" % userstr
+            if userstr: print("  %s" % userstr)
             # print total elapsed time
-            print "Total time elapsed: %gs" % (time.clock()-self.mainstarttime)
+            print("Total time elapsed: %gs" % (time.clock()-self.mainstarttime))
         else:
             # if status was checked while running, print 'done' to the end
             if self.phase_status:
-                print 'done'
+                print('done')
             # print userstring
-            if userstr: print "  %s" % userstr
+            if userstr: print("  %s" % userstr)
             # print elapsed time
-            print "  time elapsed: %gs\n" % (time.clock()-self.starttime)
+            print("  time elapsed: %gs\n" % (time.clock()-self.starttime))
         sys.stdout.flush()
 
 
@@ -229,12 +229,12 @@ def print_underlined(string, emptylines=0, fileobj=None):
     """Prints a string and prints a line under it with same length + some empty
     lines if defined."""
     indent = len(string) - len(string.lstrip())
-    print >> fileobj, string
+    print(string, file=fileobj)
     if indent:
-        print >> fileobj, ' '*(indent-1),
+        print(' '*(indent-1), file=fileobj, end=" ")
     print >> fileobj, '-' * (len(string)-indent)
     if emptylines:
-        print >> fileobj, '\n'*(emptylines-1)
+        print('\n'*(emptylines-1), file=fileobj)
 
 
 def insert_commentchar_to_file(filename, commentchar):
@@ -258,16 +258,16 @@ def load_object(filename):
     else:
         f = open(filename, 'rb')
     try:
-        object = cPickle.load(f)
+        object = pickle.load(f)
     except EOFError:
-        print "ERROR loading", filename
+        print("ERROR loading", filename)
         object = None
     f.close()
     gc.enable()
     return object
 
 
-def save_object(object, filename, protocol = cPickle.HIGHEST_PROTOCOL):
+def save_object(object, filename, protocol = pickle.HIGHEST_PROTOCOL):
     """Save a (compressed) object to disk.
 
     :param filename: name of the .zip file to save to
@@ -278,7 +278,7 @@ def save_object(object, filename, protocol = cPickle.HIGHEST_PROTOCOL):
         f = gzip.GzipFile(filename, 'wb')
     else:
         f = open(filename, 'wb')
-    cPickle.dump(object, f, protocol)
+    pickle.dump(object, f, protocol)
     f.close()
     gc.enable()
 

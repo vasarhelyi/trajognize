@@ -52,8 +52,8 @@ def main(argv=[]):
     Main variable descriptions can be found in init.variable_t() class.
 
     """
-    print "This is trajognize. SVN revision:", util.get_svn_info()['revision']
-    print "Current project is: %s\n" % project_str[PROJECT]
+    #print("This is trajognize. SVN revision:", util.get_svn_info()['revision'])
+    print("Current project is: %s\n" % project_str[PROJECT])
     v = variables_t()
     phase = util.phase_t()
     # parse command line arguments
@@ -90,38 +90,38 @@ def main(argv=[]):
         # default on non windows (linux, atlasz)
         else:
             options.inputfile = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/done/random_sample_trial_run_2011-06-10_13-15-29.335159.ts/OUT/2011-06-10_13-15-29.335159.ts.blobs'
-        print "  WARNING! No input file is specified! Default for %s is: '%s'" % (sys.platform, options.inputfile)
+        print("  WARNING! No input file is specified! Default for %s is: '%s'" % (sys.platform, options.inputfile))
     else:
-        print "  Using inputfile: '%s'" % options.inputfile
+        print("  Using inputfile: '%s'" % options.inputfile)
     # colorid file
     if options.coloridfile is None:
         options.coloridfile = 'misc/5-3_28patek.xml'
-        print "  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile
+        print("  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile)
     else:
-        print "  Using colorid file: '%s'" % options.coloridfile
+        print("  Using colorid file: '%s'" % options.coloridfile)
     # output path
     if options.outputpath is None:
         (options.outputpath, tail) = os.path.split(options.inputfile)
-        print "  WARNING! No output path is specified! Default is input file directory: '%s'" % os.path.abspath(options.outputpath)
+        print("  WARNING! No output path is specified! Default is input file directory: '%s'" % os.path.abspath(options.outputpath))
     else:
-        print "  Using output path: '%s'" % os.path.abspath(options.outputpath)
+        print("  Using output path: '%s'" % os.path.abspath(options.outputpath))
     # check output file
     outputfile = '%s.barcodes' % os.path.join(options.outputpath, os.path.split(options.inputfile)[1])
     if os.path.isfile(outputfile):
         if options.force:
-            print "  WARNING: option '-f' specified, forcing overwrite of output file."
+            print("  WARNING: option '-f' specified, forcing overwrite of output file.")
         else:
-            print "  ERROR: Output file already exists, add '-f' to force overwrite."
+            print("  ERROR: Output file already exists, add '-f' to force overwrite.")
             return
     # frame num
     if options.framenum is not None:
-        print "  WARNING: debug option '-n' specified, reading only %d frames." % options.framenum
+        print("  WARNING: debug option '-n' specified, reading only %d frames." % options.framenum)
     # no trajectory part
     if options.notrajectory is True:
-        print "  WARNING: debug option '-nf' specified, trajectory analysis part is not executed."
+        print("  WARNING: debug option '-nf' specified, trajectory analysis part is not executed.")
     # no deleted
     if options.nodeleted is True:
-        print "  WARNING: debug option '-wt' specified, writing only good barcodes, skipping deleted ones."
+        print("  WARNING: debug option '-wt' specified, writing only good barcodes, skipping deleted ones.")
     phase.end_phase()
 
 
@@ -134,19 +134,19 @@ def main(argv=[]):
         phase.start_phase("Reading colorid file...")
         v.colorids = parse.parse_colorid_file(options.coloridfile)
         if v.colorids is None: return
-        print "  %d colorids read, e.g. first is (%s,%s)" % (len(v.colorids), v.colorids[0].strid, v.colorids[0].symbol)
+        print("  %d colorids read, e.g. first is (%s,%s)" % (len(v.colorids), v.colorids[0].strid, v.colorids[0].symbol))
         phase.end_phase()
 
         # parse calibration file
         phase.start_phase("Reading calibration file...")
-        print "  WARNING: TODO - calibration is not implemented yet!!!"
+        print("  WARNING: TODO - calibration is not implemented yet!!!")
         phase.end_phase()
 
         # parse input blob file
         phase.start_phase("Reading input blob file...")
         (v.color_blobs, v.md_blobs, v.rat_blobs) = parse.parse_blob_file(options.inputfile, options.framenum)
         if v.color_blobs is None and v.md_blobs is None and v.rat_blobs is None: return
-        print "  %d BLOB frames read" % len(v.color_blobs)
+        print("  %d BLOB frames read" % len(v.color_blobs))
         phase.end_phase()
     elif options.debugload == 1:
         phase.start_phase("Reading previously saved debug environment at level %d..." % options.debugload)

@@ -46,7 +46,7 @@ def get_strid_from_tail(tail):
 def main(argv=[]):
     """Main entry point of the script."""
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     if sys.platform.startswith('win'):
         inputfiles = glob.glob(argv[0])
@@ -59,7 +59,7 @@ def main(argv=[]):
     filedict = {} # keys are hashable (exp, group, light, realvirt) tuples
     stats = []
     for inputfile in inputfiles:
-        print "gathering info from", os.path.split(inputfile)[1]
+        print("gathering info from", os.path.split(inputfile)[1])
         exp = trajognize.plot.plot.get_exp_from_filename(inputfile)
         stat = trajognize.plot.plot.get_stat_from_filename(inputfile)
         if stat not in stats: stats.append(stat)
@@ -72,13 +72,13 @@ def main(argv=[]):
         if key not in filedict: filedict[key] = [inputfile[:-4] + ".zip"]
         else: filedict[key].append(inputfile[:-4] + ".zip")
     if len(stats) != 1:
-        print "ERROR: wrong number of stats parsed:", stats
+        print("ERROR: wrong number of stats parsed:", stats)
         return
     stat = stats[0]
 
     # calculate averages, write new results
     for key in filedict:
-        print "\n", key, "\n\n"
+        print("\n", key, "\n\n")
         (exp, group) = key
         experiment = exps[exp[4:]]
         # caculate average
@@ -89,7 +89,7 @@ def main(argv=[]):
         else:
             0/0
         for inputfile in filedict[key]:
-            print "parsing", os.path.split(inputfile)[1]
+            print("parsing", os.path.split(inputfile)[1])
             newobj = trajognize.util.load_object(inputfile)
             if newobj:
                 newobj.print_status()
@@ -116,10 +116,10 @@ def main(argv=[]):
             outputfilezip = os.path.join(outdir, tail + '.zip')
             substat = stat + "diff." + get_strid_from_tail(tail)
             # save output in .zipped object
-            print "writing", os.path.split(outputfilezip)[1]
+            print("writing", os.path.split(outputfilezip)[1])
             trajognize.util.save_object(newobj, outputfilezip)
             # save output in text format with header
-            print "writing", os.path.split(outputfiletxt)[1]
+            print("writing", os.path.split(outputfiletxt)[1])
             outputfile = open(outputfiletxt, "w")
             outputfile.write(trajognize.stat.experiments.get_formatted_description(experiment, "#"))
             outputfile.write("\n")
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

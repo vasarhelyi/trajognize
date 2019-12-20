@@ -227,7 +227,7 @@ def dominance_transitivity(W, idorder=None, max_noedge_value=0):
     if not upper and not lower:
         return 0
     elif not upper + lower:
-        print "WARNING: TODO dominance_transitivity: what to do if upper+lower == 0?"
+        print("WARNING: TODO dominance_transitivity: what to do if upper+lower == 0?")
         return 0
     else:
         return upper/(upper+lower)
@@ -390,10 +390,10 @@ def BBS_scale_score(W):
         # increase iteration count
         iteration += 1
         # debug
-        # print "BBS iteration %d, total error = %g" % (iteration, error)
+        # print("BBS iteration %d, total error = %g" % (iteration, error))
 
     #if error <= errorlimit:
-    #    print "BBS iteration %d, error limit of %g reached" % (iteration, errorlimit)
+    #    print("BBS iteration %d, error limit of %g reached" % (iteration, errorlimit))
 
     ############################
     # New step not present in the article: substract avgS from S
@@ -468,7 +468,7 @@ def deVries_modified_Davids_score(W, mode=4):
                     wins[i] += (W[i][j]+0.5)/(n+1)
                     loses[i] += (W[j][i]+0.5)/(n+1)
     nans /= 2
-    if nans: print "Warning: there are %d not number elements, normDS calculation will be somewhat wrong..." % nans
+    if nans: print("Warning: there are %d not number elements, normDS calculation will be somewhat wrong..." % nans)
 
     # calculate weighted Dij (old: Pij) and Dji (old: Pji) for all IDs
     for i in idorder:

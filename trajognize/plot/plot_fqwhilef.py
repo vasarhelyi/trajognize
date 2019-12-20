@@ -44,7 +44,7 @@ def get_categories_from_name(name):
 def main(argv=[]):
     """Main entry point of the script."""
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     if sys.platform.startswith('win'):
         inputfiles = glob.glob(argv[0])
@@ -53,7 +53,7 @@ def main(argv=[]):
     outdirs = []
     corrfiles = []
     for inputfile in inputfiles:
-        print "parsing", os.path.split(inputfile)[1]
+        print("parsing", os.path.split(inputfile)[1])
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
         (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
         exp = get_exp_from_filename(inputfile)
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

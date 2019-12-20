@@ -230,7 +230,7 @@ def get_minmax_from_file(inputfile):
 def main(argv=[]):
     """Main entry point of the script."""
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     if sys.platform.startswith('win'):
         inputfiles = glob.glob(argv[0])
@@ -241,7 +241,7 @@ def main(argv=[]):
 
     intdistdata = [] # (outdir, name(common), input, strid, exp)
     for inputfile in inputfiles:
-        print "parsing", os.path.split(inputfile)[1]
+        print("parsing", os.path.split(inputfile)[1])
         stat = get_stat_from_filename(inputfile)
         exp = get_exp_from_filename(inputfile)
         headers = grep_headers_from_file(inputfile, stat)
@@ -284,11 +284,12 @@ def main(argv=[]):
             # plot
             script = get_gnuplot_script(inputfile, outputfile, name, index, exp,
                     experiment, group, maxvalue)
-            print >>open(gnufile, 'w'), script
+            with open(gnufile, 'w') as f:
+                f.write(script)
             try:
                 subprocess.call(["gnuplot", gnufile])
             except WindowsError:
-                print "  Error plotting '%s': gnuplot is not available on Windows" % name
+                print("  Error plotting '%s': gnuplot is not available on Windows" % name)
             # create SPGM picture description
             spgm.create_picture_description(outputfile,
                     [name, exp], inputfile, gnufile)
@@ -296,9 +297,9 @@ def main(argv=[]):
     # plot common intensity distribution if there are individual heatmaps
     if intdistdata:
         outdirs = set([x[0] for x in intdistdata])
-        print len(outdirs), "outdirs found"
+        print(len(outdirs), "outdirs found")
         for outdir in outdirs:
-            print "Plotting heatmap intensity distribution for", outdir
+            print("Plotting heatmap intensity distribution for", outdir)
             inputs = []
             for (outdirx, namex, inputfile, strid, expx) in intdistdata:
                 if outdirx == outdir:
@@ -309,11 +310,12 @@ def main(argv=[]):
             gnufile = outputfilecommon + ".gnu"
             outputfile = outputfilecommon + ".png"
             script = get_gnuplot_script_intdist(inputs, outputfile, name, exp)
-            print >>open(gnufile, 'w'), script
+            with open(gnufile, 'w') as f:
+                f.write(script)
             try:
                 subprocess.call(["gnuplot", gnufile])
             except WindowsError:
-                print "  Error plotting 'heatmapintdist_%s': gnuplot is not available on Windows" % name
+                print("  Error plotting 'heatmapintdist_%s': gnuplot is not available on Windows" % name)
             # create SPGM picture description
             spgm.create_picture_description(outputfile,
                     [name, exp], None, gnufile) # there are more source files...
@@ -353,7 +355,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

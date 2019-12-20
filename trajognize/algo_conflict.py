@@ -30,10 +30,10 @@ def list_conflicts(conflicts, colorids):
     for k in xrange(len(colorids)):
         strid = colorids[k].strid
         for conflict in conflicts[k]:
-            print "   ", conflict.ctype, strid, "f%d-%d" % (conflict.firstframe, \
+            print("   ", conflict.ctype, strid, "f%d-%d" % (conflict.firstframe, \
                     algo_trajectory.trajlastframe(conflict)), \
                     conflict.cwith if conflict.cwith is None else [colorids[x].strid for x in conflict.cwith], \
-                    STATE_STR[conflict.state]
+                    STATE_STR[conflict.state])
 
 
 def list_conflicted_trajs(conflicted_trajs, colorids, trajectories):
@@ -52,10 +52,10 @@ def list_conflicted_trajs(conflicted_trajs, colorids, trajectories):
             trajectories[y[0]][y[1]]) - algo_trajectory.traj_score(trajectories[x[0]][x[1]]))
     for (k, t) in si:
         traj = trajectories[k][t]
-        print "   ", colorids[k].strid, "f%d-%d s%d" % (traj.firstframe,
+        print("   ", colorids[k].strid, "f%d-%d s%d" % (traj.firstframe,
                 algo_trajectory.trajlastframe(traj),
                 algo_trajectory.traj_score(traj)), \
-                STATE_STR[traj.state]
+                STATE_STR[traj.state])
 
 
 def get_gap_conflicts(barcodes, colorids):
@@ -322,34 +322,34 @@ def create_conflict_database(trajectories, barcodes, blobs, colorids):
 
     """
 
-    print "  Get total number of chosen barcodes..."
+    print("  Get total number of chosen barcodes...")
     numchosen = 0
     for frame in xrange(len(barcodes)):
         chosens = algo_barcode.get_chosen_barcode_indices(barcodes[frame])
         for k in xrange(len(chosens)):
             if chosens[k] is not None:
                 numchosen += 1
-    print "    found", numchosen
+    print("    found", numchosen)
     if numchosen == 0: return
 
-    print "  Searching for all gap conflicts..."
+    print("  Searching for all gap conflicts...")
     gap_conflicts = get_gap_conflicts(barcodes, colorids)
     num = sum(sum(len(x.barcodeindices) for x in confsamecolor) for confsamecolor in gap_conflicts)
-    print "    found %d gap conflicted barcodes (%1.2f%% of all chosen)" % (num, 100.0*num/numchosen)
+    print("    found %d gap conflicted barcodes (%1.2f%% of all chosen)" % (num, 100.0*num/numchosen))
     list_conflicts(gap_conflicts, colorids)
 
-    print "  Searching for all overlap conflicts..."
+    print("  Searching for all overlap conflicts...")
     overlap_conflicts = get_overlap_conflicts(barcodes, blobs, colorids)
     num = sum(sum(len(x.barcodeindices) for x in confsamecolor) for confsamecolor in overlap_conflicts)
-    print "    found %d overlap conflicted barcodes (%1.2f%% of all chosen), trying to resolve them..." % (num, 100.0*num/numchosen)
+    print("    found %d overlap conflicted barcodes (%1.2f%% of all chosen), trying to resolve them..." % (num, 100.0*num/numchosen))
     resolved = resolve_overlap_conflicts(overlap_conflicts, barcodes, blobs, colorids)
-    print "   ", resolved, "overlap conflicts resolved"
+    print("   ", resolved, "overlap conflicts resolved")
     list_conflicts(overlap_conflicts, colorids)
 
-    print "  Searching for all not-used-barcode conflicts..."
+    print("  Searching for all not-used-barcode conflicts...")
     (nub_conflicts, nub_conflicted_trajs) = get_nub_conflicts(trajectories, barcodes, blobs, colorids)
     num = sum(sum(len(x.barcodeindices) for x in confsamecolor) for confsamecolor in nub_conflicts)
-    print "    found %d nub conflicted barcodes (%1.2f%% of all chosen)" % (num, 100.0*num/numchosen)
+    print("    found %d nub conflicted barcodes (%1.2f%% of all chosen)" % (num, 100.0*num/numchosen))
 #    list_conflicts(nub_conflicts, colorids)
     list_conflicted_trajs(nub_conflicted_trajs, colorids, trajectories)
 

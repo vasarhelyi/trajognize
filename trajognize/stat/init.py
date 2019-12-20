@@ -101,8 +101,8 @@ class stat_t(object):
         No need to overload this function, only use it in print_status() if needed.
 
         """
-        print "  statistic is from %d files, %d frames and %d data points" % \
-                (self.files, self.frames, self.points)
+        print("  statistic is from %d files, %d frames and %d data points" % \
+                (self.files, self.frames, self.points))
 
     def _print_status__light(self):
         """Template function for print_status() for data with light types.
@@ -111,8 +111,8 @@ class stat_t(object):
 
         """
         for light in trajognize.project.good_light:
-            print "  %s statistic is from %d files, %d frames and %d data points" % \
-                    (light, self.files, self.frames[light], self.points[light])
+            print("  %s statistic is from %d files, %d frames and %d data points" % \
+                    (light, self.files, self.frames[light], self.points[light]))
 
     def _print_status__mft(self):
         """Template function for print_status() for data with mfix types.
@@ -122,8 +122,8 @@ class stat_t(object):
         """
         for mfi in xrange(len(mfix_types)):
             mft = mfix_types[mfi]
-            print "  %s statistic is from %d files, %d frames and %d data points" % \
-                    (mft, self. files, self.frames, self.points[mfi])
+            print("  %s statistic is from %d files, %d frames and %d data points" % \
+                    (mft, self. files, self.frames, self.points[mfi]))
 
     def _print_status__light_mft(self):
         """Template function for print_status() for data with light and mfix types.
@@ -134,8 +134,8 @@ class stat_t(object):
         for light in trajognize.project.good_light:
             for mfi in xrange(len(mfix_types)):
                 mft = mfix_types[mfi]
-                print "  %s %s statistic is from %d files, %d frames and %d data points" % \
-                        (light, mft, self.files, self.frames[light], self.points[light][mfi])
+                print("  %s %s statistic is from %d files, %d frames and %d data points" % \
+                        (light, mft, self.files, self.frames[light], self.points[light][mfi]))
 
     def print_status(self):
         """Prints status info about the data to standard output.
@@ -1118,8 +1118,8 @@ class sameiddist_t(stat_t):
     def print_status(self):
         """Prints status info about the data to standard output."""
         for light in trajognize.project.good_light:
-            print "  %s statistic is from %d files, %d frames and %d/%d data points (including/excluding deleted)" % \
-                    (light, self.files, self.frames[light], self.points[light][0], self.points[light][1])
+            print("  %s statistic is from %d files, %d frames and %d/%d data points (including/excluding deleted)" % \
+                    (light, self.files, self.frames[light], self.points[light][0], self.points[light][1]))
 
     def write_results(self, outputfile, colorids):
         """Saves the contents of self to a file (possibly as a summarized stat).
@@ -2487,8 +2487,8 @@ class basic_t(stat_t):
     def print_status(self):
         """Prints status info about the data to standard output."""
         for light in trajognize.project.all_light:
-            print "  %s statistic is from %d files and %d frames" % \
-                    (light, self.files, self.frames[light])
+            print("  %s statistic is from %d files and %d frames" % \
+                    (light, self.files, self.frames[light]))
 
     def write_results(self, outputfile, colorids, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).

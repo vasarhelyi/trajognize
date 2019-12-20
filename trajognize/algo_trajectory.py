@@ -256,7 +256,7 @@ def initialize_trajectories(trajectories, trajsonframe, barcodes, blobs,
         #    print currentframe, strid, 'trajsonlastframe', trajsonframe[currentframe-1][k]
         for i in xrange(len(barcodes[currentframe][k])):
             #if strid == 'ORB' and currentframe > 820:
-            #    print '  barcode', i
+            #    print('  barcode', i)
             barcode = barcodes[currentframe][k][i]
             if not barcode.mfix or (barcode.mfix & MFIX_DELETED):
                 continue
@@ -266,7 +266,7 @@ def initialize_trajectories(trajectories, trajsonframe, barcodes, blobs,
                 # if found a good one, add to existing trajectory
                 traj = trajectories[k][trajindex]
                 #if strid == 'ORB' and currentframe > 820:
-                #    print '    try trajindex', trajindex, 'with last b.ind.', traj.barcodeindices[-1], 'No. of last barc.', len(barcodes[currentframe-1][k])
+                #    print('    try trajindex', trajindex, 'with last b.ind.', traj.barcodeindices[-1], 'No. of last barc.', len(barcodes[currentframe-1][k]))
                 if trajindex in trajsonframe[currentframe][k]:
                     lastbarcode = barcodes[currentframe-1][k][traj.barcodeindices[-2]]
                 else:
@@ -277,17 +277,17 @@ def initialize_trajectories(trajectories, trajsonframe, barcodes, blobs,
                         mdindices[currentframe-1], mdindices[currentframe]):
                     found += 1
                     #if strid == 'ORB' and currentframe > 820:
-                    #    print '    found', found, 'trajindex', trajindex
+                    #    print('    found', found, 'trajindex', trajindex)
                     if trajindex not in trajsonframe[currentframe][k]:
                     # if not added yet (no split), add barcode to existing trajectory
                         # if this barcode has already caused trouble, stop all trajs that could end with this
                         if found > 1:
                             #if strid == 'ORB' and currentframe > 820:
-                            #    print '    stopped trajindex', trajindex
+                            #    print('    stopped trajindex', trajindex)
                             traj.state = STATE_FORCED_END
                         else:
                             #if strid == 'ORB' and currentframe > 820:
-                            #    print '    append to trajindex', trajindex
+                            #    print('    append to trajindex', trajindex)
                             append_barcode_to_traj(
                                     traj, trajsonframe[currentframe][k], trajindex,
                                     barcode, i, strid, blobs[currentframe])
@@ -310,14 +310,14 @@ def initialize_trajectories(trajectories, trajsonframe, barcodes, blobs,
                                     trajectories, trajsonframe, currentframe, k,
                                     barcode, i, strid, blobs[currentframe])
                             #if strid == 'ORB' and currentframe > 820:
-                            #    print '    delete trajindex', trajindex, 'and start two new trajindex', len(trajectories[k])-2, len(trajectories[k])-1
+                            #    print('    delete trajindex', trajindex, 'and start two new trajindex', len(trajectories[k])-2, len(trajectories[k])-1)
 
             # if no trajectories found where this barcode can fit, start a new one
             if not found:
                 start_new_traj(trajectories, trajsonframe, currentframe, k,
                         barcode, i, strid, blobs[currentframe])
                 #if strid == 'ORB' and currentframe > 820:
-                #    print '    not found, starting new one trajindex', len(trajectories[k])-1
+                #    print('    not found, starting new one trajindex', len(trajectories[k])-1)
 
 
 def traj_score(traj, k=None, kk=None, calculate_deleted=True):
@@ -661,7 +661,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
         connections = connections_t(toframe)
         index = -1
 
-#    print mode, colorids[k].strid, "level", level, "f%d-%d" % (fromframe, toframe), "flimit", framelimit, "fflimit", connections.fromframelimit, "Nconns", len(connections.data)
+#    print(mode, colorids[k].strid, "level", level, "f%d-%d" % (fromframe, toframe), "flimit", framelimit, "fflimit", connections.fromframelimit, "Nconns", len(connections.data))
 
     # avoid getting into too deep recursions and also define stricter first frame
     # limit if there are too many recursions. This level should be the last.
@@ -671,7 +671,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
             connections.fromframelimit = max(connections.fromframelimit, trajlastframe(traja))
         else:
             connections.fromframelimit = min(connections.fromframelimit, traja.firstframe)
-#        print "  recursion limit reached, setting new fflimit", connections.fromframelimit
+#        print("  recursion limit reached, setting new fflimit", connections.fromframelimit)
         return None
 
 
@@ -710,7 +710,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
                         if trajx.state == STATE_DELETED: continue
                     if trajx.state == STATE_CHANGEDID or trajx.k != kk: continue
                     if trajx.state == STATE_CHOSEN:
-                        print "Warning, something is buggy. state is already CHOSEN"
+                        print("Warning, something is buggy. state is already CHOSEN")
                 # skip ones far away
                 if get_distance(
                         barcodefrom, barcodes[frame][kk][trajx.barcodeindices[(inc-1)/2]]) > \
@@ -763,7 +763,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
                 connections.data[index].append((kk,i))
 
                 # find connection between new one and last
-#                print "  found", colorids[k].strid, "level", level, "f%d-%d" % (trajx.firstframe, trajlastframe(trajx)), "newflimit", framelimit - inc*(toxframe - (fromframe - inc)), "fflimit", connections.fromframelimit, "Nconns", len(connections.data)
+#                print("  found", colorids[k].strid, "level", level, "f%d-%d" % (trajx.firstframe, trajlastframe(trajx)), "newflimit", framelimit - inc*(toxframe - (fromframe - inc)), "fflimit", connections.fromframelimit, "Nconns", len(connections.data))
                 connect_chosen_trajs(trajx, trajb, k, trajectories, trajsonframe,
                         barcodes, colorids, framelimit - inc*(toxframe - (fromframe - inc)),
                         connections, index, level+1)
@@ -823,12 +823,12 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
         # the whole search is in one recursion...
         # it might happen that many small trajs set fromframelimit too low
         # and therefore win over good long traj, but what can I do...
-        print "Warning: recursion limit reached during search, selecting best conn-part so far and starting new part..."
-        print " ", mode, colorids[k].strid, "level", level, "from-to", "%d-%d" % (fromframe, toframe), "flimit", framelimit, "fflimit", connections.fromframelimit, "Nconns", len(connections.data)
+        print("Warning: recursion limit reached during search, selecting best conn-part so far and starting new part...")
+        print(" ", mode, colorids[k].strid, "level", level, "from-to", "%d-%d" % (fromframe, toframe), "flimit", framelimit, "fflimit", connections.fromframelimit, "Nconns", len(connections.data))
         conn = connect_chosen_trajs(trajx, trajb, k, trajectories, trajsonframe,
                 barcodes, colorids, framelimit - inc*(nextfromxframe - fromframe))
         if conn:
-#           print "conn+", [(colorids[kk].strid, ii, trajectories[kk][ii].firstframe, trajlastframe(trajectories[kk][ii])) for (kk, ii) in tempconn + conn]
+#           print("conn+", [(colorids[kk].strid, ii, trajectories[kk][ii].firstframe, trajlastframe(trajectories[kk][ii])) for (kk, ii) in tempconn + conn])
            return tempconn + conn
 
     ############################################################################
@@ -886,14 +886,14 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
             connections.data[si[0]].append((k,neigh))
 
 #    if colorids[k].strid in ["GOP"]:
-#        print "helo", colorids[k].strid, "mode", mode, "conn", connections.data[si[0]], "%d-%d" % (fromframe, toframe)
+#        print("helo", colorids[k].strid, "mode", mode, "conn", connections.data[si[0]], "%d-%d" % (fromframe, toframe))
 
     if mode == 'b':
         # return reverse list (backward backward == forward)
-#        print "connb", [(colorids[kk].strid, ii, trajectories[kk][ii].firstframe, trajlastframe(trajectories[kk][ii])) for (kk, ii) in connections.data[si[0]][::-1]]
+#        print("connb", [(colorids[kk].strid, ii, trajectories[kk][ii].firstframe, trajlastframe(trajectories[kk][ii])) for (kk, ii) in connections.data[si[0]][::-1]])
         return connections.data[si[0]][::-1]
     else:
-#        print "connfc", [(colorids[kk].strid, ii, trajectories[kk][ii].firstframe, trajlastframe(trajectories[kk][ii])) for (kk, ii) in connections.data[si[0]]]
+#        print("connfc", [(colorids[kk].strid, ii, trajectories[kk][ii].firstframe, trajlastframe(trajectories[kk][ii])) for (kk, ii) in connections.data[si[0]]])
         return connections.data[si[0]]
 
 
@@ -925,8 +925,8 @@ def mark_traj_chosen(trajectories, k, i, trajsonframe, colorids, barcodes, blobs
     deleted = 0
     if kk is None: kk = k
     if traj.k != k:
-        print "Warning, something bad happened (%s i%d f%d-%d) traj.k (%s) != k (%s). kk is %s!!!" % \
-                (colorids[k].strid, i, traj.firstframe, trajlastframe(traj), colorids[traj.k].strid, colorids[k].strid, colorids[kk].strid)
+        print("Warning, something bad happened (%s i%d f%d-%d) traj.k (%s) != k (%s). kk is %s!!!" % \
+                (colorids[k].strid, i, traj.firstframe, trajlastframe(traj), colorids[traj.k].strid, colorids[k].strid, colorids[kk].strid))
         raise ValueError
         return -1
 
@@ -948,9 +948,9 @@ def mark_traj_chosen(trajectories, k, i, trajsonframe, colorids, barcodes, blobs
     if chosenoverlap:
         for (kkk,j) in chosenoverlap:
             trajx = trajectories[kkk][j]
-            print "  Warning: overlapping chosen trajs found (dst %s)." % colorids[kk].strid,
-            print "old:", colorids[trajx.k].strid, "%d-%d," % (trajx.firstframe, trajlastframe(trajx)),
-            print "new:", colorids[traj.k].strid, "%d-%d, Deleting new." % (traj.firstframe, trajlastframe(traj))
+            print("  Warning: overlapping chosen trajs found (dst %s)." % colorids[kk].strid, end=" ")
+            print("old:", colorids[trajx.k].strid, "%d-%d," % (trajx.firstframe, trajlastframe(trajx)), end=" ")
+            print("new:", colorids[traj.k].strid, "%d-%d, Deleting new." % (traj.firstframe, trajlastframe(traj)))
         traj.state = STATE_DELETED
         return -1
 
@@ -1126,11 +1126,11 @@ def fill_connection_with_nub(conn, k, trajectories, trajsonframe, barcodes, colo
         oldtraj = traj
         (oldkk, oldj) = (kk, j)
 
-#    print "found", count_found
-#    print "virtual", count_virtual
+#    print("found", count_found)
+#    print("virtual", count_virtual)
 #    for (kk,j) in conn:
 #        traj = trajectories[kk][j]
-#        print kk, j, colorids[traj.k].strid, "%d-%d" % (traj.firstframe, trajlastframe(traj))
+#        print(kk, j, colorids[traj.k].strid, "%d-%d" % (traj.firstframe, trajlastframe(traj)))
 
     return (count_found, count_virtual)
 
@@ -1153,9 +1153,9 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
 
     """
     changes = 0
-    print "   ",
+    print("   ", end=" ")
     for k in xrange(len(colorids)):
-        print colorids[k].strid,
+        print(colorids[k].strid, end=" ")
         # get first chosen traj
         i = get_chosen_neighbor_traj_perframe(None, trajectories, trajsonframe, k, True, None)
         while i != -1:
@@ -1261,7 +1261,7 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
                 frame += 1
             # get next chosen traj
             i = get_chosen_neighbor_traj_perframe(traj, trajectories, trajsonframe, k, True, None)
-    print
+    print()
     return changes
 
 
@@ -1291,7 +1291,7 @@ def choose_and_connect_trajs(si, score_threshold, trajectories, trajsonframe,
     connections = [[] for x in xrange(len(colorids))]
     changedcolor = []
     # iterate all trajectories
-    print "\n  Scores of chosen:",
+    print("\n  Scores of chosen:", end=" ")
     for i in xrange(len(si)):
         k = si[i][0]
         ii = si[i][1]
@@ -1299,15 +1299,15 @@ def choose_and_connect_trajs(si, score_threshold, trajectories, trajsonframe,
         # end iteration if traj is not good any more
         if not is_traj_good(traj, score_threshold + traj.offset_count):
             break
-        print traj_score(traj), colorids[k].strid, "i%d s%d (%d-%d)," % (ii, traj.state, traj.firstframe, trajlastframe(traj)),
+        print(traj_score(traj), colorids[k].strid, "i%d s%d (%d-%d)," % (ii, traj.state, traj.firstframe, trajlastframe(traj)), end=" ")
         # skip ones that look good, but are already deleted (by better ones or due to changed score)
         if traj.state == STATE_DELETED:
             deletedgood.append((colorids[k].strid, traj_score(traj)))
             continue
         # and also skip ones that were chosen for another colorid
         if traj.state == STATE_CHANGEDID or traj.k != k: # actually second should not occur here yet
-            print "\n  Warning: changed %s traj colorid to %s with score %d, colorblob_count: %s," % (colorids[k].strid,
-                    colorids[traj.k].strid, traj_score(traj), traj.colorblob_count),
+            print("\n  Warning: changed %s traj colorid to %s with score %d, colorblob_count: %s," % (colorids[k].strid,
+                    colorids[traj.k].strid, traj_score(traj), traj.colorblob_count), end=" ")
             continue
         # skip already chosen ones
         if traj.state == STATE_CHOSEN:
@@ -1368,22 +1368,22 @@ def choose_and_connect_trajs(si, score_threshold, trajectories, trajsonframe,
                         connected += 1
                         deleted += a
 
-    print
-    print "    chosen:", chosen, "deleted:", deleted, "connected:", connected
-    print "    deleted trajs with score over the threshold (possibly deleted false positive detections):", deletedgood
-    print "    barcodes reanimated to fill gap between chosen trajs:", rebirth
-    print "    virtual barcodes added to trajs to fill gap between static chosen trajs:", virtual
+    print()
+    print("    chosen:", chosen, "deleted:", deleted, "connected:", connected)
+    print("    deleted trajs with score over the threshold (possibly deleted false positive detections):", deletedgood)
+    print("    barcodes reanimated to fill gap between chosen trajs:", rebirth)
+    print("    virtual barcodes added to trajs to fill gap between static chosen trajs:", virtual)
 
     # change colorids on marked ones
-    print "  Changing colorid of some (possibly false detected) trajs..."
+    print("  Changing colorid of some (possibly false detected) trajs...")
     for (k,i) in changedcolor:
         change_colorid(trajectories, k, i, trajsonframe, barcodes, colorids, blobs)
-    print "    changed:", len(changedcolor)
+    print("    changed:", len(changedcolor))
 
     # set barcodes chosen/deleted property (first round)
-    print "  Set barcode properties (first round)..."
+    print("  Set barcode properties (first round)...")
     (chosen, deleted) = mark_barcodes_from_trajs(trajectories, barcodes, colorids, kkkk)
-    print "    chosen barcodes:", chosen, " deleted barcodes:", deleted
+    print("    chosen barcodes:", chosen, " deleted barcodes:", deleted)
     sys.stdout.flush()
 
 
@@ -1473,9 +1473,9 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
             deleteit = True
             for traj in trajectories[k]:
                 traj.state = STATE_DELETED
-        print "  %s trajs: %5d sum: %5d sum_good: %5d best: %5d worst: %5d %s" % (strid,
+        print("  %s trajs: %5d sum: %5d sum_good: %5d best: %5d worst: %5d %s" % (strid,
                 len(trajectories[k]), sum_scores[k], sum_good_scores[k], best_scores[k],
-                worst_scores[k], "<-- all deleted" if deleteit else "")
+                worst_scores[k], "<-- all deleted" if deleteit else ""))
     sys.stdout.flush()
 
     ############################################################################
@@ -1503,22 +1503,22 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
         choose_and_connect_trajs(si, settings.good_score_threshold, trajectories,
                 trajsonframe, colorids, barcodes, blobs, kkkk=k, framelimit=settings.framelimit)
         # extend all chosen barcodes
-        print "  Extending chosen trajs with not yet chosen in both temporal directions..."
+        print("  Extending chosen trajs with not yet chosen in both temporal directions...")
         (virtual, rebirth) = extend_chosen_trajs(trajectories, trajsonframe, colorids, barcodes, blobs, k)
-        print "    new virtual barcodes:", virtual, " barcodes reanimated:", rebirth
+        print("    new virtual barcodes:", virtual, " barcodes reanimated:", rebirth)
 
     ############################################################################
     # third phase: cleanup, list, enhance virtual
 
     # list meta trajs
-    print "\n  List meta trajs and gaps between..."
+    print("\n  List meta trajs and gaps between...")
     list_meta_trajs(trajectories, trajsonframe, barcodes, colorids, blobs)
 
     # try to include not used blobs and not used barcodes to virtual barcodes
-    print "  Enhance virtual barcodes with not used barcodes/blobs..."
+    print("  Enhance virtual barcodes with not used barcodes/blobs...")
     # TODO: too slow
     changes = enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blobs)
-    print "    number of changes:", changes
+    print("    number of changes:", changes)
 
 
 def extend_chosen_trajs(trajectories, trajsonframe, colorids, barcodes, blobs,
@@ -1565,9 +1565,9 @@ def extend_chosen_trajs(trajectories, trajsonframe, colorids, barcodes, blobs,
         changedcolor = []
         oldchosen = chosen
         olddeleted = deleted
-        print "   ",
+        print("   ", end=" ")
         for k in klist:
-            print colorids[k].strid,
+            print(colorids[k].strid, end=" ")
             for i in xrange(len(trajectories[k])):
                 traj = trajectories[k][i]
                 if traj.state != STATE_CHOSEN: continue
@@ -1583,7 +1583,7 @@ def extend_chosen_trajs(trajectories, trajsonframe, colorids, barcodes, blobs,
                     virtual += b
                     # set CHOSEN property if good connection was found
                     for (kk, j) in conn:
-#                        print "forward", colorids[kk].strid, trajectories[kk][j].firstframe, trajlastframe(trajectories[kk][j])
+#                        print("forward", colorids[kk].strid, trajectories[kk][j].firstframe, trajlastframe(trajectories[kk][j]))
                         a = mark_traj_chosen(trajectories, kk, j, trajsonframe, colorids, barcodes, blobs, k)
                         if k != kk:
                             changedcolor.append((kk,j))
@@ -1604,7 +1604,7 @@ def extend_chosen_trajs(trajectories, trajsonframe, colorids, barcodes, blobs,
                     virtual += b
                     # set CHOSEN property if good connection was found
                     for (kk,j) in conn:
- #                       print "backward", colorids[kk].strid, trajectories[kk][j].firstframe, trajlastframe(trajectories[kk][j])
+ #                       print("backward", colorids[kk].strid, trajectories[kk][j].firstframe, trajlastframe(trajectories[kk][j]))
                         a = mark_traj_chosen(trajectories, kk, j, trajsonframe, colorids, barcodes, blobs, k)
                         if k != kk:
                             changedcolor.append((kk,j))
@@ -1623,7 +1623,7 @@ def extend_chosen_trajs(trajectories, trajsonframe, colorids, barcodes, blobs,
 
         # iterate next
         it += 1
-        print "\n    iteration #%d -" % it, "chosen:", chosen-oldchosen, "deleted:", deleted-olddeleted, "changed color:", len(changedcolor)
+        print("\n    iteration #%d -" % it, "chosen:", chosen-oldchosen, "deleted:", deleted-olddeleted, "changed color:", len(changedcolor))
         sys.stdout.flush()
     return (virtual, rebirth)
 
@@ -1645,7 +1645,7 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
 
     """
     simulate = False
-    if simulate: print "    Warning: add_virtual_barcodes_to_gaps() is in simulation mode."
+    if simulate: print("    Warning: add_virtual_barcodes_to_gaps() is in simulation mode.")
     virtual = 0
 
     for k in xrange(len(colorids)):
@@ -1683,9 +1683,9 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
                 dist = get_distance(barcodea, barcodeb)
                 debug = False
                 if dist > max_allowed_dist_between_trajs(a,b):
-                    print "    Warning: distance between neighboring chosen %s trajs is large (%d)." % (colorids[k].strid, dist),
-                    print "a i%d" % i, "f%d-%d" % (traj.firstframe, trajlastframe(traj)),
-                    print "b i%d" % next, "f%d-%d" % (trajx.firstframe, trajlastframe(trajx))
+                    print("    Warning: distance between neighboring chosen %s trajs is large (%d)." % (colorids[k].strid, dist), end=" ")
+                    print("a i%d" % i, "f%d-%d" % (traj.firstframe, trajlastframe(traj)), end=" ")
+                    print("b i%d" % next, "f%d-%d" % (trajx.firstframe, trajlastframe(trajx)))
                     if trajx.firstframe - trajlastframe(traj) > 25:
                         debug = True
                     elif dist > 250:
@@ -1834,7 +1834,7 @@ def list_meta_trajs(trajectories, trajsonframe, barcodes, colorids, blobs):
     """
     changes = 0
     for k in xrange(len(colorids)):
-        print "   ", colorids[k].strid,
+        print("   ", colorids[k].strid, end=" ")
         # get first chosen traj
         i = get_chosen_neighbor_traj_perframe(None, trajectories, trajsonframe, k, True, None)
         while i != -1:
@@ -1852,13 +1852,13 @@ def list_meta_trajs(trajectories, trajsonframe, barcodes, colorids, blobs):
                 chosens.append(i)
                 oldtraj = traj
             lastframe = trajlastframe(trajectories[k][chosens[-1]])
-            print "%d-%d" % (firstframe, lastframe),
+            print("%d-%d" % (firstframe, lastframe), end=" ")
             if i != -1:
-                print "(d%d)" % get_distance(
+                print("(d%d)" % get_distance(
                         barcodes[lastframe][k][trajectories[k][chosens[-1]].barcodeindices[-1]],
-                        barcodes[trajectories[k][i].firstframe][k][trajectories[k][i].barcodeindices[0]]),
+                        barcodes[trajectories[k][i].firstframe][k][trajectories[k][i].barcodeindices[0]]), end=" ")
             # iterate to next chain of trajs
-        print
+        print()
         # iterate to next colorid
 
 
@@ -1877,7 +1877,7 @@ def smooth_final_trajectories(trajectories, trajsonframe, barcodes, colorids, bl
     """
     changes = 0
     for k in xrange(len(colorids)):
-        print "   ", colorids[k].strid,
+        print("   ", colorids[k].strid, end=" ")
         # get first chosen traj
         i = get_chosen_neighbor_traj_perframe(None, trajectories, trajsonframe, k, True, None)
         while i != -1:
@@ -1897,18 +1897,18 @@ def smooth_final_trajectories(trajectories, trajsonframe, barcodes, colorids, bl
             lastframe = trajlastframe(trajectories[k][chosens[-1]])
             # get first fullfound
             (oldfullframe, ii) = get_next_barcode_with_mfix(firstframe, barcodes, k, MFIX_CHOSEN | MFIX_FULLFOUND)
-            print "%d-%d" % (firstframe, lastframe),
+            print("%d-%d" % (firstframe, lastframe), end=" ")
             if i != -1:
-                print "(d%d)" % get_distance(
+                print("(d%d)" % get_distance(
                         barcodes[lastframe][k][trajectories[k][chosens[-1]].barcodeindices[-1]],
-                        barcodes[trajectories[k][i].firstframe][k][trajectories[k][i].barcodeindices[0]]),
+                        barcodes[trajectories[k][i].firstframe][k][trajectories[k][i].barcodeindices[0]]), end=" ")
 # TODOdebug
 #            if colorids[k].strid == "GOP" and lastframe == 326:
 #                for xx in xrange(320, 360):
-#                    print "frame", xx
+#                    print("frame", xx)
 #                    for xxx in trajsonframe[xx][k]:
 #                        xxxx = trajectories[k][xxx]
-#                        print "  i%d f%d-%d" % (xxx, xxxx.firstframe, trajlastframe(xxxx)), STATE_STR[xxxx.state]
+#                        print("  i%d f%d-%d" % (xxx, xxxx.firstframe, trajlastframe(xxxx)), STATE_STR[xxxx.state])
 # TODOdebug
 
             # no more fullfound until the end of current frame
@@ -1940,7 +1940,7 @@ def smooth_final_trajectories(trajectories, trajsonframe, barcodes, colorids, bl
                     while do < -pi: do += 2*pi
                     do /= (fullframe - oldfullframe)
 #                    if colorids[k].strid == 'GPB':
-#                        print "oldfull", colorids[k].strid, oldfullframe, oldfullbarcode.centerx, oldfullbarcode.centery, oldfullbarcode.orientation, mfix2str(oldfullbarcode.mfix)
+#                        print("oldfull", colorids[k].strid, oldfullframe, oldfullbarcode.centerx, oldfullbarcode.centery, oldfullbarcode.orientation, mfix2str(oldfullbarcode.mfix))
                     oldframe = oldfullframe
                     # set partlyfound params between
                     while 1:
@@ -1961,18 +1961,18 @@ def smooth_final_trajectories(trajectories, trajsonframe, barcodes, colorids, bl
 # TODO debug comment ends
 
 #                        if colorids[k].strid == 'GPB':
-#                            print "barcode", colorids[k].strid, frame, barcode.centerx, barcode.centery, barcode.orientation, mfix2str(barcode.mfix)
+#                            print("barcode", colorids[k].strid, frame, barcode.centerx, barcode.centery, barcode.orientation, mfix2str(barcode.mfix))
                         changes += 1
                         # save old params
                         oldframe = frame
                     # save old params
 #                    if colorids[k].strid == 'GPB':
-#                        print "full", colorids[k].strid, fullframe, fullbarcode.centerx, fullbarcode.centery, fullbarcode.orientation, mfix2str(fullbarcode.mfix)
+#                        print("full", colorids[k].strid, fullframe, fullbarcode.centerx, fullbarcode.centery, fullbarcode.orientation, mfix2str(fullbarcode.mfix))
                 oldfullframe = fullframe
                 oldfullbarcode = fullbarcode
             # iterate to next chain of trajs
         # iterate to next colorid
-        print
+        print()
     return changes
 
 
@@ -2051,29 +2051,29 @@ OK  4. Mark barcodes as chosen/deleted and perform basic position and orientatio
     # include n.u. barcodes to missing ones, etc.
     # assign possibility to location of all barcodes on all frames
 
-    print "  Extending chosen trajs with not yet chosen in both temporal directions..."
+    print("  Extending chosen trajs with not yet chosen in both temporal directions...")
     (virtual, rebirth) = extend_chosen_trajs(trajectories, trajsonframe, colorids, barcodes, blobs)
-    print "    new virtual barcodes:", virtual, " barcodes reanimated:", rebirth
+    print("    new virtual barcodes:", virtual, " barcodes reanimated:", rebirth)
 
     # list meta trajs
-    print "  List meta trajs and gaps between..."
+    print("  List meta trajs and gaps between...")
     list_meta_trajs(trajectories, trajsonframe, barcodes, colorids, blobs)
 
-    print "  Filling gaps between chosen trajectories with virtual barcodes..."
+    print("  Filling gaps between chosen trajectories with virtual barcodes...")
     virtual = add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
-    print "    virtual barcodes:", virtual
+    print("    virtual barcodes:", virtual)
 
     # list meta trajs
-    print "  List meta trajs and gaps between..."
+    print("  List meta trajs and gaps between...")
     list_meta_trajs(trajectories, trajsonframe, barcodes, colorids, blobs)
 
     # try to include not used blobs and not used barcodes to virtual barcodes
-    print "  Enhance virtual barcodes with not used barcodes/blobs..."
+    print("  Enhance virtual barcodes with not used barcodes/blobs...")
     # TODO: too slow
     changes = enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blobs)
-    print "    number of changes:", changes
+    print("    number of changes:", changes)
 
-#    print "  Smooth final trajectories (TODO: good algo not implemented yet)..."
+#    print("  Smooth final trajectories (TODO: good algo not implemented yet)...")
 #    changes = smooth_final_trajectories(trajectories, trajsonframe, barcodes, colorids, blobs)
-#    print "    number of changes:", changes
+#    print("    number of changes:", changes)
 

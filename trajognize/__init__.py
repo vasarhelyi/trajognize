@@ -14,7 +14,6 @@ from trajognize.main import main as cli
 
 __author__ = "Gabor Vasarhelyi"
 __email__ = "vasarhelyi@angel.elte.hu"
-__version__ = "0.1"
 
 def main(argv=[]):
     if argv:

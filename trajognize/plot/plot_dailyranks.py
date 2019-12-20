@@ -123,11 +123,12 @@ def main(argv=[]):
                     maxcol, exp, datatype, index,
                     get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
                     *get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
-        print >>open(gnufile, 'w'), script
+        with open(gnufile, 'w') as f:
+            f.write(script)
         try:
             subprocess.call(["gnuplot", gnufile])
         except WindowsError:
-            print "  Error plotting '%s': gnuplot is not available on Windows" % name
+            print("  Error plotting '%s': gnuplot is not available on Windows" % name)
         # create SPGM picture description
         spgm.create_picture_description(outputfile, [name, exp], txtfile, gnufile)
         spgm.create_picture_description(outputfileabsgrad,
@@ -136,7 +137,7 @@ def main(argv=[]):
 
 
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     if sys.platform.startswith('win'):
         inputfiles = glob.glob(argv[0])
@@ -186,8 +187,8 @@ def main(argv=[]):
                         dailyLDI[key][strid] = []
                     # small error checking on correct day order
                     if day != len(dailyranks[key][strid]):
-                        print "day", day, "dailyranks[key]", dailyranks[key]
-                        0/0
+                        print("day", day, "dailyranks[key]", dailyranks[key])
+                        raise ValueError("0/0")
                     # add new rank to daily list
                     dailyranks[key][strid].append(j)
                     dailynormDS[key][strid].append(normDS[strid])
@@ -238,7 +239,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

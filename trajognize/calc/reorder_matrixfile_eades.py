@@ -32,13 +32,13 @@ except ImportError:
 def main(argv=[]):
     """Main entry point of the script."""
     if len(argv) != 1:
-        print __doc__
+        print(__doc__)
         return
     inputfile = argv[0]
     params = []
 
     (head, tail, plotdir) = trajognize.plot.plot.get_headtailplot_from_filename(inputfile)
-    print "parsing", os.path.split(inputfile)[1]
+    print("parsing", os.path.split(inputfile)[1])
     # define output directory and write results (filenames remain the same)
     outdir = os.path.join(head, plotdir) # calling standard heatmap will differentiate again...
     if not os.path.isdir(outdir): os.makedirs(outdir)
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

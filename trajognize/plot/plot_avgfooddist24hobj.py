@@ -97,7 +97,7 @@ def get_categories_from_name(name):
 def main(argv=[]):
     """Main entry point of the script."""
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     if sys.platform.startswith('win'):
         inputfiles = glob.glob(argv[0])
@@ -105,7 +105,7 @@ def main(argv=[]):
         inputfiles = argv
     outdirs = []
     for inputfile in inputfiles:
-        print "parsing", os.path.split(inputfile)[1]
+        print("parsing", os.path.split(inputfile)[1])
         headers = grep_headers_from_file(inputfile, "avgfooddist24hobj")
         exp = get_exp_from_filename(inputfile)
         for index in xrange(len(headers)):
@@ -133,11 +133,12 @@ def main(argv=[]):
             outputfilecumul = outputfilecommon + ".cumul.png"
             script = get_gnuplot_script(inputfile, outputfile, outputfileall, outputfilecumul,
                     name, index, maxcol, exp)
-            print >>open(gnufile, 'w'), script
+            with open(gnufile, 'w') as f:
+                f.write(script)
             try:
                 subprocess.call(["gnuplot", gnufile])
             except WindowsError:
-                print "  Error plotting '%s': gnuplot is not available on Windows" % name
+                print("  Error plotting '%s': gnuplot is not available on Windows" % name)
             # create SPGM picture description
             spgm.create_picture_description(outputfile,
                     [name, "individual data", exp], inputfile, gnufile)
@@ -160,7 +161,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

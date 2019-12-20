@@ -27,16 +27,16 @@ def main(argv=[]):
 
     # parse all data first
     if not os.path.isfile(corrfile):
-        print "Correlation file does not exist:", corrfile
+        print("Correlation file does not exist:", corrfile)
         return
-    print "Parsing corr file to collect data..."
+    print("Parsing corr file to collect data...")
     basedir = util.get_corr_basedir()
     headers, data = util.parse_corr_file(corrfile)
 
     # open output file
     if os.path.isfile(outfile):
-        print "Group descriptor file exists, overwriting it..."
-    print "Writing group descriptors to", outfile
+        print("Group descriptor file exists, overwriting it...")
+    print("Writing group descriptors to", outfile)
     outfile = open(outfile, 'w')
     outfile.write("exp_number\tparam_name\tgroup\tavg\tstd\tmax\tmin\tmax-min\n")
 
@@ -46,7 +46,7 @@ def main(argv=[]):
         for key in data.keys():
             if not key.startswith(expdir): continue
             for group in exps[exp]['groups']:
-                print exp, key, group
+                print(exp, key, group)
                 groupids = exps[exp]['groups'][group]
                 gi = [headers.index(strid) for strid in groupids]
                 # excluding 'nan'
@@ -54,10 +54,10 @@ def main(argv=[]):
                 pp = [data[key][i] for i in gi if data[key][i] == data[key][i]]
                 if qq != pp:
                     if not pp:
-                        print "WARNING: looks like there are no usable values in", qq
+                        print("WARNING: looks like there are no usable values in", qq)
                         pp = [float('nan')]
                     else:
-                        print "WARNING:", len(qq)-len(pp), "invalid numbers excluded from", qq
+                        print("WARNING:", len(qq)-len(pp), "invalid numbers excluded from", qq)
                 outfile.write("%s\t%s\t%s\t%g\t%g\t%g\t%g\t%g\n" % (exps[exp]['number'], key, group,
                         numpy.mean(pp),
                         numpy.std(pp),
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

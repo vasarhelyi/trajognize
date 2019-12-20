@@ -157,12 +157,13 @@ def main(argv=[]):
     # write gnuplot script
     script = get_gnuplot_script(inputfile, inputfilesum, colsumfile, outputfile,
         id_count, " ".join(headerline), index, exp, options.cbrange)
-    print >>open(gnufile, 'w'), script
+    with open(gnufile, 'w') as f:
+        f.write(script)
     # call gnuplot
     try:
         subprocess.call(["gnuplot", gnufile])
     except WindowsError:
-        print "  Error plotting '%s': gnuplot is not available on Windows" % name
+        print("  Error plotting '%s': gnuplot is not available on Windows" % name)
     # create SPGM picture description
     spgm.create_picture_description(outputfile,
            [name, exp] + [options.label] if options.label is not None else [],
@@ -173,7 +174,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

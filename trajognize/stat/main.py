@@ -41,8 +41,8 @@ def main(argv=[]):
     init.py or call util.print_stats_help()
 
     """
-    print "This is trajognize stat. SVN revision:", trajognize.util.get_svn_info()['revision']
-    print "Current project is: %s" % project_str[PROJECT]
+    #print("This is trajognize stat. SVN revision:", trajognize.util.get_svn_info()['revision'])
+    print("Current project is: %s" % project_str[PROJECT])
     phase = trajognize.util.phase_t()
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
@@ -74,15 +74,15 @@ def main(argv=[]):
         options = argparser.parse_args()
     # handle help option with help topics
     if options.help == []:
-        print "\n"
+        print("\n")
         argparser.print_help()
         return
     elif options.help == "stats":
-        print "\n"
+        print("\n")
         util.print_stats_help(stats)
         return
     elif options.help:
-        print "\n"
+        print("\n")
         util.print_stats_help(stats, [options.help])
         return
 
@@ -96,54 +96,54 @@ def main(argv=[]):
         # default on non windows (linux, atlasz)
         else:
             options.inputfile = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/done/random_sample_trial_run_2011-06-10_13-15-29.335159.ts/OUT/2011-06-10_13-15-29.335159.ts.blobs.barcodes'
-        print "  WARNING! No input file is specified! Default for %s is: '%s'" % (sys.platform, options.inputfile)
+        print("  WARNING! No input file is specified! Default for %s is: '%s'" % (sys.platform, options.inputfile))
     else:
-        print "  Using inputfile: '%s'" % options.inputfile
+        print("  Using inputfile: '%s'" % options.inputfile)
     # colorid file
     if options.coloridfile is None:
         options.coloridfile = 'misc/5-3_28patek.xml'
-        print "  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile
+        print("  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile)
     else:
-        print "  Using colorid file: '%s'" % options.coloridfile
+        print("  Using colorid file: '%s'" % options.coloridfile)
     # entrytimes file
     if options.entrytimesfile is None:
         options.entrytimesfile = 'misc/entrytimes.dat'
-        print "  WARNING! No entrytimes file is specified! Default is: '%s'" % options.entrytimesfile
+        print("  WARNING! No entrytimes file is specified! Default is: '%s'" % options.entrytimesfile)
     else:
-        print "  Using entrytimes file: '%s'" % options.entrytimesfile
+        print("  Using entrytimes file: '%s'" % options.entrytimesfile)
 
     # output path
     if options.outputpath is None:
         (options.outputpath, tail) = os.path.split(options.inputfile)
-        print "  WARNING! No output path is specified! Default is input file directory: '%s'" % options.outputpath
+        print("  WARNING! No output path is specified! Default is input file directory: '%s'" % options.outputpath)
     else:
-        print "  Using output path: '%s'" % options.outputpath
+        print("  Using output path: '%s'" % options.outputpath)
 
     # dailyoutput
     if options.dailyoutput:
-        print "  WARNING: option '-d' specified, output is written on a daily basis. Use -d in statsum also to parse daily output data."
+        print("  WARNING: option '-d' specified, output is written on a daily basis. Use -d in statsum also to parse daily output data.")
 
     # check output file
     outputfilecommon = os.path.join(options.outputpath, os.path.split(options.inputfile)[1])
     if options.force:
-        print "  WARNING: option '-f' specified, forcing overwrite of output files."
+        print("  WARNING: option '-f' specified, forcing overwrite of output files.")
 
     # frame num
     if options.framenum is not None:
         options.framenum = int(options.framenum)
-        print "  WARNING: debug option '-n' specified, reading only %d frames." % options.framenum
+        print("  WARNING: debug option '-n' specified, reading only %d frames." % options.framenum)
 
     # subtitles
     if options.subtitle:
         if options.dailyoutput:
-            print "  ERROR:  dailyoutput and subtitle params cannot be specified at the same time!"
+            print("  ERROR:  dailyoutput and subtitle params cannot be specified at the same time!")
             return
-        print "  option -sub specified, creating subtitle files."
+        print("  option -sub specified, creating subtitle files.")
 
     # statistics
     # get difference of stat and nostat
     options.statistics = sorted(list(set(options.statistics).difference(set(options.nostatistics))))
-    print "  Calculating statistics:", options.statistics
+    print("  Calculating statistics:", options.statistics)
     # TODO: maybe check subclassindex
     phase.end_phase()
 
@@ -151,28 +151,28 @@ def main(argv=[]):
     phase.start_phase("Reading colorid file...")
     colorids = trajognize.parse.parse_colorid_file(options.coloridfile)
     if colorids is None: return
-    print "  %d colorids read, e.g. first is (%s,%s)" % (len(colorids), colorids[0].strid, colorids[0].symbol)
+    print("  %d colorids read, e.g. first is (%s,%s)" % (len(colorids), colorids[0].strid, colorids[0].symbol))
     phase.end_phase()
 
     # parse entrytimes file
     phase.start_phase("Reading entrytimes file...")
     entrytimes = trajognize.parse.parse_entry_times(options.entrytimesfile)
     if entrytimes is None: return
-    print "  %d entrytime dates read, e.g. first is (%s)" % (len(entrytimes), next(entrytimes.itervalues()))
+    print("  %d entrytime dates read, e.g. first is (%s)" % (len(entrytimes), next(entrytimes.itervalues())))
     phase.end_phase()
 
     # parse calibration file
     phase.start_phase("Reading calibration file...")
-    print "  WARNING: TODO - calibration is not implemented yet!!!"
+    print("  WARNING: TODO - calibration is not implemented yet!!!")
     phase.end_phase()
 
     # parse input barcode file
     phase.start_phase("Reading input barcode file...")
     barcodes = trajognize.parse.parse_barcode_file(options.inputfile, colorids, 0, options.framenum)
     if barcodes is None:
-        print "  empty barcode file found. Exiting."
+        print("  empty barcode file found. Exiting.")
         return
-    print "  %d barcode frames read" % len(barcodes)
+    print("  %d barcode frames read" % len(barcodes))
     phase.end_phase()
 
     # parse input log file
@@ -187,10 +187,10 @@ def main(argv=[]):
         light_log = {0: 'NIGHTLIGHT'}
         cage_log = {0: [image_size.x/2, image_size.y/2, 0, 90]}
     if light_log is None and cage_log is None:
-        print "  reading input log file failed. Exiting."""
+        print("  reading input log file failed. Exiting.""")
         return
-    print "  %d LED switches parsed" % len(light_log)
-    print "  %d CAGE coordinates parsed" % len(cage_log)
+    print("  %d LED switches parsed" % len(light_log))
+    print("  %d CAGE coordinates parsed" % len(cage_log))
     # get current experiment name (assuming that it will remain the same on the whole video)
     starttime = trajognize.util.get_datetime_from_filename(inputfile)
     # get days for dailyoutput (current and next if we are around midnight)
@@ -217,13 +217,13 @@ def main(argv=[]):
                     break
             else:
                 exp = None
-            print exp
+            print(exp)
         elif PROJECT in [PROJECT_ANTS, PROJECT_ANTS_2019]:
             exp = explist[0] # first one in list is the main one (we always calculate stat with that)
         else:
             exp = explist[0] # TODO: define this for all projects
         experiment = exps[exp]
-    print "  current experiment is '%s'" % exp
+    print("  current experiment is '%s'" % exp)
     phase.end_phase()
 
     ############################################################################
@@ -249,7 +249,7 @@ def main(argv=[]):
             breakit = False
             for outputfile in outputfiles:
                 if os.path.isfile(outputfile) and not options.force:
-                    print "  Output file '%s' already exists, add '-f' to force overwrite. Now skipping.\n" % util.get_stat_fileext_zipped(substat)
+                    print("  Output file '%s' already exists, add '-f' to force overwrite. Now skipping.\n" % util.get_stat_fileext_zipped(substat))
                     breakit = True
             if breakit: continue
             # prepare subtitle file
@@ -268,7 +268,7 @@ def main(argv=[]):
             for i, statobject in enumerate(statobjects):
                 if not statobject.files:
                     continue
-                print "  %s stat%s version: %d" % (stat, " (%s)" % days[i] if days[i] else "", statobject.version)
+                print("  %s stat%s version: %d" % (stat, " (%s)" % days[i] if days[i] else "", statobject.version))
                 statobject.print_status()
                 outputdir = os.path.split(outputfiles[i])[0]
                 if not os.path.isdir(outputdir): os.mkdir(outputdir)

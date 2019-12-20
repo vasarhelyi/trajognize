@@ -53,11 +53,11 @@ def main(argv=[]):
         inputdir = argv[0]
         outputdir = argv[1]
     else:
-        print __doc__
+        print(__doc__)
         return
 
-    print "Input dir:", inputdir
-    print "Output dir:", outputdir
+    print("Input dir:", inputdir)
+    print("Output dir:", outputdir)
 
     exps = trajognize.stat.experiments.get_initialized_experiments()
     for root, subfolders, files in os.walk(inputdir):
@@ -130,9 +130,9 @@ def main(argv=[]):
             os.makedirs(dst)
         dst = os.path.join(dst, "-".join(presubs))
         if os.path.isdir(dst):
-            print "Warning: existing destination:", dst
+            print("Warning: existing destination:", dst)
         else:
-#            print "ln -v -s %s %s" % (root, dst)
+#            print("ln -v -s %s %s" % (root, dst))
             os.system("ln -v -s %s %s" % (root, dst))
 
 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

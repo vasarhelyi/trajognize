@@ -109,13 +109,13 @@ def print_stats_help(stats, statlist=None, fileobj=None):
         statlist = sorted(stats)
     for stat in statlist:
         trajognize.util.print_underlined("'%s' statistic description" % stat, 1, fileobj)
-        print >> fileobj, "init:", stats[stat]['init']
-        print >> fileobj, getattr(sys.modules['trajognize.stat.init'], stats[stat]['init'][0]).__doc__
+        print("init: {}".format(stats[stat]['init']), file=fileobj)
+        print(getattr(sys.modules['trajognize.stat.init'], stats[stat]['init'][0]).__doc__, file=fileobj)
         if stats[stat]['subf'] is not None:
-            print >> fileobj, "subf:", stats[stat]['subf']
-            print >> fileobj, getattr(sys.modules['trajognize.stat.stat'], stats[stat]['subf'][0]).__doc__
-        print >> fileobj, "calc:", stats[stat]['calc']
-        print >> fileobj, getattr(sys.modules['trajognize.stat.stat'], stats[stat]['calc'][0]).__doc__
+            print("subf: {}".format(stats[stat]['subf']), file=fileobj)
+            print(getattr(sys.modules['trajognize.stat.stat'], stats[stat]['subf'][0]).__doc__, file=fileobj)
+        print("calc: {}".format(stats[stat]['calc']), file=fileobj)
+        print(getattr(sys.modules['trajognize.stat.stat'], stats[stat]['calc'][0]).__doc__, file=fileobj)
 
 
 def get_stat_dict():
@@ -184,7 +184,7 @@ def init_stat(stats, stat, f_back=1):
     try:
         real_params = [caller_namespace[param_name] for param_name in stats[stat]['init'][1]]
     except KeyError:
-        print "TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!" % stats[stat]['init'][0]
+        print("TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!" % stats[stat]['init'][0])
         raise
     finally:
         del caller_namespace
@@ -204,7 +204,7 @@ def calculate_stat(stats, stat, f_back=1):
     try:
         real_params = [caller_namespace[param_name] for param_name in stats[stat]['calc'][1]]
     except KeyError:
-        print "TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!" % stats[stat]['calc'][0]
+        print("TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!" % stats[stat]['calc'][0])
         raise
     finally:
         del caller_namespace
@@ -227,7 +227,7 @@ def subclasses_stat(stats, stat, f_back=1):
     try:
         real_params = [caller_namespace[param_name] for param_name in stats[stat]['subf'][1]]
     except KeyError:
-        print "TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!" % stats[stat]['calc'][0]
+        print("TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!" % stats[stat]['calc'][0])
         raise
     finally:
         del caller_namespace
@@ -248,7 +248,7 @@ def write_stat(stats, stat, object, f_back=1):
     try:
         real_params = [caller_namespace[param_name] for param_name in stats[stat]['write'][1]]
     except KeyError:
-        print "TODO: define parameters passed to %s in caller namespace with the same name as in function def!" % stats[stat]['write'][0]
+        print("TODO: define parameters passed to %s in caller namespace with the same name as in function def!" % stats[stat]['write'][0])
         raise
     finally:
         del caller_namespace
@@ -269,7 +269,7 @@ def write_dailyoutput_stat(stats, stat, object, f_back=1):
     try:
         real_params = [caller_namespace[param_name] for param_name in stats[stat]['writedaily'][1]]
     except KeyError:
-        print "TODO: define parameters passed to %s in caller namespace with the same name as in function def!" % stats[stat]['writedaily'][0]
+        print("TODO: define parameters passed to %s in caller namespace with the same name as in function def!" % stats[stat]['writedaily'][0])
         raise
     finally:
         del caller_namespace

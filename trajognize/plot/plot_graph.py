@@ -41,9 +41,9 @@ def remove_negligible_data(data):
                 data[i][j] = "0"
                 removed.append(x[i-1][j-1])
     if removed:
-        print len(removed), "elements -", removed, "- removed from matrix for igraph plot, " \
+        print(len(removed), "elements -", removed, "- removed from matrix for igraph plot, " \
                 "based on the following criteria: value < 0.05 * max " \
-                "(mean=%g, max=%g, threshold=%g)" % (dmean, dmax, dthreshold)
+                "(mean=%g, max=%g, threshold=%g)" % (dmean, dmax, dthreshold))
 
 
 def main(argv=[]):
@@ -83,7 +83,7 @@ def main(argv=[]):
 
     g = igraph.load(inputfilencol)
 
-#    print "Removing loop edges..."
+#    print("Removing loop edges...")
 #    g.es([x for x, l in enumerate(g.is_loop()) if l]).delete()
 
     lo, extd_graph = g.layout_sugiyama(weights=g.es["weight"], return_extended_graph=True)
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

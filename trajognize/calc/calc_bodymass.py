@@ -29,7 +29,7 @@ nogroup = False
 def main(argv=[]):
     """Main entry point of the script."""
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     if sys.platform.startswith('win'):
         inputfiles = glob.glob(argv[0])
@@ -38,7 +38,7 @@ def main(argv=[]):
     exps = trajognize.stat.experiments.get_initialized_experiments()
     # parse files
     for inputfile in inputfiles:
-        print "parsing", os.path.split(inputfile)[1]
+        print("parsing", os.path.split(inputfile)[1])
         (head, tail, plotdir) = trajognize.plot.plot.get_headtailplot_from_filename(inputfile)
         data = trajognize.parse.parse_stat_output_file(inputfile, 0)
         name = data[0][0]
@@ -80,7 +80,7 @@ def main(argv=[]):
             outdir = os.path.join(head, plotdir)
             if not os.path.isdir(outdir): os.makedirs(outdir)
             outputfile = os.path.join(outdir, "meas_%s__exp_%s.txt" % (tail, exp))
-            print "writing", os.path.split(outputfile)[1]
+            print("writing", os.path.split(outputfile)[1])
             outputfile = open(outputfile, "w")
             outputfile.write("# This file contains interpolated data of %s\n" % inputfile)
             outputfile.write("\n")
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

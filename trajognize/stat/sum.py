@@ -56,8 +56,8 @@ def main(argv=[]):
     and summarizes them to get global statistics.
 
     """
-    print "This is trajognize statsum. SVN revision:", trajognize.util.get_svn_info()['revision']
-    print "Current project is: %s" % project_str[PROJECT]
+    #print("This is trajognize statsum. SVN revision:", trajognize.util.get_svn_info()['revision'])
+    print("Current project is: %s" % project_str[PROJECT])
     phase = trajognize.util.phase_t()
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
@@ -85,20 +85,20 @@ def main(argv=[]):
         options = argparser.parse_args()
     # handle help option with help topics
     if options.help == []:
-        print "\n"
+        print("\n")
         argparser.print_help()
         return
     elif options.help == "stats":
-        print "\n"
+        print("\n")
         util.print_stats_help(stats)
         return
     elif options.help == "exps":
         for exp in exps:
-            print "\n"
-            print experiments.get_formatted_description(exps[exp])
+            print("\n")
+            print(experiments.get_formatted_description(exps[exp]))
         return
     elif options.help:
-        print "\n"
+        print("\n")
         util.print_stats_help(stats, [options.help])
         return
 
@@ -112,27 +112,27 @@ def main(argv=[]):
         # default on non windows (linux, atlasz)
         else:
             options.inputpath = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/done/'
-        print "  WARNING! No input path is specified! Default for %s is: '%s'" % (sys.platform, options.inputpath)
-    print "  Using input path: '%s'" % options.inputpath
+        print("  WARNING! No input path is specified! Default for %s is: '%s'" % (sys.platform, options.inputpath))
+    print("  Using input path: '%s'" % options.inputpath)
     inputdirs = glob.glob(os.path.join(options.inputpath, '*' + os.sep))
 
     # colorid file
     if options.coloridfile is None:
         options.coloridfile = 'misc/5-3_28patek.xml'
-        print "  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile
+        print("  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile)
     else:
-        print "  Using colorid file: '%s'" % options.coloridfile
+        print("  Using colorid file: '%s'" % options.coloridfile)
     # output path
     if options.outputpath is None:
         options.outputpath = options.inputpath
-        print "  WARNING! No output path is specified! Default is input path: '%s'" % options.outputpath
+        print("  WARNING! No output path is specified! Default is input path: '%s'" % options.outputpath)
     else:
-        print "  Using output path: '%s'" % options.outputpath
+        print("  Using output path: '%s'" % options.outputpath)
 
     # dailyoutput
     # get input files for daily output
     if options.dailyoutput:
-        print "  WARNING: option '-d' specified, output is written on a daily basis."
+        print("  WARNING: option '-d' specified, output is written on a daily basis.")
         dailyoutput = True
     # get standard inputfiles
     else:
@@ -141,7 +141,7 @@ def main(argv=[]):
     # uniqueoutput
     # get input files for unique output
     if options.uniqueoutput:
-        print "  WARNING: option '-u' specified, output is written for every input file separately."
+        print("  WARNING: option '-u' specified, output is written for every input file separately.")
         uniqueoutput = True
     # get standard inputfiles
     else:
@@ -154,12 +154,12 @@ def main(argv=[]):
     colorids = trajognize.parse.parse_colorid_file(options.coloridfile)
     if colorids is None: return
     id_count = len(colorids)
-    print "  %d colorids read, e.g. first is (%s,%s)" % (id_count, colorids[0].strid, colorids[0].symbol)
+    print("  %d colorids read, e.g. first is (%s,%s)" % (id_count, colorids[0].strid, colorids[0].symbol))
     phase.end_phase()
 
     # parse calibration file
     phase.start_phase("Reading calibration file...")
-    print "  WARNING: TODO - calibration is not implemented yet!!!"
+    print("  WARNING: TODO - calibration is not implemented yet!!!")
     phase.end_phase()
 
     # experiments and statistics
@@ -199,8 +199,8 @@ def main(argv=[]):
     for day in experiments.get_dayrange_of_all_experiments() if dailyoutput else [None]:
         inputfiles = glob.glob(os.path.join(options.inputpath, "*", "OUT",
                 '%s*.blobs.barcodes.stat_*.zip' % ("%s/" % day if day else "")))
-        print "  %sparsing %d input .zip files from %d directories" % \
-                ("%s: " % day if day else "", len(inputfiles), len(inputdirs))
+        print("  %sparsing %d input .zip files from %d directories" % \
+                ("%s: " % day if day else "", len(inputfiles), len(inputdirs)))
         if not inputfiles:
             continue
         # initialize statobjects
@@ -208,9 +208,9 @@ def main(argv=[]):
         for exp in ['dailyoutput'] if dailyoutput else options.experiments:
             statobjects[exp] = dict()
             if dailyoutput:
-                print "  dailyoutput for", day
+                print("  dailyoutput for", day)
             else:
-                print "  experiment '%s':" % exp
+                print("  experiment '%s':" % exp)
             for stat in options.statistics:
                 if options.subclassindex is None:
                     if subclassdict[stat] is None:
@@ -222,7 +222,7 @@ def main(argv=[]):
                 for subclassindex in subclassindices:
                     substat = util.get_substat(stat, subclassdict[stat], subclassindex)
                     statobjects[exp][substat] = util.init_stat(stats, stat)
-                    print "    %s" % substat
+                    print("    %s" % substat)
 
         # parse files
         for filenum in xrange(len(inputfiles)):
@@ -250,12 +250,12 @@ def main(argv=[]):
                 if newobj:
                     newobj.print_status()
                     if newobj.version != statobject.version:
-                        print "  WARNING: object version is %d instead of %d. Skipping it!" % (newobj.version, statobject.version)
+                        print("  WARNING: object version is %d instead of %d. Skipping it!" % (newobj.version, statobject.version))
                     else:
                         statobject += newobj
                     if uniqueoutput:
                         # print results to stdout
-                        print "  writing unique output..."
+                        print("  writing unique output...")
                         if PROJECT in [PROJECT_ANTS, PROJECT_ANTS_2019]:
                             uniqueoutputfilename = os.path.join(options.outputpath, 
                                     os.path.split(os.path.split(os.path.split(inputfile)[0])[0])[1] + "__" +
@@ -289,7 +289,7 @@ def main(argv=[]):
                         statobject += statobjects[tempexp][substat]
                 # print results to stdout
                 tailcommon = util.get_stat_fileext(substat, day if dailyoutput else exp, False)
-                print
+                print()
                 trajognize.util.print_underlined(tailcommon)
                 statobject.print_status()
                 # print results to .txt file

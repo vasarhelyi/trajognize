@@ -48,7 +48,7 @@ def get_categories_from_filename(filename):
 def main(argv=[]):
     """Main entry point of the script."""
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     inputdir = argv[0]
     if len(argv) == 2:
@@ -67,9 +67,9 @@ def main(argv=[]):
         tail = os.path.split(inputfile)[1]
         (strid, exp) = get_categories_from_filename(tail)
         if exp == 'all' or strid == 'all':
-            print "skipping", tail
+            print("skipping", tail)
             continue
-        print "gathering info from", tail
+        print("gathering info from", tail)
         # initialize empty object
         motionmaps = trajognize.stat.init.motionmap_t()
         # add new object (so that we have latest methods from latest version)
@@ -87,9 +87,9 @@ def main(argv=[]):
         if keys is None:
             keys = sorted(database[exp][strid].keys())
     # write results (assuming that all substats are available)
-    print "Writing results to corr files..."
+    print("Writing results to corr files...")
     for exp in database:
-        print exp
+        print(exp)
         allnames = []
         for group in exps[exp]['groups'].keys() + ['all']:
             if group == 'all':
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

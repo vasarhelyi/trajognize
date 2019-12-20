@@ -85,7 +85,7 @@ def main(argv=[]):
     """Main entry point of the script."""
 
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     if sys.platform.startswith('win'):
         inputfiles = glob.glob(argv[0])
@@ -96,7 +96,7 @@ def main(argv=[]):
     paintdates = trajognize.parse.parse_paintdates(os.path.join(
         os.path.dirname(trajognize.__file__), '../misc/paintdates.dat'))
     for inputfile in inputfiles:
-        print "parsing", os.path.split(inputfile)[1]
+        print("parsing", os.path.split(inputfile)[1])
         # calc_heatmap_dailyoutput.py output file should be the input
         headers = grep_headers_from_file(inputfile, "heatmap_dailyoutput_")
         (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
@@ -117,7 +117,7 @@ def main(argv=[]):
                 spgm.remove_picture_descriptions(outdir)
                 outdirs.append(outdir)
             outputfilecommon = os.path.join(outdir, tail + '__' + name)
-#            print "length of filename:", len(outputfilecommon)
+#            print("length of filename:", len(outputfilecommon))
             gnufile = outputfilecommon + ".gnu"
             outputfile = outputfilecommon + ".png"
             outputfileabsgrad = outputfilecommon + ".absgrad.png"
@@ -126,11 +126,12 @@ def main(argv=[]):
                     name, maxcol, expgroup, datatype, index,
                     get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
                     *get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
-            print >>open(gnufile, 'w'), script
+            with open(gnufile, 'w') as f:
+                f.write(script)
             try:
                 subprocess.call(["gnuplot", gnufile])
             except WindowsError:
-                print "  Error plotting '%s': gnuplot is not available on Windows" % name
+                print("  Error plotting '%s': gnuplot is not available on Windows" % name)
             # create SPGM picture description
             spgm.create_picture_description(outputfile, [name, expgroup], inputfile, gnufile)
             spgm.create_picture_description(outputfileabsgrad,
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)
