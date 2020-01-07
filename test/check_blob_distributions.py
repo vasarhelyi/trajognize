@@ -102,7 +102,7 @@ for inputfile in files:
         if not args.noheatmap:
             print("\nParsing input log file from same path...")
             (light_log, cage_log) = trajognize.parse.parse_log_file(inputfile_log)
-            if light_log is None and cage_log is None: continue
+            if not light_log or not cage_log: continue
             light_at_frame = trajognize.util.param_at_frame(light_log)
             cage_at_frame = trajognize.util.param_at_frame(cage_log)
             print("  %d LED switches parsed" % len(light_log))
@@ -394,14 +394,16 @@ if not args.nomotiondist:
     print("\n\n# distance distribution on consecutive frames between motion blobs")
     print("tdist_md\tnum\tdelta_o_avg\tdelta_o_std")
     for i in range(max_tdist + 1):
-        print("%d\t%d\t%f\t%f" % (i, tdists_md[i], delta_o_avg_md[i], sqrt(delta_o_std_md[i]/tdists_md[i])))
+        print("%d\t%d\t%f\t%f" % (i, tdists_md[i], delta_o_avg_md[i],
+            sqrt(delta_o_std_md[i]/tdists_md[i]) if tdists_md[i] else float('nan'))
+        )
 
 # print heatmaps
 if not args.noheatmap:
     for light in range(len(trajognize.project.good_light)):
         for k in range(5):
             print("\n\n# heatmap of %s %s blobs" % (trajognize.project.good_light[light], trajognize.project.colornames[k]))
-            print("heatmap_%s_%s" % (ttrajognize.project.good_light[light], trajognize.project.colornames[k]), end=" ")
+            print("heatmap_%s_%s" % (trajognize.project.good_light[light], trajognize.project.colornames[k]), end=" ")
             for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
                 print("\t%d" % (x * heatmap_bin_size), end=" ")
             print("")

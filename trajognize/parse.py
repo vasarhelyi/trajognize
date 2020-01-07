@@ -228,7 +228,7 @@ def parse_blob_file(inputfile, lastframe=None):
 
 def parse_log_file(inputfile, lastframe=None):
     """Parse a full ts.log file and extract light condition and cage center list (so far).
-    
+
     Keyword arguments:
     inputfile -- any *.ts.log file created by ratognize
     lastframe -- debug option not to parse the whole file, only the beginning
@@ -273,7 +273,7 @@ def parse_log_file(inputfile, lastframe=None):
             cage_log[framenum] = [float(i) for i in linesplit[2:6]]
 
     return (light_log, cage_log)
-    
+
 
 def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
     """Parse a full .blobs.barcodes file created by trajognize itself.
@@ -350,7 +350,7 @@ def parse_stat_output_file(inputfile, index=None):
     Return value:
     parsed data in the following format:
     data[p][x][y] = data entry of paragraph p, row x, column y, including headers
-    
+
     if index is defined, data is only data[x][y]
 
     Paragraphs are separated by at least 2 empty lines
