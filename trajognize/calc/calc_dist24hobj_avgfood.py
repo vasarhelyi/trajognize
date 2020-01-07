@@ -145,7 +145,7 @@ class avgdist24hobj_t():
         # write results
         for group in exps[exp]['groups']:
             # get sorted names and colorid indices
-            allnames = [colorids[k].strid for k in xrange(len(colorids))]
+            allnames = [colorids[k].strid for k in range(len(colorids))]
             names = sorted(exps[exp]['groups'][group])
             klist = [allnames.index(name) for name in names]
             # calculate group sum
@@ -164,7 +164,7 @@ class avgdist24hobj_t():
             s.append("all_avg\tall_std\tall_num")
             outputfile.write("\t".join(s) + "\n")
             # write all minute bins (120)
-            for bin in xrange(self.minutes_of_feeding):
+            for bin in range(self.minutes_of_feeding):
                 s = ["%02d:%02d:00" % (bin/60, bin%60)]
                 for k in klist:
                     s.append("%g\t%g" % (self.avg[k,bin], self.std[k,bin]))
@@ -187,7 +187,7 @@ class avgdist24hobj_t():
         """
         for group in exps[exp]['groups']:
             # get sorted names and colorid indices
-            allnames = [colorids[k].strid for k in xrange(len(colorids))]
+            allnames = [colorids[k].strid for k in range(len(colorids))]
             names = sorted(exps[exp]['groups'][group])
             klist = [allnames.index(name) for name in names]
             # initialize corr file
@@ -206,7 +206,7 @@ class avgdist24hobj_t():
                 data = []
                 for k in klist:
                     x = 0
-                    for i in xrange(60,120):
+                    for i in range(60,120):
                         x += self.avg[k,i]
                         if x >= minute:
                             data.append(i-60+1)
@@ -214,7 +214,7 @@ class avgdist24hobj_t():
                     else:
                         data.append(float('inf'))
                 corrline = "\t".join([substat + "_t%dmin" % minute] +
-                        ["%g" % data[i] for i in xrange(len(data))])
+                        ["%g" % data[i] for i in range(len(data))])
                 trajognize.corr.util.add_corr_line(corrfile, headerline, corrline)
 
 

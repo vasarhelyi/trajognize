@@ -62,10 +62,10 @@ def main(argv=[]):
         print("gathering info from", os.path.split(inputfile)[1])
         day = trajognize.plot.plot.get_day_from_filename(inputfile)
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
-        for index in xrange(len(alldata)):
+        for index in range(len(alldata)):
             name = alldata[index][0][0]
             (strid, light, realvirt) = get_categories_from_name(name)
-            for i in xrange(1, len(alldata[index])):
+            for i in range(1, len(alldata[index])):
                 datatype = alldata[index][i][0]
                 # add new key entries to key sets
                 lights.add(light)

@@ -49,33 +49,33 @@ max_tdist = 150 # [pixel]
 max_sizedist = 150 # [pixel]
 
 if not args.nodist:
-    sdists = [0 for x in xrange(max_sdist + 1)]
-    sdists_samecolor = [0 for x in xrange(max_sdist + 1)]
-    tdists = [0 for x in xrange(max_tdist + 1)]
-    tdists_diffcolor = [0 for x in xrange(max_tdist + 1)]
-    sizedists = [0 for x in xrange(max_sizedist + 1)]
-    axisAdists = [0 for x in xrange(max_sizedist + 1)]
-    axisABdists = [0 for x in xrange(max_sizedist + 1)]
-    eccentrdists = [0 for x in xrange(max_sizedist + 1)]
+    sdists = [0 for x in range(max_sdist + 1)]
+    sdists_samecolor = [0 for x in range(max_sdist + 1)]
+    tdists = [0 for x in range(max_tdist + 1)]
+    tdists_diffcolor = [0 for x in range(max_tdist + 1)]
+    sizedists = [0 for x in range(max_sizedist + 1)]
+    axisAdists = [0 for x in range(max_sizedist + 1)]
+    axisABdists = [0 for x in range(max_sizedist + 1)]
+    eccentrdists = [0 for x in range(max_sizedist + 1)]
 
 if not args.nomotiondist:
-    sdists_md = [0 for x in xrange(max_sdist + 1)]
-    tdists_md = [0 for x in xrange(max_tdist + 1)]
-    delta_o_avg_md = [0 for x in xrange(max_tdist + 1)] # avg orientation change
-    delta_o_std_md = [0 for x in xrange(max_tdist + 1)] # std orientation change
+    sdists_md = [0 for x in range(max_sdist + 1)]
+    tdists_md = [0 for x in range(max_tdist + 1)]
+    delta_o_avg_md = [0 for x in range(max_tdist + 1)] # avg orientation change
+    delta_o_std_md = [0 for x in range(max_tdist + 1)] # std orientation change
 
 # init blob occurrence heatmaps
 if not args.noheatmap:
     heatmap_bin_size = 1 # [pixel]
-    heatmaps = [[[[0 for y in xrange(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size))] for c in xrange(5)] for light in xrange(2)] # [light][color][x][y]
-    heatmap_md = [[[0 for y in xrange(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size))] for light in xrange(2)] # [light][x][y]
-    heatmap_rat = [[[0 for y in xrange(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size))] for light in xrange(2)] # [light][x][y]
+    heatmaps = [[[[0 for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in range(int(trajognize.project.image_size.x/heatmap_bin_size))] for c in range(5)] for light in range(2)] # [light][color][x][y]
+    heatmap_md = [[[0 for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in range(int(trajognize.project.image_size.x/heatmap_bin_size))] for light in range(2)] # [light][x][y]
+    heatmap_rat = [[[0 for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in range(int(trajognize.project.image_size.x/heatmap_bin_size))] for light in range(2)] # [light][x][y]
 
 # get input path
 path = trajognize.util.get_path_as_first_arg((None, args.inputpath))
 if not os.path.isfile(path):
     path += '*/OUT/*.blobs'
-    print "# Using data: %s" % path
+    print("# Using data: %s" % path)
 
 # list files and check for error
 files = glob(path)
@@ -93,79 +93,79 @@ for inputfile in files:
         inputfile_log += '.log'
         start = time.clock()
 
-        print "\nParsing input file #%d: '%s'..." % (ii, tail)
+        print("\nParsing input file #%d: '%s'..." % (ii, tail))
         color_blobs, md_blobs, rat_blobs = trajognize.parse.parse_blob_file(inputfile)
         if color_blobs is None and md_blobs is None and rat_blobs is None: continue
-        print "  %d BLOB lines parsed" % len(color_blobs)
+        print("  %d BLOB lines parsed" % len(color_blobs))
         sys.stdout.flush()
 
         if not args.noheatmap:
-            print "\nParsing input log file from same path..."
+            print("\nParsing input log file from same path...")
             (light_log, cage_log) = trajognize.parse.parse_log_file(inputfile_log)
             if light_log is None and cage_log is None: continue
             light_at_frame = trajognize.util.param_at_frame(light_log)
             cage_at_frame = trajognize.util.param_at_frame(cage_log)
-            print "  %d LED switches parsed" % len(light_log)
-            print "  %d CAGE coordinates parsed" % len(cage_log)
+            print("  %d LED switches parsed" % len(light_log))
+            print("  %d CAGE coordinates parsed" % len(cage_log))
             sys.stdout.flush()
 
         if not args.nodist:
-            print "Calculating size distribution..."
+            print("Calculating size distribution...")
             good = 0
-            for currentframe in xrange(len(color_blobs)):
+            for currentframe in range(len(color_blobs)):
                 for blob in color_blobs[currentframe]:
                     d = int(blob.radius)
                     if d > max_sizedist: continue
                     sizedists[d] += 1
                     good += 1
-            print "  %d blobs added with size <= %d" % (good, max_sizedist)
+            print("  %d blobs added with size <= %d" % (good, max_sizedist))
             sys.stdout.flush()
 
             try:
-                print "Calculating axisA distribution..."
+                print("Calculating axisA distribution...")
                 good = 0
-                for currentframe in xrange(len(color_blobs)):
+                for currentframe in range(len(color_blobs)):
                     for blob in color_blobs[currentframe]:
                         d = int(blob.axisA)
                         if d > max_sizedist: continue
                         axisAdists[d] += 1
                         good += 1
-                print "  %d blobs added with axisA <= %d" % (good, max_sizedist)
+                print("  %d blobs added with axisA <= %d" % (good, max_sizedist))
                 sys.stdout.flush()
 
-                print "Calculating 10*axisA/axisB distribution..."
+                print("Calculating 10*axisA/axisB distribution...")
                 good = 0
-                for currentframe in xrange(len(color_blobs)):
+                for currentframe in range(len(color_blobs)):
                     for blob in color_blobs[currentframe]:
                         d = int(10*blob.axisA/blob.axisB)
                         if d > max_sizedist: continue
                         axisABdists[d] += 1
                         good += 1
-                print "  %d blobs added with 10*axisA/axisB <= %d" % (good, max_sizedist)
+                print("  %d blobs added with 10*axisA/axisB <= %d" % (good, max_sizedist))
                 sys.stdout.flush()
 
-                print "Calculating eccentricity distribution..."
+                print("Calculating eccentricity distribution...")
                 good = 0
-                for currentframe in xrange(len(color_blobs)):
+                for currentframe in range(len(color_blobs)):
                     for blob in color_blobs[currentframe]:
                         d = int(max_sizedist*sqrt(blob.axisA*blob.axisA-blob.axisB*blob.axisB)/blob.axisA)
                         if d > max_sizedist: continue
                         eccentrdists[d] += 1
                         good += 1
-                print "  %d blobs added with eccentricity <= %d" % (good, max_sizedist)
+                print("  %d blobs added with eccentricity <= %d" % (good, max_sizedist))
                 sys.stdout.flush()
 
             except AttributeError:
-                print "  ERROR: no axis is defined in blob data"
+                print("  ERROR: no axis is defined in blob data")
                 sys.stdout.flush()
 
 
-            print "Calculating spatial distance distribution..."
+            print("Calculating spatial distance distribution...")
             good = 0
             good_samecolor = 0
-            for currentframe in xrange(len(color_blobs)):
-                for i in xrange(len(color_blobs[currentframe])):
-                    for j in xrange(i):
+            for currentframe in range(len(color_blobs)):
+                for i in range(len(color_blobs[currentframe])):
+                    for j in range(i):
                         # get distance and skip ones that are far away
                         d = int(trajognize.algo.get_distance(color_blobs[currentframe][i], color_blobs[currentframe][j]))
                         if d > max_sdist: continue
@@ -176,16 +176,16 @@ for inputfile in files:
                         else:
                             sdists[d] += 1
                             good += 1
-            print "  %d blob pairs added with diff color and distance <= %d on the same frame" % (good, max_sdist)
-            print "  %d blob pairs added with same color and distance <= %d on the same frame" % (good_samecolor, max_sdist)
+            print("  %d blob pairs added with diff color and distance <= %d on the same frame" % (good, max_sdist))
+            print("  %d blob pairs added with same color and distance <= %d on the same frame" % (good_samecolor, max_sdist))
             sys.stdout.flush()
 
-            print "Calculating temporal distance distribution..."
+            print("Calculating temporal distance distribution...")
             good = 0
             good_diffcolor = 0
-            for currentframe in xrange(1, len(color_blobs)):
-                for i in xrange(len(color_blobs[currentframe])):
-                    for j in xrange(len(color_blobs[currentframe-1])):
+            for currentframe in range(1, len(color_blobs)):
+                for i in range(len(color_blobs[currentframe])):
+                    for j in range(len(color_blobs[currentframe-1])):
                         # get distance and skip ones that are far away
                         d = int(trajognize.algo.get_distance(color_blobs[currentframe][i], color_blobs[currentframe-1][j]))
                         if d > max_tdist: continue
@@ -196,30 +196,30 @@ for inputfile in files:
                         else:
                             tdists_diffcolor[d] += 1
                             good_diffcolor += 1
-            print "  %d blob pairs added with same color and distance <= %d on consecutive frames" % (good, max_tdist)
-            print "  %d blob pairs added with diff color and distance <= %d on consecutive frames" % (good_diffcolor, max_tdist)
+            print("  %d blob pairs added with same color and distance <= %d on consecutive frames" % (good, max_tdist))
+            print("  %d blob pairs added with diff color and distance <= %d on consecutive frames" % (good_diffcolor, max_tdist))
             sys.stdout.flush()
 
         if not args.nomotiondist:
-            print "Calculating spatial distance distribution of motion blobs..."
+            print("Calculating spatial distance distribution of motion blobs...")
             good = 0
-            for currentframe in xrange(len(md_blobs)):
-                for i in xrange(len(md_blobs[currentframe])):
-                    for j in xrange(i):
+            for currentframe in range(len(md_blobs)):
+                for i in range(len(md_blobs[currentframe])):
+                    for j in range(i):
                         # get distance and skip ones that are far away
                         d = int(trajognize.algo.get_distance(md_blobs[currentframe][i], md_blobs[currentframe][j]))
                         if d > max_sdist: continue
                         sdists_md[d] += 1
                         good += 1
-            print "  %d blob pairs added with distance <= %d on the same frame" % (good, max_sdist)
+            print("  %d blob pairs added with distance <= %d on the same frame" % (good, max_sdist))
             sys.stdout.flush()
 
-            print "Calculating temporal distance distribution of motion blobs..."
+            print("Calculating temporal distance distribution of motion blobs...")
             good = 0
             good_diffcolor = 0
-            for currentframe in xrange(1, len(md_blobs)):
-                for i in xrange(len(md_blobs[currentframe])):
-                    for j in xrange(len(md_blobs[currentframe-1])):
+            for currentframe in range(1, len(md_blobs)):
+                for i in range(len(md_blobs[currentframe])):
+                    for j in range(len(md_blobs[currentframe-1])):
                         # assign temporary pointers
                         blobi = md_blobs[currentframe][i]
                         blobj = md_blobs[currentframe-1][j]
@@ -235,15 +235,15 @@ for inputfile in files:
                                 delta_o_avg_md[d],
                                 delta_o_std_md[d])
                         good += 1
-            print "  %d blob pairs added with distance <= %d on consecutive frames" % (good, max_tdist)
+            print("  %d blob pairs added with distance <= %d on consecutive frames" % (good, max_tdist))
             sys.stdout.flush()
 
         if not args.noheatmap:
-            print "Calculating color blob heatmaps..."
+            print("Calculating color blob heatmaps...")
             good = [0, 0]
             light_at_frame.reset()
             cage_at_frame.reset()
-            for currentframe in xrange(len(color_blobs)):
+            for currentframe in range(len(color_blobs)):
                 # get light
                 lightstr = light_at_frame(currentframe)
                 if lightstr in ('DAYLIGHT', 'EXTRALIGHT'):
@@ -255,7 +255,7 @@ for inputfile in files:
                 # get cage
                 cagecenter = cage_at_frame(currentframe)
                 # store blobs on heatmap
-                for i in xrange(len(color_blobs[currentframe])):
+                for i in range(len(color_blobs[currentframe])):
                     # get center and skip bad ones: nan or outside image area
                     centerx = color_blobs[currentframe][i].centerx
                     centery = color_blobs[currentframe][i].centery
@@ -267,15 +267,15 @@ for inputfile in files:
                     # store good ones on heatmap
                     heatmaps[light][color_blobs[currentframe][i].color][int(centerx/heatmap_bin_size)][int(centery/heatmap_bin_size)] += 1
                     good[light] += 1
-            print "  %d blobs added to daylight color blob heatmaps" % good[0]
-            print "  %d blobs added to nightlight color blob heatmaps" % good[1]
+            print("  %d blobs added to daylight color blob heatmaps" % good[0])
+            print("  %d blobs added to nightlight color blob heatmaps" % good[1])
             sys.stdout.flush()
 
-            print "Calculating motion blob heatmap..."
+            print("Calculating motion blob heatmap...")
             good = [0, 0]
             light_at_frame.reset()
             cage_at_frame.reset()
-            for currentframe in xrange(len(md_blobs)):
+            for currentframe in range(len(md_blobs)):
                 # get light
                 lightstr = light_at_frame(currentframe)
                 if lightstr in ('DAYLIGHT', 'EXTRALIGHT'):
@@ -287,7 +287,7 @@ for inputfile in files:
                 # get cage
                 cagecenter = cage_at_frame(currentframe)
                 # store blobs on heatmap
-                for i in xrange(len(md_blobs[currentframe])):
+                for i in range(len(md_blobs[currentframe])):
                     # get center and skip bad ones: nan or outside image area
                     centerx = md_blobs[currentframe][i].centerx
                     centery = md_blobs[currentframe][i].centery
@@ -299,15 +299,15 @@ for inputfile in files:
                     # store good ones on heatmap
                     heatmap_md[light][int(centerx/heatmap_bin_size)][int(centery/heatmap_bin_size)] += 1
                     good[light] += 1
-            print "  %d blobs added to daylight motion blob heatmap" % good[0]
-            print "  %d blobs added to nightlight motion blob heatmap" % good[1]
+            print("  %d blobs added to daylight motion blob heatmap" % good[0])
+            print("  %d blobs added to nightlight motion blob heatmap" % good[1])
             sys.stdout.flush()
 
-            print "Calculating rat blob heatmap..."
+            print("Calculating rat blob heatmap...")
             good = [0, 0]
             light_at_frame.reset()
             cage_at_frame.reset()
-            for currentframe in xrange(len(rat_blobs)):
+            for currentframe in range(len(rat_blobs)):
                 # get light
                 lightstr = light_at_frame(currentframe)
                 if lightstr in ('DAYLIGHT', 'EXTRALIGHT'):
@@ -319,7 +319,7 @@ for inputfile in files:
                 # get cage
                 cagecenter = cage_at_frame(currentframe)
                 # store blobs on heatmap
-                for i in xrange(len(rat_blobs[currentframe])):
+                for i in range(len(rat_blobs[currentframe])):
                     # get center and skip bad ones: nan or outside image area
                     centerx = rat_blobs[currentframe][i].centerx
                     centery = rat_blobs[currentframe][i].centery
@@ -331,106 +331,106 @@ for inputfile in files:
                     # store good ones on heatmap
                     heatmap_rat[light][int(centerx/heatmap_bin_size)][int(centery/heatmap_bin_size)] += 1
                     good[light] += 1
-            print "  %d blobs added to daylight rat blob heatmap" % good[0]
-            print "  %d blobs added to nightlight rat blob heatmap" % good[1]
+            print("  %d blobs added to daylight rat blob heatmap" % good[0])
+            print("  %d blobs added to nightlight rat blob heatmap" % good[1])
             sys.stdout.flush()
 
-        print "  time elapsed: %gs" % (time.clock()-start)
+        print("  time elapsed: %gs" % (time.clock()-start))
         sys.stdout.flush()
 
     except KeyboardInterrupt:
-        print "Keyboard Interrupt detected: printing actual results before exit."
+        print("Keyboard Interrupt detected: printing actual results before exit.")
         break
 
 # print color blob distributions
 if not args.nodist:
-    print"\n\n# size distribution of blobs"
-    print "sizedist\tnum"
-    for i in xrange(max_sizedist + 1):
-        print "%d\t%d" % (i, sizedists[i])
+    print("\n\n# size distribution of blobs")
+    print("sizedist\tnum")
+    for i in range(max_sizedist + 1):
+        print("%d\t%d" % (i, sizedists[i]))
 
-    print"\n\n# axisA distribution of blobs"
-    print "axisAdist\tnum"
-    for i in xrange(max_sizedist + 1):
-        print "%d\t%d" % (i, axisAdists[i])
+    print("\n\n# axisA distribution of blobs")
+    print("axisAdist\tnum")
+    for i in range(max_sizedist + 1):
+        print("%d\t%d" % (i, axisAdists[i]))
 
-    print"\n\n# 10*axisA/axisB distribution of blobs"
-    print "axisABdist\tnum"
-    for i in xrange(max_sizedist + 1):
-        print "%d\t%d" % (i, axisABdists[i])
+    print("\n\n# 10*axisA/axisB distribution of blobs")
+    print("axisABdist\tnum")
+    for i in range(max_sizedist + 1):
+        print("%d\t%d" % (i, axisABdists[i]))
 
-    print"\n\n# %d*eccentricity distribution of blobs" % max_sizedist
-    print "%d*eccentricity\tnum" % max_sizedist
-    for i in xrange(max_sizedist + 1):
-        print "%d\t%d" % (i, eccentrdists[i])
+    print("\n\n# %d*eccentricity distribution of blobs" % max_sizedist)
+    print("%d*eccentricity\tnum" % max_sizedist)
+    for i in range(max_sizedist + 1):
+        print("%d\t%d" % (i, eccentrdists[i]))
 
-    print"\n\n# distance distribution on a frame between blobs of difference color"
-    print "sdist\tnum"
-    for i in xrange(max_sdist + 1):
-        print "%d\t%d" % (i, sdists[i])
+    print("\n\n# distance distribution on a frame between blobs of difference color")
+    print("sdist\tnum")
+    for i in range(max_sdist + 1):
+        print("%d\t%d" % (i, sdists[i]))
 
-    print"\n\n# distance distribution on a frame between blobs of same color (as noise reference)"
-    print "sdist_samecolor\tnum"
-    for i in xrange(max_sdist + 1):
-        print "%d\t%d" % (i, sdists_samecolor[i])
+    print("\n\n# distance distribution on a frame between blobs of same color (as noise reference)")
+    print("sdist_samecolor\tnum")
+    for i in range(max_sdist + 1):
+        print("%d\t%d" % (i, sdists_samecolor[i]))
 
-    print"\n\n# distance distribution on consecutive frames between blobs of same color"
-    print "tdist\tnum"
-    for i in xrange(max_tdist + 1):
-        print "%d\t%d" % (i, tdists[i])
+    print("\n\n# distance distribution on consecutive frames between blobs of same color")
+    print("tdist\tnum")
+    for i in range(max_tdist + 1):
+        print("%d\t%d" % (i, tdists[i]))
 
-    print"\n\n# distance distribution on consecutive frames between blobs of different color (as noise reference)"
-    print "tdist_diffcolor\tnum"
-    for i in xrange(max_tdist + 1):
-        print "%d\t%d" % (i, tdists[i])
+    print("\n\n# distance distribution on consecutive frames between blobs of different color (as noise reference)")
+    print("tdist_diffcolor\tnum")
+    for i in range(max_tdist + 1):
+        print("%d\t%d" % (i, tdists[i]))
 
 # print motion blob distributions
 if not args.nomotiondist:
-    print"\n\n# distance distribution on a frame between motion blobs"
-    print "sdist_md\tnum"
-    for i in xrange(max_sdist + 1):
-        print "%d\t%d" % (i, sdists_md[i])
+    print("\n\n# distance distribution on a frame between motion blobs")
+    print("sdist_md\tnum")
+    for i in range(max_sdist + 1):
+        print("%d\t%d" % (i, sdists_md[i]))
 
-    print"\n\n# distance distribution on consecutive frames between motion blobs"
-    print "tdist_md\tnum\tdelta_o_avg\tdelta_o_std"
-    for i in xrange(max_tdist + 1):
-        print "%d\t%d\t%f\t%f" % (i, tdists_md[i], delta_o_avg_md[i], sqrt(delta_o_std_md[i]/tdists_md[i]))
+    print("\n\n# distance distribution on consecutive frames between motion blobs")
+    print("tdist_md\tnum\tdelta_o_avg\tdelta_o_std")
+    for i in range(max_tdist + 1):
+        print("%d\t%d\t%f\t%f" % (i, tdists_md[i], delta_o_avg_md[i], sqrt(delta_o_std_md[i]/tdists_md[i])))
 
 # print heatmaps
 if not args.noheatmap:
-    for light in xrange(len(trajognize.project.good_light)):
-        for k in xrange(5):
-            print"\n\n# heatmap of %s %s blobs" % (trajognize.project.good_light[light], trajognize.project.colornames[k])
-            print "heatmap_%s_%s" % (ttrajognize.project.good_light[light], trajognize.project.colornames[k]),
-            for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size)):
-                print "\t%d" % (x * heatmap_bin_size),
-            print ""
-            for y in xrange(int(trajognize.project.image_size.y/heatmap_bin_size)):
-                print "%d" % (y * heatmap_bin_size),
-                for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size)):
-                    print "\t%d" % heatmaps[light][k][x][y],
-                print ""
+    for light in range(len(trajognize.project.good_light)):
+        for k in range(5):
+            print("\n\n# heatmap of %s %s blobs" % (trajognize.project.good_light[light], trajognize.project.colornames[k]))
+            print("heatmap_%s_%s" % (ttrajognize.project.good_light[light], trajognize.project.colornames[k]), end=" ")
+            for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+                print("\t%d" % (x * heatmap_bin_size), end=" ")
+            print("")
+            for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)):
+                print("%d" % (y * heatmap_bin_size), end=" ")
+                for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+                    print("\t%d" % heatmaps[light][k][x][y], end=" ")
+                print("")
 
-    for light in xrange(len(trajognize.project.good_light)):
-        print"\n\n# heatmap of %s motion blobs" % trajognize.project.good_light[light]
-        print "heatmap_%s_md" % trajognize.project.good_light[light],
-        for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size)):
-            print "\t%d" % (x * heatmap_bin_size),
-        print ""
-        for y in xrange(int(trajognize.project.image_size.y/heatmap_bin_size)):
-            print "%d" % (y * heatmap_bin_size),
-            for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size)):
-                print "\t%d" % heatmap_md[light][x][y],
-            print ""
+    for light in range(len(trajognize.project.good_light)):
+        print("\n\n# heatmap of %s motion blobs" % trajognize.project.good_light[light])
+        print("heatmap_%s_md" % trajognize.project.good_light[light], end=" ")
+        for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+            print("\t%d" % (x * heatmap_bin_size), end=" ")
+        print("")
+        for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)):
+            print("%d" % (y * heatmap_bin_size), end=" ")
+            for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+                print("\t%d" % heatmap_md[light][x][y], end=" ")
+            print("")
 
-    for light in xrange(len(trajognize.project.good_light)):
-        print"\n\n# heatmap of %s rat blobs" % trajognize.project.good_light[light]
-        print "heatmap_%s_rat" % trajognize.project.good_light[light],
-        for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size)):
-            print "\t%d" % (x * heatmap_bin_size),
-        print ""
-        for y in xrange(int(trajognize.project.image_size.y/heatmap_bin_size)):
-            print "%d" % (y * heatmap_bin_size),
-            for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size)):
-                print "\t%d" % heatmap_rat[light][x][y],
-            print ""
+    for light in range(len(trajognize.project.good_light)):
+        print("\n\n# heatmap of %s rat blobs" % trajognize.project.good_light[light])
+        print("heatmap_%s_rat" % trajognize.project.good_light[light], end=" ")
+        for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+            print("\t%d" % (x * heatmap_bin_size), end=" ")
+        print("")
+        for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)):
+            print("%d" % (y * heatmap_bin_size), end=" ")
+            for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+                print("\t%d" % heatmap_rat[light][x][y], end=" ")
+            print("")

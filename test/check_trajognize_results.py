@@ -18,8 +18,8 @@ def main(argv=[]):
     if len(argv) != 1 or "-h" in argv or "--help" in argv:
         print __doc__
         return
-    print "\t".join(["#inputdir", "number_of_rats", "blob_frames", "full_barcodes",
-            "full_barcodes/blob_frames/number_of_rats"])
+    print("\t".join(["#inputdir", "number_of_rats", "blob_frames", "full_barcodes",
+            "full_barcodes/blob_frames/number_of_rats"]))
     for inputdir in glob(os.path.join(argv[0], "ratmaze_full_run__trajognize*")):
         if not os.path.isdir(inputdir):
             continue
@@ -39,9 +39,9 @@ def main(argv=[]):
                     full_barcodes = line.replace("full barcodes found", "").strip()
                 if blob_frames != "nan" and full_barcodes != "nan":
                     break
-        print "\t".join([os.path.split(inputdir)[1], str(number_of_rats),
+        print("\t".join([os.path.split(inputdir)[1], str(number_of_rats),
                 blob_frames, full_barcodes,
-                str(float(full_barcodes) / float(blob_frames) / number_of_rats)])
+                str(float(full_barcodes) / float(blob_frames) / number_of_rats)]))
 
 
 if __name__ == "__main__":

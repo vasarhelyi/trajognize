@@ -19,7 +19,7 @@ def add_sum_to_matrix_file(inputfile, outputfile):
         # print last matrix sum column line
         out.write("sum") # header
         sum[0] = 0
-        for i in xrange(1, len(data)):
+        for i in range(1, len(data)):
             sum[0] += sum[i]
             out.write("\t%f" % sum[i]) # sum columns
         out.write("\t%f\n" % sum[0]) # sum sum
@@ -49,13 +49,13 @@ def add_sum_to_matrix_file(inputfile, outputfile):
             startnewblock = False
             out.write("%s\tsum\n" % line)
             # reset sum for new data matrix
-            sum = [0 for i in xrange(len(line.split('\t')))]
+            sum = [0 for i in range(len(line.split('\t')))]
             continue
         # parse data lines and add row sum to end
         data = line.split('\t')
         writesum = True # set flag
         sum[0] = 0
-        for i in xrange(1, len(data)):
+        for i in range(1, len(data)):
             if data[i] != data[i]: continue # skip nan
             sum[0] += float(data[i])
             sum[i] += float(data[i])

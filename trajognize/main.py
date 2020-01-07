@@ -162,15 +162,15 @@ def main(argv=[]):
     # initialize variables
     phase.start_phase("Initializing variables and output files...")
     framecount = len(v.color_blobs)
-    v.sdistlists = [[[],[]] for x in xrange(framecount)] # spatial distlist (which blob is close to be neighbor/second neighbor on same rat)
-    v.tdistlists = [[] for x in xrange(framecount)] # temporal distlist (which blob can be the same on the previous frame)
-    v.clusterlists = [[] for x in xrange(framecount)] # cluster list containing blob indices in clusters for all frames
-    v.clusterindices = [[] for x in xrange(framecount)] # cluster index for all blobs
-    v.mdindices = [[] for x in xrange(framecount)] # motion blob index for all blobs (-1 if none)
-    v.barcodes = [[[] for x in xrange(len(v.colorids))] for x in xrange(framecount)] # all barcodes found. First index is frame num.
+    v.sdistlists = [[[],[]] for x in range(framecount)] # spatial distlist (which blob is close to be neighbor/second neighbor on same rat)
+    v.tdistlists = [[] for x in range(framecount)] # temporal distlist (which blob can be the same on the previous frame)
+    v.clusterlists = [[] for x in range(framecount)] # cluster list containing blob indices in clusters for all frames
+    v.clusterindices = [[] for x in range(framecount)] # cluster index for all blobs
+    v.mdindices = [[] for x in range(framecount)] # motion blob index for all blobs (-1 if none)
+    v.barcodes = [[[] for x in range(len(v.colorids))] for x in range(framecount)] # all barcodes found. First index is frame num.
     if not options.notrajectory:
-        v.trajectories = [[] for x in xrange(len(v.colorids))] # all candidate trajectories found. First index is coloridindex.
-        v.trajsonframe = [[set() for x in xrange(len(v.colorids))] for x in xrange(framecount)] # trajectory indices on each frame
+        v.trajectories = [[] for x in range(len(v.colorids))] # all candidate trajectories found. First index is coloridindex.
+        v.trajsonframe = [[set() for x in range(len(v.colorids))] for x in range(framecount)] # trajectory indices on each frame
     output.barcode_textfile_init(outputfile, v.barcodes)
     outputlogfile = outputfile[:-9] + '.log' # remove '.barcodes'
     output.logfile_init(outputlogfile)
@@ -184,7 +184,7 @@ def main(argv=[]):
         ############################################################################
         # initialize calculated variables
         phase.start_phase("Initialize calculated variables (sdistdists, clusterlists, md blobs over blobs, etc.)...")
-        for currentframe in xrange(framecount):
+        for currentframe in range(framecount):
             # calculate spatial distances between blobs
             v.sdistlists[currentframe] = algo_blob.create_spatial_distlists(v.color_blobs[currentframe])
             # find blob clusters for later error checking and set clusterindex variable in all blobs
@@ -213,12 +213,12 @@ def main(argv=[]):
         # find full barcodes
         phase.start_phase("Find full IDs based on spatial closeness chains...")
         count = 0
-        for currentframe in xrange(framecount):
+        for currentframe in range(framecount):
             # find colorid chains
             chainlists = algo_blob.find_chains_in_sdistlists(
                     v.color_blobs[currentframe], v.sdistlists[currentframe], v.colorids)
             # store full IDs
-            for k in xrange(len(v.colorids)):
+            for k in range(len(v.colorids)):
                 if not chainlists[k]: continue
                 for chain in chainlists[k]:
                     # append to blob list
@@ -253,7 +253,7 @@ def main(argv=[]):
             phase.start_phase("Remove full barcodes that have shared id properties or are overlapping, set 'nocluster' prop on others...")
             count_sharesid = 0
             count_overlapped = 0
-            for currentframe in xrange(framecount):
+            for currentframe in range(framecount):
                 # remove close sharesid ones
                 count_sharesid += algo_barcode.remove_close_sharesid(
                         v.barcodes[currentframe], v.color_blobs[currentframe], v.colorids)
@@ -289,7 +289,7 @@ def main(argv=[]):
             count = 0
             count_adjusted = 0
             count_notused = 0
-            for currentframe in xrange(1,framecount):
+            for currentframe in range(1,framecount):
                 # main algo is in algo.py, all function params are lists so they are modified in the call
                 (a, b, c) = algo_barcode.find_partlyfound_from_tdist(
                         'forward', currentframe, v.tdistlists, v.color_blobs, v.barcodes, v.colorids,
@@ -324,7 +324,7 @@ def main(argv=[]):
             count = 0
             count_adjusted = 0
             count_notused = 0
-            for currentframe in xrange(framecount-2, -1, -1):
+            for currentframe in range(framecount-2, -1, -1):
                 # main algo is in algo.py, all function params are lists so they are modified in the call
                 (a, b, c) = algo_barcode.find_partlyfound_from_tdist(
                         'backward', currentframe, v.tdistlists, v.color_blobs, v.barcodes, v.colorids,
@@ -359,7 +359,7 @@ def main(argv=[]):
             # remove/concat bad partial barcodes
             phase.start_phase("Remove partial barcodes that have shared id properties...")
             count_sharesid = 0
-            for currentframe in xrange(framecount):
+            for currentframe in range(framecount):
                 # remove close sharesid ones
                 count_sharesid += algo_barcode.remove_close_sharesid(
                         v.barcodes[currentframe], v.color_blobs[currentframe], v.colorids, MFIX_PARTLYFOUND_FROM_TDIST)
@@ -381,7 +381,7 @@ def main(argv=[]):
         ############################################################################
         # set sharesid/sharesblob mfix
         phase.start_phase("Set sharesid/sharesblob mfix flags...")
-        for currentframe in xrange(framecount):
+        for currentframe in range(framecount):
             # set mfix flags temporarily (we might use this info later
             algo_barcode.set_shared_mfix_flags(v.barcodes[currentframe],
                     v.color_blobs[currentframe], v.colorids)
@@ -399,7 +399,7 @@ def main(argv=[]):
                 ########################################################################
                 # create trajectory database
                 phase.start_phase("Creating trajectory database...")
-                for currentframe in xrange(framecount):
+                for currentframe in range(framecount):
                     algo_trajectory.initialize_trajectories(
                             v.trajectories, v.trajsonframe, v.barcodes, v.color_blobs, currentframe,
                             v.colorids, v.md_blobs, v.mdindices)
@@ -472,7 +472,7 @@ def main(argv=[]):
             ########################################################################
             # set sharesid/sharesblob mfix
             phase.start_phase("Refresh sharesid/sharesblob mfix flags...")
-            for currentframe in xrange(framecount):
+            for currentframe in range(framecount):
                 # set mfix flags temporarily (we might use this info later
                 algo_barcode.set_shared_mfix_flags(v.barcodes[currentframe],
                         v.color_blobs[currentframe], v.colorids)

@@ -132,7 +132,7 @@ def main(argv=[]):
         print("parsing", os.path.split(inputfile)[1])
         headers = grep_headers_from_file(inputfile, "dist24hobj")
         exp = get_exp_from_filename(inputfile)
-        for index in xrange(len(headers)):
+        for index in range(len(headers)):
             maxcol = len(headers[index])-3 # _avg, _std, but all is _avg, _std, _num
             # get categories
             name = headers[index][0]

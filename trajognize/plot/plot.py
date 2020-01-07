@@ -122,9 +122,9 @@ def convert_matrixdata_to_dict(strdata):
     strids = strdata[0][1:]
     n = len(strids)
     data = collections.defaultdict(collections.defaultdict)
-    for i in xrange(n):
-        for j in xrange(n):
+    for i in range(n):
+        for j in range(n):
             x = float(strdata[i+1][j+1])
             data[strids[i]][strids[j]] = x
     return data
-    
+

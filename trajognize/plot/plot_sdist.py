@@ -61,7 +61,7 @@ def main(argv=[]):
             spgm.remove_picture_descriptions(outdir)
             outdirs.append(outdir)
         # plot all indices
-        for index in xrange(len(headers)):
+        for index in range(len(headers)):
             name = headers[index][0]
             outputfilecommon = os.path.join(outdir, tail + '__' + name)
             gnufile = outputfilecommon + ".gnu"

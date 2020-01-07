@@ -8,7 +8,7 @@ from trajognize.init import int2color
 
 def calculate_running_avg(new, k, prevavg, prevstd):
     """Running average and standard deviation calculation.
-    
+
     Source:
     http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
 
@@ -17,14 +17,14 @@ def calculate_running_avg(new, k, prevavg, prevstd):
     k     -- index of element (starting from 1)
     prevavg -- previous average
     prevstd -- previous "standard deviation"
-    
+
     Return value is new running avg and std.
     Note: real standard deviation at all times is sqrt(std/n)
 
     """
     avg = prevavg + (new - prevavg)/k
     std = prevstd + (new - prevavg)*(new-avg)
-    
+
     return (avg, std)
 
 
@@ -32,7 +32,7 @@ def get_distance(a, b):
     """Calculate the distance between two blobs or barcodes -
     anything that has .centerx and .centery parameters."""
     return hypot(a.centerx - b.centerx, a.centery - b.centery)
-    
+
 
 def is_point_inside_ellipse(point, ellipse, mul=1.2):
     """Return true if point center is contained by ellipse (e.g. md blob over barcode/blob).
@@ -73,10 +73,10 @@ def find_md_under_blobs(color_blobs, md_blobs):
     md_blobs -- list of all blobs (color_blob_t) from the current frame
 
     """
-    mdindices = [-1 for i in xrange(len(color_blobs))]
-    
-    for i in xrange(len(color_blobs)):
-        for j in xrange(len(md_blobs)):
+    mdindices = [-1 for i in range(len(color_blobs))]
+
+    for i in range(len(color_blobs)):
+        for j in range(len(md_blobs)):
             if is_point_inside_ellipse(color_blobs[i], md_blobs[j]):
                 mdindices[i] = j
                 break

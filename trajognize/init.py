@@ -150,7 +150,7 @@ class trajectory_t:
 
     Note that the frame number is not contained in the barcodeindices structure,
     because it can be calculated as firstframe + list index.
-    
+
     """
     # Keep memory requirements low by preventing the creation of instance dictionaries.
     __slots__ = ('firstframe', 'barcodeindices', 'fullfound_count', 'fullnocluster_count',
@@ -162,7 +162,7 @@ class trajectory_t:
         self.barcodeindices = []
         self.fullfound_count = 0 # number of fullfound barcodes
         self.fullnocluster_count = 0 # number of fullfound barcodes that are not part of a larger cluster
-        self.colorblob_count = [0 for x in xrange(MCHIPS)] # number of found blobs at a given position in the barcode
+        self.colorblob_count = [0 for x in range(MCHIPS)] # number of found blobs at a given position in the barcode
         self.sharesblob_count = 0 # number of barcodes that share blobs with other barcodes
         self.offset_count = 0 # arbitrary count that modifies traj score. Could decrease or increase.
         self.state = STATE_INITIALIZED
@@ -197,4 +197,4 @@ class metatraj_t:
         self.trajs = trajs
         self.score = 0
 
-    
+

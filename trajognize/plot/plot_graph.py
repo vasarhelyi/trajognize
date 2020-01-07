@@ -16,8 +16,8 @@ def create_ncol_file(data, outputfile):
     """Create .ncol file that is compatible with igraph."""
     count = 0
     f = open(outputfile, 'w')
-    for i in xrange(1, len(data[0])):
-        for j in xrange(1, len(data)):
+    for i in range(1, len(data[0])):
+        for j in range(1, len(data)):
             value = float(data[i][j])
             if value and value == value:
                 count += 1
@@ -30,13 +30,13 @@ def create_ncol_file(data, outputfile):
 def remove_negligible_data(data):
     """Remove elements for data that are negligible, i.e.
     their value is smaller than 5% of max value"""
-    x = [[float(d) for d in data[i][1:]] for i in xrange(1, len(data))]
+    x = [[float(d) for d in data[i][1:]] for i in range(1, len(data))]
     removed = []
     dmean = numpy.mean(x)
     dmax = numpy.max(x)
     dthreshold = dmax*0.05
-    for i in xrange(1, len(data)):
-        for j in xrange(1, len(data)):
+    for i in range(1, len(data)):
+        for j in range(1, len(data)):
             if x[i-1][j-1] and x[i-1][j-1] < dmax*0.05:
                 data[i][j] = "0"
                 removed.append(x[i-1][j-1])
@@ -96,7 +96,7 @@ def main(argv=[]):
     extd_graph.vs[:g.vcount()]["color"] = "#FF0000"
     # vertex size TODO: rectangle with width and height
     extd_graph.vs["width"] = extd_graph.vs["size"] = [extd_graph.vs["label_size"][i] * \
-            len(extd_graph.vs[i]["label"]) for i in xrange(g.vcount())]
+            len(extd_graph.vs[i]["label"]) for i in range(g.vcount())]
     extd_graph.vs["height"] = extd_graph.vs["label_size"]
     extd_graph.vs[g.vcount():]["size"] = 0
 
@@ -139,7 +139,7 @@ def main(argv=[]):
            [name, exp] + [options.label] if options.label is not None else [],
            inputfile, None)
 
-        
+
 if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main

@@ -46,14 +46,14 @@ def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
     deleted  -- should we write deleted barcodes as well?
 
     Uses the global variable 'oft' as the file handler.
-    
+
     """
 
     global oft
     # get list of barcodes to be written
-    barcodeindices = [[barcode_index_t(k,x) for x in xrange(len(barcodes[k]))] for k in xrange(len(barcodes))]
+    barcodeindices = [[barcode_index_t(k,x) for x in range(len(barcodes[k]))] for k in range(len(barcodes))]
     if not deleted:
-        for k in xrange(len(barcodes)):
+        for k in range(len(barcodes)):
             barcodeindices[k] = barcodeindices_not_deleted(barcodeindices[k], barcodes)
     # write framenum and barcodenum
     i = 0
@@ -61,7 +61,7 @@ def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
         i += len(sameid)
     oft.write("%d\t%d" % (framenum, i))
     # write data
-    for k in xrange(len(barcodeindices)):
+    for k in range(len(barcodeindices)):
         strid = colorids[k].strid
         for ki in barcodeindices[k]:
             barcode = barcodes[ki.k][ki.i]
@@ -79,7 +79,7 @@ def barcode_textfile_writeall(barcodes, colorids, deleted=True):
     deleted  -- should we write deleted barcodes as well?
 
     """
-    for framenum in xrange(len(barcodes)):
+    for framenum in range(len(barcodes)):
         barcode_textfile_writeframe(barcodes[framenum], framenum, colorids, deleted)
 
 
@@ -130,7 +130,7 @@ def logfile_writeframe(blobs, barcodes, framenum):
     global oftlog
     # get NUB - not used blobs
     nub = []
-    for i in xrange(len(blobs)):
+    for i in range(len(blobs)):
         if not barcodeindices_not_deleted(blobs[i].barcodeindices, barcodes):
             nub.append(i)
     # write it
@@ -167,7 +167,7 @@ def logfile_close():
 
 def matrixfile_write(outputfile, W, name = "", idorder=None):
     """Print a data matrix.
-    
+
     Keyword arguments:
     outputfile -- output file to save data to
     data       -- square data matrix (dict/list) to save

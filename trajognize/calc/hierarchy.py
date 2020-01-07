@@ -216,8 +216,8 @@ def dominance_transitivity(W, idorder=None, max_noedge_value=0):
             idorder = range(n)
         else:
             0/0
-    for j in xrange(0, n-1): # from
-        for k in xrange(j+1, n): # to
+    for j in range(0, n-1): # from
+        for k in range(j+1, n): # to
             if W[idorder[j]][idorder[k]] > max_noedge_value:
                 upper += W[idorder[j]][idorder[k]]
             if W[idorder[k]][idorder[j]] > max_noedge_value:

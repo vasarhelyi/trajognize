@@ -112,7 +112,7 @@ def main(argv=[]):
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
         headers = grep_headers_from_file(inputfile, "dailyobj")
         exp = get_exp_from_filename(inputfile)
-        for index in xrange(len(headers)):
+        for index in range(len(headers)):
             maxcol = len(headers[index])-5 # _avg, _std, but all is _avg, _std, _num, absgrad_avg, absgrad_std
             # get categories
             name = headers[index][0]
@@ -157,11 +157,11 @@ def main(argv=[]):
             for strid in names:
                 # calculate allday average as a weighted sum of daily averages
                 avgs = [float(alldata[index][x][headers[index].index("%s_avg" % strid)]) \
-                        for x in xrange(1, len(alldata[index]))]
+                        for x in range(1, len(alldata[index]))]
                 nums = [float(alldata[index][x][headers[index].index("all_num")]) \
-                        for x in xrange(1, len(alldata[index]))]
-                corrdata.append("%g" % (sum(avgs[x]*nums[x] for x in xrange(len(avgs))) /
-                        max(1, sum(nums[x] for x in xrange(len(avgs)))) ))
+                        for x in range(1, len(alldata[index]))]
+                corrdata.append("%g" % (sum(avgs[x]*nums[x] for x in range(len(avgs))) /
+                        max(1, sum(nums[x] for x in range(len(avgs)))) ))
             # write it out
             headerline = trajognize.corr.util.strids2headerline(names, False)
             corrline = "\t".join(corrdata)

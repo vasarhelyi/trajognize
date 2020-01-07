@@ -18,9 +18,9 @@ def get_chosen_barcode_indices(barcodes):
 
     """
     id_count = len(barcodes)
-    chosen = [None for k in xrange(id_count)]
-    for k in xrange(id_count):
-        for i in xrange(len(barcodes[k])):
+    chosen = [None for k in range(id_count)]
+    for k in range(id_count):
+        for i in range(len(barcodes[k])):
             if barcodes[k][i].mfix & MFIX_CHOSEN:
                 chosen[k] = i
                 break
@@ -51,17 +51,17 @@ def check_barcode_blob_consistency(barcodes, blobs, colorids):
     """Debug function to check all blob indices of barcodes and all
     barcode indices of blobs whether they are consistent or not."""
     print("Checking barcode-blob consistency...", end=" ")
-    for frame in xrange(len(barcodes)):
+    for frame in range(len(barcodes)):
         # check from barcodes
-        for k in xrange(len(colorids)):
-            for i in xrange(len(barcodes[frame][k])):
+        for k in range(len(colorids)):
+            for i in range(len(barcodes[frame][k])):
                 barcode = barcodes[frame][k][i]
                 ki = barcode_index_t(k,i)
                 for j in barcode.blobindices:
                     if ki not in blobs[frame][j].barcodeindices:
                         raise ValueError("mismatch on frame %d, blob %d does not contain %s barcode #%d %s" % (frame, j, colorids[k].strid, i, mfix2str(barcode.mfix)))
         # check from blobs
-        for j in xrange(len(blobs[frame])):
+        for j in range(len(blobs[frame])):
             blob = blobs[frame][j]
             for ki in blob.barcodeindices:
                 if j not in barcodes[frame][ki.k][ki.i].blobindices:
@@ -71,15 +71,15 @@ def check_barcode_blob_consistency(barcodes, blobs, colorids):
 
 def print_max_barcode_count(barcodes, colorids):
     """Debug function to print the maximum number of barcodes present simultaneously."""
-    count = [[0,0,[]] for k in xrange(len(colorids))]
-    for frame in xrange(len(barcodes)):
-        for k in xrange(len(colorids)):
+    count = [[0,0,[]] for k in range(len(colorids))]
+    for frame in range(len(barcodes)):
+        for k in range(len(colorids)):
             x = len(barcodes[frame][k])
             if x > count[k][0]:
                 count[k] = [x, frame, barcodes[frame][k]]
     print("Max barcodes simultaneously:")
     sum = 0
-    for k in xrange(len(colorids)):
+    for k in range(len(colorids)):
         sum += count[k][0]
         print(" ", colorids[k].strid, count[k][0], "frame", count[k][1], end=" ")
         for barcode in count[k][2]:
@@ -110,12 +110,12 @@ def find_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
 
     # get list of contained colors in barcode
     containedcolors = set(blobs[i].color for i in barcode.blobindices)
-    containedindex = [0 for x in xrange(len(strid))]
+    containedindex = [0 for x in range(len(strid))]
 
     # find candidates for all positions
-    candidates = [set() for x in xrange(len(strid))]
+    candidates = [set() for x in range(len(strid))]
     newones = 0
-    for i in xrange(len(strid)):
+    for i in range(len(strid)):
         color = color2int[strid[i]]
         # if barcode contains blob at position, store as candidate
         if color in containedcolors:
@@ -150,9 +150,9 @@ def find_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
             break
     if fullfound:
         blobchains = list(itertools.product(*candidates))
-        #print('  find_missing_unused_blob() found full:', currentframe, strid, [blobchains[x] for x in xrange(len(blobchains))])
+        #print('  find_missing_unused_blob() found full:', currentframe, strid, [blobchains[x] for x in range(len(blobchains))])
         candidate_blobchains = []
-        for i in xrange(len(blobchains)):
+        for i in range(len(blobchains)):
             if is_blob_chain_appropriate_as_barcode([blobs[j] for j in blobchains[i]]):
                 candidate_blobchains.append(i)
         if not candidate_blobchains: return 0
@@ -164,8 +164,8 @@ def find_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
         barcode.blobindices = list(blobchains[candidate_blobchains[0]])
 
     else:
-        #print('  partial', currentframe, strid, [candidates[x] for x in xrange(len(candidates))])
-        for i in xrange(len(strid)):
+        #print('  partial', currentframe, strid, [candidates[x] for x in range(len(candidates))])
+        for i in range(len(strid)):
             candidate = candidates[i]
             if not candidate or containedindex[i]: continue
             # if there are more candidates, print warning
@@ -213,7 +213,7 @@ def order_blobindices(barcode, strid, blobs, forcefull=False):
     i = 0
     for c in strid:
         ii = color2int[c]
-        for j in xrange(len(oldcolors)):
+        for j in range(len(oldcolors)):
             if ii == oldcolors[j]:
                 barcode.blobindices[i] = oldindices[j]
                 i += 1
@@ -295,7 +295,7 @@ def calculate_params(barcode, strid, blobs):
         # TODO: generalized algo not implemented
         if len(strid) != 3:
             0/0
-        for i in xrange(len(strid)):
+        for i in range(len(strid)):
             if color2int[strid[i]] not in colors:
                 break
         if i == 0:
@@ -313,7 +313,7 @@ def calculate_params(barcode, strid, blobs):
         # TODO: generalized algo not implemented
         if len(strid) != 3:
             0/0
-        for i in xrange(len(strid)):
+        for i in range(len(strid)):
             if color2int[strid[i]] in colors:
                 break
         if i == 0:
@@ -450,7 +450,7 @@ def find_partlyfound_from_tdist(
     else:
         0/0
     maxskip = 50 # max number of frames around not used blob pairs
-    tempbarcodes = [[] for x in xrange(len(colorids))] # temporarily found new barcodes
+    tempbarcodes = [[] for x in range(len(colorids))] # temporarily found new barcodes
     # calculate temporal distances between blobs
     tdistlists[currentframe] = create_temporal_distlists(
             color_blobs[currentframe-inc], color_blobs[currentframe],
@@ -460,7 +460,7 @@ def find_partlyfound_from_tdist(
     notusedblobs = set()
     # temporarily store all barcodes that could be found based on tdist from previous barcodes (full or partial)
     # iterate for all blobs on current frame
-    for blobi in xrange(len(color_blobs[currentframe])):
+    for blobi in range(len(color_blobs[currentframe])):
         # skip blobs that ARE already assigned to something not deleted:
         if barcodeindices_not_deleted(
                 color_blobs[currentframe][blobi].barcodeindices, barcodes[currentframe]):
@@ -496,13 +496,13 @@ def find_partlyfound_from_tdist(
                 # group temporary barcodes if they come from the same previous barcode
                 # or one very close
                 else:
-                    for i in xrange(len(tempbarcodes[k])):
+                    for i in range(len(tempbarcodes[k])):
                         # new barcode comes from the same as one in already tempbarcodes (or close)
                         if get_distance(barcode, tempbarcodes[k][i]) < 10:
 #                            abs(barcode.orientation - tempbarcodes[k][i].orientation) < pi/180):
                             # What if more than one blobs are there with the same color?
                             # Now we use the closest one to prev barcode center.
-                            for j in xrange(len(tempbarcodes[k][i].blobindices)):
+                            for j in range(len(tempbarcodes[k][i].blobindices)):
                                 blobj = tempbarcodes[k][i].blobindices[j]
                                 # if different color, skip
                                 if color_blobs[currentframe][blobj].color != color_blobs[currentframe][blobi].color: continue
@@ -529,7 +529,7 @@ def find_partlyfound_from_tdist(
     count = 0
     count_adjusted = 0
     count_notused = 0
-    for k in xrange(len(colorids)):
+    for k in range(len(colorids)):
         for barcode in tempbarcodes[k]:
             # skip ones that are already present in barcodes and undelete them
             # TODO: maybe include new blobs if needed...
@@ -581,7 +581,7 @@ def find_partlyfound_from_tdist(
         newbarcode.centery /= len(cluster)
         # get colorid candidates
         goodcolors = []
-        for k in xrange(len(colorids)):
+        for k in range(len(colorids)):
             strid = colorids[k].strid
             # skip colorids that do not contain all colors in cluster
             if set([int2color[x] for x in colorsincluster]) - set(strid): continue
@@ -601,7 +601,7 @@ def find_partlyfound_from_tdist(
             lastframe = max(0, currentframe - maxskip)
         else:
             lastframe = min(len(barcodes)-1, currentframe + maxskip)
-        for frame in xrange(currentframe, lastframe, -inc):
+        for frame in range(currentframe, lastframe, -inc):
             for k in goodcolors:
                 # find candidates
                 for barcode in barcodes[frame][k]:
@@ -690,7 +690,7 @@ def set_shared_mfix_flags(barcodes, blobs, colorids):
 
     """
     # set SHARESID property
-    for k in xrange(len(barcodes)):
+    for k in range(len(barcodes)):
         #check 'deleted' flags
         num = 0
         for barcode in barcodes[k]:
@@ -717,13 +717,13 @@ def set_shared_mfix_flags(barcodes, blobs, colorids):
     # set SHARESBLOB property also on overlapping barcodes
     # get all barcode indices
     allindices = []
-    for k in xrange(len(barcodes)):
-        for i in xrange(len(barcodes[k])):
+    for k in range(len(barcodes)):
+        for i in range(len(barcodes[k])):
             allindices += barcodeindices_not_deleted(
                     [barcode_index_t(k, i)], barcodes)
     # iterate over all pairs
-    for i in xrange(1, len(allindices)):
-        for j in xrange(i):
+    for i in range(1, len(allindices)):
+        for j in range(i):
             a = barcodes[allindices[i].k][allindices[i].i]
             b = barcodes[allindices[j].k][allindices[j].i]
             if could_be_sharesblob(a, b, allindices[i].k, allindices[j].k,
@@ -755,16 +755,16 @@ def remove_close_sharesid(barcodes, blobs, colorids, mfix = None):
 
     """
     count = 0
-    for k in xrange(len(barcodes)):
+    for k in range(len(barcodes)):
         # skip ones with no sharesid
         if len(barcodes[k]) < 2: continue
         strid = colorids[k].strid
         # iterate barcodes
-        for i in xrange(len(barcodes[k])):
+        for i in range(len(barcodes[k])):
             barcode = barcodes[k][i]
             # skip ones that has been deleted already
             if not barcode.mfix or (barcode.mfix & MFIX_DELETED): continue
-            for j in xrange(i):
+            for j in range(i):
                 candidate = barcodes[k][j]
                 # skip ones that has been deleted already
                 if not candidate.mfix or (candidate.mfix & MFIX_DELETED): continue
@@ -774,7 +774,7 @@ def remove_close_sharesid(barcodes, blobs, colorids, mfix = None):
                     # skip ones that are far away
                     if get_distance(barcode, candidate) > 2 * MAX_INRAT_DIST: continue
                     # keep pairs only with appropriate blobs together
-                    color = [0 for x in xrange(MCHIPS)]
+                    color = [0 for x in range(MCHIPS)]
                     commonindices = set(barcode.blobindices + candidate.blobindices)
                     for blobi in commonindices:
                         color[strid.index(int2color[blobs[blobi].color])] += 1

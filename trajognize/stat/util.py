@@ -21,8 +21,8 @@ def get_chosen_barcodes(barcodes, mfix=None):
 
     """
     id_count = len(barcodes)
-    chosen = [None for k in xrange(id_count)]
-    for k in xrange(id_count):
+    chosen = [None for k in range(id_count)]
+    for k in range(id_count):
         for barcode in barcodes[k]:
             if barcode.mfix & trajognize.init.MFIX_CHOSEN:
                 if mfix is None or not barcode.mfix & mfix:
@@ -336,7 +336,7 @@ def distance_from_polygon(pos, poly):
     """Return the closest distance between a point and
     an arbitrary polygon (consisting of points defining line segments)."""
     return min(distance_from_line(pos, poly[i-1], poly[i]) \
-            for i in xrange(len(poly)))
+            for i in range(len(poly)))
 
 def is_inside_polygon(pos, poly):
     """Return true if pos is inside poly.

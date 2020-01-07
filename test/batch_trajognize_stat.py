@@ -24,7 +24,7 @@ if len(sys.argv) > 2 or (len(sys.argv)>1 and sys.argv[1] == '--help'):
 # get input path
 path = trajognize.util.get_path_as_first_arg(sys.argv)
 path += '*/OUT/*.blobs.barcodes'
-print "# Using data: %s" % path
+print("# Using data: %s" % path)
 
 # list files and check for error
 files = glob(path)
@@ -38,7 +38,7 @@ for inputfile in files:
     i += 1
     # get file name
     head, tail = os.path.split(inputfile)
-    print "\n\nParsing input file #%d: '%s'...\n" % (i, tail)
+    print("\n\nParsing input file #%d: '%s'...\n" % (i, tail))
     trajognize.stat.main(['-i', inputfile, '-f', '-s', 'aa'])
 end = time.clock()
-print "\n\nTotal time elapsed parsing %d files: %f hours" % (len(files), (end-start)/3600)
+print("\n\nTotal time elapsed parsing %d files: %f hours" % (len(files), (end-start)/3600))

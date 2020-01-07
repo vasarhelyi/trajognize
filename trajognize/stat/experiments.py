@@ -60,10 +60,10 @@ def get_experiment(experiments, sometime, allonday=False):
         explist1 = get_experiment(experiments, t1)
         t2 = datetime.datetime.combine(sometime.date(), datetime.time(23,59,59))
         explist2 = get_experiment(experiments, t2)
-        explist = sorted(list(set(explist1) | set(explist2)), 
+        explist = sorted(list(set(explist1) | set(explist2)),
                 lambda a,b: experiments[a]['number'] - experiments[b]['number'])
-        return explist   
- 
+        return explist
+
     explist = []
     for name in experiments:
         experiment = experiments[name]
@@ -79,11 +79,11 @@ def get_experiment(experiments, sometime, allonday=False):
 
 def are_in_same_group(stridi, stridj, experiment):
     """Return true if rats i and j are in the same group in a given experiment.
-    
+
     :param stridi: string id of one rat
     :param stridj: string id of another rat
     :param experiment: an experiment in which the check should be performed
-    
+
     """
     if experiment['groupid'][stridi] == experiment['groupid'][stridj]:
         return True
@@ -98,7 +98,7 @@ def is_wall_between(a, b, cage):
     :param a: first barcode (or any object with centerx/centery member)
     :param b: second barcode (or any object with centerx/centery member)
     :param cage: cage params at given frame: [x, y, alpha, beta]
-    
+
     Algo description:
     The equation of a line is y = ix+b
     We are first looking for the junction of two lines, one through a and b,
@@ -113,14 +113,14 @@ def is_wall_between(a, b, cage):
     all cases when the junction point is very close the the cage center. This also
     implicates that this function should be used together with are_in_same_group()
     TODO: find a reasonable max diameter for this correction, now 50 pixel is used.
-    
+
     """
     #WARNING: algo so far implemented only for PROJECT_2011
     if PROJECT != PROJECT_2011:
         return False
 
     # check cage params, return "there is no wall" if cage coords is nan
-    for i in xrange(4):
+    for i in range(4):
         if cage[i] != cage[i]:
             return False
     # get steepness of the two cage lines
@@ -184,14 +184,14 @@ def is_barcode_under_object(barcode, objectcenter, objectarea):
     """Return true if barcode lays on/under object, defined by objectcenter as center
     (and arc if circle) and and objectarea as area (radius, height, width) with
     optional center offset.
-    
+
     :param barcode: a barcode
     :param objectcenter: a point_t/circle_t object defining the CENTER (and arc) of the object
     :param objectarea: an object defining the AREA (width, height, radius) of the object
                        and possible center offset (see queuing_center_offset())
 
     Warning: function assumes that all angles are in the range of [0, 360]
-    
+
     """
     (ofsx, ofsy) = queuing_center_offset(objectcenter, objectarea)
     # check for rectangles
@@ -238,7 +238,7 @@ def get_formatted_description(experiment, commentchar=None):
 
     :param experiment: the experiment to print info about
     :param commentchar: optional comment char to the beginning of each line
-    
+
     """
     output = "Experiment '%s'\n\n" \
              "start: %s\n"      \
@@ -259,12 +259,12 @@ def get_formatted_description(experiment, commentchar=None):
         output = commentchar + " " + output
         output = output.replace("\n", "\n%s " % commentchar)
     return output + "\n"
-    
-    
+
+
 def get_days_since_start(experiment, sometime):
     """Return number of days since the start of an experiment."""
     return (sometime.date() - experiment['start'].date()).days
-    
+
 
 def get_day_offset(experiment):
     """Get day offset of a given experiment. This is a hack in project_2011
@@ -282,7 +282,7 @@ def get_dayrange_of_experiment(experiment):
     """Return a list of strings containing all days through an experiment."""
     firstday = experiment['start'].date()
     lastday = experiment['stop'].date()
-    dayrange = [str(firstday + datetime.timedelta(n)) for n in xrange(int((lastday - firstday).days) + 1)]
+    dayrange = [str(firstday + datetime.timedelta(n)) for n in range(int((lastday - firstday).days) + 1)]
     return dayrange
 
 
@@ -295,7 +295,7 @@ def get_dayrange_of_all_experiments(experiments=experiments):
         if lastday is None or lastday < exp['stop']: lastday = exp['stop']
     firstday = firstday.date()
     lastday = lastday.date()
-    dayrange = [str(firstday + datetime.timedelta(n)) for n in xrange(int((lastday - firstday).days) + 1)]
+    dayrange = [str(firstday + datetime.timedelta(n)) for n in range(int((lastday - firstday).days) + 1)]
     return dayrange
 
 

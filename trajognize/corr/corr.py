@@ -10,9 +10,9 @@ def calculate_all_pearsonr(data):
     pearsonr = defaultdict(defaultdict)
     pvalue = defaultdict(defaultdict)
     keys = data.keys()
-    for i in xrange(0,len(keys)):
+    for i in range(0,len(keys)):
         a = keys[i]
-        for j in xrange(0, i+1):
+        for j in range(0, i+1):
             b = keys[j]
             # do not perform corr with self
             if i == j:
@@ -27,4 +27,3 @@ def calculate_all_pearsonr(data):
                 pearsonr[b][a], pvalue[b][a] = pearsonr[a][b], pvalue[a][b]
     return pearsonr, pvalue
 
-    

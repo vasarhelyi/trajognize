@@ -22,7 +22,7 @@ except ImportError:
     import trajognize.stat.init
     import trajognize.stat.experiments
     import trajognize.corr.util
-    
+
 GNUPLOT_TEMPLATE_AVG = """#!/usr/bin/gnuplot
 reset
 set term png size 800, 480
@@ -87,8 +87,8 @@ def get_gnuplot_script_avg(inputfile, outputfile, outputfileabsgrad, name,
         "dailyvalidtimes_plot": dvt_plot,
     }
     return GNUPLOT_TEMPLATE_AVG % data
-    
-    
+
+
 def get_gnuplot_script_dist(inputfile, outputfile, name, maxcol, exp, index, pdstr):
     """Return .gnu script body as string for _avg plot."""
     data = {
@@ -138,7 +138,7 @@ def main(argv=[]):
         (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
         exp = get_exp_from_filename(inputfile)
         # plot all indices
-        for index in xrange(len(headers)):
+        for index in range(len(headers)):
             # get categories
             name = headers[index][0]
             (avgdist, light, mot, realvirt, groupstrid) = get_categories_from_name(name)
@@ -199,11 +199,11 @@ def main(argv=[]):
             for strid in names:
                 # calculate allday average as a weighted sum of daily averages
                 avgs = [float(alldata[index][x][headers[index].index("%s.avg" % strid)]) \
-                        for x in xrange(1, len(alldata[index]))]
+                        for x in range(1, len(alldata[index]))]
                 nums = [float(alldata[index][x][headers[index].index("%s.num" % strid)]) \
-                        for x in xrange(1, len(alldata[index]))]
-                corrdata.append("%.1f" % (sum(avgs[x]*nums[x] for x in xrange(len(avgs))) /
-                        max(1, sum(nums[x] for x in xrange(len(avgs)))) ))
+                        for x in range(1, len(alldata[index]))]
+                corrdata.append("%.1f" % (sum(avgs[x]*nums[x] for x in range(len(avgs))) /
+                        max(1, sum(nums[x] for x in range(len(avgs)))) ))
             # write it out
             headerline = trajognize.corr.util.strids2headerline(names, False)
             corrline = "\t".join(corrdata)

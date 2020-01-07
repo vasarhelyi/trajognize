@@ -23,7 +23,7 @@ try:
     import trajognize.stat.experiments
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "../.."))) 
+        os.path.dirname(sys.modules[__name__].__file__), "../..")))
     import trajognize.parse
     import trajognize.calc.hierarchy
     import trajognize.stat.experiments
@@ -99,7 +99,7 @@ def main(argv=[]):
         # write header
         f.write("%s\t%s\tabsgrad_avg\tabsgrad_std\n" % (localname, "\t".join(strids)))
         # write data
-        for i in xrange(len(data[key][strids[0]])):
+        for i in range(len(data[key][strids[0]])):
             f.write("%d" % i)
             absgrad = []
             for strid in strids:
@@ -157,7 +157,7 @@ def main(argv=[]):
         dailyLDI = {}
         # parse data file
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
-        for index in xrange(len(alldata)):
+        for index in range(len(alldata)):
             # get categories
             name = alldata[index][0][0]
             (datatype, light, object, group, day) = get_categories_from_name(name)
@@ -171,7 +171,7 @@ def main(argv=[]):
                 LDI = trajognize.calc.hierarchy.Lindquist_dominance_index(datadict)
                 # add new idorder entry for all Dominant parts
                 strids = alldata[index][0][1:]
-                for j in xrange(len(strids)):
+                for j in range(len(strids)):
                     key = (group, light, object, datatype)
                     strid = strids[j]
                     # initialize list if not present yet for a given key

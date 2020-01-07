@@ -57,7 +57,7 @@ def main(argv=[]):
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
         (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
         exp = get_exp_from_filename(inputfile)
-        for index in xrange(len(alldata)):
+        for index in range(len(alldata)):
             # get categories
             name = alldata[index][0][0]
             (light, object, group) = get_categories_from_name(name)

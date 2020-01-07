@@ -49,7 +49,7 @@ def strids2headerline(strids, pairwise=True, ID=["ID"]):
     """Convert a list of strids into a header line used for correlation analysis.
 
     Trailing end of line is not included.
-    
+
     ID can contain extra columns if needed.
 
     """
@@ -58,7 +58,7 @@ def strids2headerline(strids, pairwise=True, ID=["ID"]):
                 sorted(strids), sorted(strids))))
     else:
         return "\t".join(ID + sorted(strids))
-    
+
 
 def matrix2corrline(data):
     """Convert a matrix type input into a line for pairwise correlation analysis.
@@ -82,11 +82,11 @@ def corrline2dict(headerline, corrline):
     # convert list to dict
     csplit = corrline.split('\t')
     hsplit = headerline.split('\t')
-    strids = sorted(list(set(hsplit[i].split('->')[0] for i in xrange(1, len(hsplit)))))
+    strids = sorted(list(set(hsplit[i].split('->')[0] for i in range(1, len(hsplit)))))
     n = len(strids)
     data = defaultdict(defaultdict)
-    for i in xrange(n):
-        for j in xrange(n):
+    for i in range(n):
+        for j in range(n):
             x = float(csplit[i*n + j + 1])
             data[strids[i]][strids[j]] = x
 
@@ -104,11 +104,11 @@ def add_corr_line(corrfile, headerline, corrline):
         print >> f, headerline.strip()
     print >> f, corrline.strip()
     f.close()
-    
+
 
 def pairparams2params(headerline, corrline):
     """Convert a pairparam correlation line into param type output.
-    
+
     Outputs that are saved:
 
         - Eades-ordered rank
@@ -121,7 +121,7 @@ def pairparams2params(headerline, corrline):
 
     Returns params headerline and a list of corrlines.
     """
-    
+
     # prepare data
     name = corrline[:corrline.find('\t')]
     datadict = corrline2dict(headerline, corrline)
@@ -172,6 +172,6 @@ def parse_corr_file(filename):
         # parse data
         if len(linesplit)-1 != len(headers) + is_collected_corr_file:
             raise ValueError("Invalid line length (%d instead of %d values)!!!" % (len(linesplit)-1), len(headers) + is_collected_corr_file)
-        data[linesplit[0 + is_collected_corr_file]] = [float(linesplit[i]) for i in xrange(1 + is_collected_corr_file, len(linesplit))]
+        data[linesplit[0 + is_collected_corr_file]] = [float(linesplit[i]) for i in range(1 + is_collected_corr_file, len(linesplit))]
     return (headers, data)
-        
+

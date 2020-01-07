@@ -225,7 +225,7 @@ def main(argv=[]):
                     print("    %s" % substat)
 
         # parse files
-        for filenum in xrange(len(inputfiles)):
+        for filenum in range(len(inputfiles)):
             inputfile = inputfiles[filenum]
             statobject = None
             if dailyoutput:

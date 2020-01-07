@@ -7,7 +7,7 @@ except ImportError:
     import trajognize
     import trajognize.stat
 
-    
+
 exps = trajognize.stat.experiments.get_initialized_experiments()
 barcode = trajognize.init.barcode_t(0,0,0,0,[])
 objectcenter = exps['fifth_G1_G4_large_G2_G3_small'][obj]['G1L'][0]
@@ -24,4 +24,4 @@ for x in range(0,2000,50):
         if trajognize.stat.experiments.is_barcode_under_object(barcode, objectcenter,
 #                trajognize.stat.experiments.object_areas[obj]):
                 trajognize.stat.project.object_queuing_areas[obj]):
-            print "ez van alatta: %d,%d " % (x, y)
+            print("ez van alatta: %d, %d " % (x, y))

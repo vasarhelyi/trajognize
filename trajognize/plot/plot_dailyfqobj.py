@@ -63,7 +63,7 @@ def main(argv=[]):
         exp = get_exp_from_filename(orderedfile)
         # parse data file
         alldata = trajognize.parse.parse_stat_output_file(orderedfile)
-        for index in xrange(len(alldata)):
+        for index in range(len(alldata)):
             # get categories
             name = alldata[index][0][0]
             (datatype, light, object, group, day) = get_categories_from_name(name)

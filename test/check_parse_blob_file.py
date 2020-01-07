@@ -25,7 +25,7 @@ if len(sys.argv) > 2 or (len(sys.argv)>1 and sys.argv[1] == '--help'):
 # get input path
 path = trajognize.util.get_path_as_first_arg(sys.argv)
 path += '*/OUT/*.blobs'
-print "# Using data: %s" % path
+print("# Using data: %s" % path)
 
 # list files and check for error
 files = glob(path)
@@ -38,12 +38,12 @@ for inputfile in files:
     i += 1
     # get file name
     head, tail = os.path.split(inputfile)
-    print "Parsing input file #%d: '%s'..." % (i, tail)
+    print("Parsing input file #%d: '%s'..." % (i, tail))
     start = time.clock()
     color_blobs, md_blobs, rat_blobs = trajognize.parse.parse_blob_file(inputfile)
     if color_blobs is None and md_blobs is None and rat_blobs is None: continue
     end = time.clock()
-    print "  time elapsed: %.2gs" % (end-start)
-    print "  %d BLOB lines" % len(color_blobs)
-    print "  %d MD lines" % len(rat_blobs)
-    print "  %d RAT lines" % len(md_blobs)
+    print("  time elapsed: %.2gs" % (end-start))
+    print("  %d BLOB lines" % len(color_blobs))
+    print("  %d MD lines" % len(rat_blobs))
+    print("  %d RAT lines" % len(md_blobs))

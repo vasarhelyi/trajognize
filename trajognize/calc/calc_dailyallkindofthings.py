@@ -43,7 +43,7 @@ def main(argv=[]):
     # get dayrange of all experiments
     firstday = exps[expnames[0]]['start'].date()
     lastday = exps[expnames[-1]]['stop'].date()
-    dayrange = [firstday + datetime.timedelta(n) for n in xrange(int((lastday - firstday).days) + 1)]
+    dayrange = [firstday + datetime.timedelta(n) for n in range(int((lastday - firstday).days) + 1)]
     # go through all days
     for allday, day in enumerate(dayrange):
         print allday,
@@ -64,7 +64,7 @@ def main(argv=[]):
         dvs = 0
         start = experiment['start']
         stop = experiment['stop']
-        for i in xrange(86400):
+        for i in range(86400):
             datetimeatsec = datetime.datetime(date.year, date.month, date.day) + datetime.timedelta(0,i)
             if datetimeatsec >= start and datetimeatsec <= stop and not trajognize.util.is_entry_time(entrytimes, datetimeatsec):
                 dvs += 1

@@ -65,7 +65,7 @@ def get_gnuplot_script(inputfile, outputfile, outputfileabsgrad, name, maxcol,
         "dailyvalidtimes_plot": dvt_plot,
     }
     return GNUPLOT_TEMPLATE % data
-    
+
 
 def get_categories_from_name(name):
     """Get light, realvirt and datatype from paragraph header (name), e.g.:
@@ -104,7 +104,7 @@ def main(argv=[]):
         (exp, group) = expgroup.split("__")
         group = group[6:] # remove 'group_'
         # plot all indices
-        for index in xrange(len(headers)):
+        for index in range(len(headers)):
             # get categories
             name = headers[index][0]
             (light, realvirt, datatype) = get_categories_from_name(name)

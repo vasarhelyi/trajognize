@@ -45,7 +45,7 @@ def main(argv=[]):
         alldata = data[1:]
 
 #        dates = [datetime.datetime.strptime(data[i][0],"%Y.%m.%d.").date() \
-#                for i in xrange(1, len(data))]
+#                for i in range(1, len(data))]
         for exp in exps:
             # write interpolated data
             outdir = os.path.join(head, plotdir)
@@ -58,7 +58,7 @@ def main(argv=[]):
             if nogroup:
                 outputfile.write("\t".join(data[0]))
                 outputfile.write("\n")
-                for i in xrange(len(alldata)):
+                for i in range(len(alldata)):
                     outputfile.write("\t".join(alldata[i]))
                     outputfile.write("\n")
             else:
@@ -66,7 +66,7 @@ def main(argv=[]):
                     names = sorted(exps[exp]['groups'][group])
                     outputfile.write("\t".join(["%s_group_%s" % (name, group)] + names))
                     outputfile.write("\n")
-                    for i in xrange(len(alldata)):
+                    for i in range(len(alldata)):
                         outputfile.write("\t".join([alldata[i][0].strip('.').replace('.', '-')] +
                                 [alldata[i][headerline.index(strid)] for strid in names]))
                         outputfile.write("\n")

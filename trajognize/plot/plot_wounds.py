@@ -22,7 +22,7 @@ except ImportError:
     import trajognize.stat.init
     import trajognize.stat.experiments
     import trajognize.corr.util
-    
+
 
 GNUPLOT_TEMPLATE = """#!/usr/bin/gnuplot
 reset
@@ -93,7 +93,7 @@ def main(argv=[]):
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
         (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
         exp = get_exp_from_filename(inputfile)
-        for index in xrange(len(alldata)):
+        for index in range(len(alldata)):
             # get categories
             headerline = alldata[index][0]
             name = headerline[0]
@@ -128,7 +128,7 @@ def main(argv=[]):
             for strid in names:
                 # calculate allday average
                 nums = [float(alldata[index][x][headerline.index(strid)]) \
-                        for x in xrange(1, len(alldata[index]))]
+                        for x in range(1, len(alldata[index]))]
                 corrdata.append("%.1f" % numpy.mean(nums))
             # write it out
             headerline = trajognize.corr.util.strids2headerline(names, False)

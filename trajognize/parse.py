@@ -149,9 +149,9 @@ def parse_blob_file(inputfile, lastframe=None):
     if lastframe is None or lastframe < 0 or lastframe > i:
         lastframe = i
 
-    color_blobs = [[] for x in xrange(lastframe+1)]
-    md_blobs = [[] for x in xrange(lastframe+1)]
-    rat_blobs = [[] for x in xrange(lastframe+1)]
+    color_blobs = [[] for x in range(lastframe+1)]
+    md_blobs = [[] for x in range(lastframe+1)]
+    rat_blobs = [[] for x in range(lastframe+1)]
 
     for line in open(inputfile).readlines():
         line = line.strip()
@@ -302,7 +302,7 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
     if lastframe is None or lastframe < firstframe or lastframe > i:
         lastframe = i
 
-    barcodes = [[[] for k in range(len(colorids))] for x in xrange(firstframe, lastframe+1)]
+    barcodes = [[[] for k in range(len(colorids))] for x in range(firstframe, lastframe+1)]
 
     for line in open(inputfile).readlines():
         line = line.strip()
@@ -389,7 +389,7 @@ def parse_stat_output_file(inputfile, index=None):
             # if greater, we insert empty values to previous entries and throw only warning
             # (e.g. heatmap dailyoutput uses this format that header line is only 1 entry long)
             elif lenprev < lenthis:
-                for i in xrange(len(data[p])):
+                for i in range(len(data[p])):
                     data[p][i] += [""]*(lenthis-lenprev)
 #                print("Warning in data, length mismatch in line #%d (%d < %d)" % (linenum, lenprev, lenthis))
 #        if index is None or index == p:

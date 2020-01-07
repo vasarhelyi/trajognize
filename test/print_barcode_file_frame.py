@@ -30,9 +30,9 @@ except ImportError:
     # colorid file
     if options.coloridfile is None:
         options.coloridfile = 'misc/5-3_28patek.xml'
-        print "  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile
+        print("  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile)
     else:
-        print "  Using colorid file: '%s'" % options.coloridfile
+        print("  Using colorid file: '%s'" % options.coloridfile)
 
     # inputfile
     if options.inputfile is None:
@@ -42,9 +42,9 @@ except ImportError:
         # default on non windows (linux, atlasz)
         else:
             options.inputfile = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/done/random_sample_trial_run_2011-06-10_13-15-29.335159.ts/OUT/2011-06-10_13-15-29.335159.ts.blobs.barcodes'
-        print "  WARNING! No input file is specified! Default for %s is: '%s'" % (sys.platform, options.inputfile)
+        print("  WARNING! No input file is specified! Default for %s is: '%s'" % (sys.platform, options.inputfile))
     else:
-        print "  Using inputfile: '%s'" % options.inputfile
+        print("  Using inputfile: '%s'" % options.inputfile)
 
     # frame num
     options.framenum = int(options.framenum)
@@ -52,21 +52,21 @@ except ImportError:
     # read coloridfile
     colorids = trajognize.parse.parse_colorid_file(options.coloridfile)
     if colorids is None:
-        print "colorids file bad"
+        print("colorids file bad")
         sys.exit()
 
     # read barcode file line
-    print "Reading frame", options.framenum
+    print("Reading frame", options.framenum)
     barcodes = trajognize.parse.parse_barcode_file(options.inputfile, colorids, options.framenum, options.framenum)
     if not barcodes:
-        print "barcode file empty"
+        print("barcode file empty")
         sys.exit()
 
     # print line
-    for k in xrange(len(colorids)):
+    for k in range(len(colorids)):
         if not barcodes[0][k]:
             print colorids[k].strid
         for barcode in barcodes[0][k]:
-            print "%s\t%d\t%d\t%d\t%s\t%s" % (colorids[k].strid, int(barcode.centerx),
+            print("%s\t%d\t%d\t%d\t%s\t%s" % (colorids[k].strid, int(barcode.centerx),
                     int(barcode.centery), int(barcode.orientation*180/pi),
-                    trajognize.util.mfix2str(barcode.mfix), barcode.blobindices)
+                    trajognize.util.mfix2str(barcode.mfix), barcode.blobindices))

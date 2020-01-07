@@ -247,7 +247,7 @@ def main(argv=[]):
         headers = grep_headers_from_file(inputfile, stat)
         (minvalue, maxvalue) = get_minmax_from_file(inputfile) # TODO: this can take quite some time...
         # plot heatmaps
-        for index in xrange(len(headers)):
+        for index in range(len(headers)):
             # get categories
             name = headers[index][0]
             (strid, light, realvirt) = get_categories_from_name(name)

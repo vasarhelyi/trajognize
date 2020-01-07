@@ -87,7 +87,7 @@ def main(argv=[]):
         # parse data file
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
         # TODO: common cbrange for F, C, D
-        for index in xrange(len(alldata)):
+        for index in range(len(alldata)):
             # get categories
             name = alldata[index][0][0]
             (networknumber, light, group) = get_categories_from_name(name)
@@ -139,10 +139,10 @@ def main(argv=[]):
                 headerline = trajognize.corr.util.strids2headerline(alldata[index][0][1:], False)
                 # calculate correlation output as weighted avg number of neighbors
                 corrdata = [name] # [name[:name.find("_group")]]
-                for j in xrange(1, len(alldata[index][0])):
+                for j in range(1, len(alldata[index][0])):
                     try:
                         corrdata.append("%g" % numpy.average(range(len(alldata[index])-1),
-                                weights=[float(alldata[index][i][j]) for i in xrange(1, len(alldata[index]))]))
+                                weights=[float(alldata[index][i][j]) for i in range(1, len(alldata[index]))]))
                     except ZeroDivisionError:
                         corrdata.append("nan") # TODO: or 0 ?
                 corrline = "\t".join(corrdata)

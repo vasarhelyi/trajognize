@@ -20,9 +20,9 @@ def create_spatial_distlists(blobs):
 
     """
     n = len(blobs)
-    sdistlists = [[[],[]] for x in xrange(n)]
-    for i in xrange(n):
-        for j in xrange(i):
+    sdistlists = [[[],[]] for x in range(n)]
+    for i in range(n):
+        for j in range(i):
             d = get_distance(blobs[i], blobs[j])
             if d <= MAX_INRAT_DIST:
                 sdistlists[i][0].append(j)
@@ -31,17 +31,17 @@ def create_spatial_distlists(blobs):
                 sdistlists[i][1].append(j)
                 sdistlists[j][1].append(i)
     return sdistlists
-    
+
 
 def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdindices, mdindices):
     """Return a list for all blobs containing prevblob indices
     that are close enough to be the same blobs as on the previous frame.
-    
+
     Function uses two thresholds, a lower one for static cases and
     a higher one for cases when there are motion blobs under the blobs.
 #    If motion blob is present on both frames, shift of centers can be calculated
 #    easily and distance calculation is corrected with this shift.
-    
+
     TODO: better algo would be nice, checking orientation of md blobs, etc.
 
     Keyword arguments:
@@ -57,9 +57,9 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdin
     """
     n = len(blobs)
     m = len(prevblobs)
-    tdistlists = [[] for x in xrange(n)]
-    for i in xrange(n):
-        for j in xrange(m):
+    tdistlists = [[] for x in range(n)]
+    for i in range(n):
+        for j in range(m):
             if blobs[i].color != prevblobs[j].color: continue
             d = get_distance(blobs[i], prevblobs[j])
             # static case, lower threshold is met
@@ -91,7 +91,7 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdin
 def find_chains_in_sdistlists(blobs, sdistlists, colorids):
     """Find all color blob chains on a frame that could be real colorids
     and return them in lists for all colorids separately.
-    
+
     Constraint #1: small distance between blobs in a chain
     Constraint #2: chain must be straigh enough (>120deg) to count.
 
@@ -104,10 +104,10 @@ def find_chains_in_sdistlists(blobs, sdistlists, colorids):
     Uses the recursive function find_chains_in_sdistlists_recursively()
 
     """
-    chainlists = [[] for x in xrange(len(colorids))]
-    lastit = [-1 for x in xrange(MCHIPS)]
+    chainlists = [[] for x in range(len(colorids))]
+    lastit = [-1 for x in range(MCHIPS)]
     # iterate all colorids
-    for k in xrange(len(colorids)):
+    for k in range(len(colorids)):
         # iterate all from given color (from) to find all good chains for that colorid
         fr = -1
         while fr < len(blobs) - 1:
@@ -133,7 +133,7 @@ def find_chains_in_sdistlists_recursively(
     """Helper function to find chains recursively.
 
     Should be called by itself and find_chains_in_sdistlists() only.
-    
+
     Keyword arguments:
     chainlists -- the list of good chains
     k          -- colorid index
@@ -144,11 +144,11 @@ def find_chains_in_sdistlists_recursively(
     # if no more chain elements needed, check good order and store chain
     if i == MCHIPS:
         # bad order: do not store (next one is further than a later one)
-        blobchain = [blobs[lastit[x]] for x in xrange(0,MCHIPS)]
+        blobchain = [blobs[lastit[x]] for x in range(0,MCHIPS)]
         if not is_blob_chain_appropriate_as_barcode(blobchain):
             return
         # good order: store
-        chainlists[k].append([lastit[j] for j in xrange(MCHIPS)])
+        chainlists[k].append([lastit[j] for j in range(MCHIPS)])
         return
 
     # if more chain elements needed, call self recursively
@@ -168,25 +168,25 @@ def is_blob_chain_appropriate_as_barcode(blobchain, check_distance=None):
     Keyword arguments:
     blobchain      -- list/tuple of blobs as a chain
     check_distance -- optional argument to check for distance between blobs
-    
+
     """
     # check absolute distance if needed
     if check_distance:
-        for j in xrange(MCHIPS-1):
+        for j in range(MCHIPS-1):
             if get_distance(blobchain[j], blobchain[j+1]) > check_distance:
                 return False
 
     # check for good order according to distance between blobs
-    for j in xrange(MCHIPS-2):
-        for jj in xrange(j+2, MCHIPS):
+    for j in range(MCHIPS-2):
+        for jj in range(j+2, MCHIPS):
             d12 = get_distance(blobchain[j], blobchain[j+1])  # 1,2
             d1x = get_distance(blobchain[j], blobchain[jj])   # 1,3
             d2x = get_distance(blobchain[j+1], blobchain[jj]) # 2,3
             if d1x < d12 or d1x < d2x:
                 return False
-            
+
     # bad angle: do not store (too small angle in the middle)
-    for j in xrange(1, MCHIPS-1):
+    for j in range(1, MCHIPS-1):
         d1 = degrees(atan2(blobchain[j-1].centery - blobchain[j].centery,
                 blobchain[j-1].centerx - blobchain[j].centerx))
         d2 = degrees(atan2(blobchain[j+1].centery - blobchain[j].centery,
@@ -215,10 +215,10 @@ def find_clusters_in_sdistlists(blobs, sdistlists, level=0):
     Returns clusterlist and clusterindex
     """
     clusterlist = []
-    clusterindex = [-1 for x in xrange(len(blobs))]
+    clusterindex = [-1 for x in range(len(blobs))]
     clusternum = -1
     # iterate all blobs
-    for i in xrange(len(blobs)):
+    for i in range(len(blobs)):
         # skip ones that has already been clustered
         if clusterindex[i] > -1: continue
         # create new cluster
@@ -265,7 +265,7 @@ def find_clusters_in_sdistlists_recursively(blobs, sdistlists, level,
 
 def barcodeindices_not_deleted(barcodeindices, barcodes, mfix=None):
     """Return subset of barcodeindices (as list) that contains non-deleted barcodes.
-    
+
     Keyword arguments:
     barcodeindices -- list of barcode indices (e.g. of a blob) of barcode_index_t
     barcodes       -- list of all barcodes (barcode_t) for current frame
@@ -290,9 +290,9 @@ def get_not_used_blob_indices(blobs, barcodes):
 
     """
     nub = []
-    for i in xrange(len(blobs)):
+    for i in range(len(blobs)):
         blob = blobs[i]
         if not barcodeindices_not_deleted(blob.barcodeindices, barcodes):
             nub.append(i)
-            
+
     return nub

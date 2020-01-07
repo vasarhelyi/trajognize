@@ -32,9 +32,9 @@ def main(argv=[]):
     for exp in exps:
         start = exps[exp]['start']
         stop = exps[exp]['stop']
-        for date in [start.date() +  datetime.timedelta(i) for i in xrange((stop.date()-start.date()).days+1)]:
+        for date in [start.date() +  datetime.timedelta(i) for i in range((stop.date()-start.date()).days+1)]:
             t = 0
-            for i in xrange(86400):
+            for i in range(86400):
                 datetimeatsec = datetime.datetime(date.year, date.month, date.day) + datetime.timedelta(0,i)
                 if datetimeatsec >= start and datetimeatsec <= stop and not trajognize.util.is_entry_time(entrytimes, datetimeatsec):
                     t += 1

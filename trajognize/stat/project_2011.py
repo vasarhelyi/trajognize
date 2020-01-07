@@ -221,7 +221,7 @@ experiments['first_part_7']={ \
 
 
 # weekly experiments
-for i in xrange(1, 22):
+for i in range(1, 22):
     name = 'first_week_%d' % i
     experiments[name] = experiments[first_A1_A2_B1_B2].copy()
     experiments[name]['number'] = 1000 + i
@@ -364,7 +364,7 @@ experiments['fifth_G1_G4_large_G2_G3_small']={ \
     'description': """The fifth experiment in which G1-4 groups remained unchanged,
     but territory size got changed so that G1 and G4 got larger place, while
     G2 and G3 got smaller place.
-    
+
     |--------/----|
     | G1L   / G2S |
     |------/------|  entrance
@@ -379,7 +379,7 @@ experiments['fifth_G1_G4_large_G2_G3_small']={ \
     2012-01-06_DIGITALIZALO_DOBOZ_LEFAGYASA_MIATT_FELVETEL_LEALLT:
         last good before: 2012-01-05_05-53-05.243852.ts
         first good after: 2012-01-07_17-31-12.772791.ts
-                    
+
     """,
     'start': datetime.datetime(2011,12,19,18,57),
     'stop': datetime.datetime(2012,01,07,15,58),
@@ -440,7 +440,7 @@ experiments['sixth_G1_G4_small_G2_G3_large']={ \
 
     """,
     'start': datetime.datetime(2012,01,07,17,47),
-    'stop': datetime.datetime(2012,01,26,14,33), 
+    'stop': datetime.datetime(2012,01,26,14,33),
     'groups': { \
         'G1S': "OPG ROG OBP RBP RGB GRP OGP".split(), # RBP not present
         'G2L': "RPG ORG OPB GPB OGB BGP BOP".split(),
@@ -508,7 +508,7 @@ experiments['seventh_G1_G2_G3_G4_females']={ \
 
     """,
     'start': datetime.datetime(2012,01,27,17,40),
-    'stop': datetime.datetime(2012,02,26,9,16), 
+    'stop': datetime.datetime(2012,02,26,9,16),
     'groups': { \
         'G1': "OPG ROG OBP RBP RGB GRP OGP".split(), # RBP not present
         'G2': "RPG ORG OPB GPB OGB BGP BOP".split(),
@@ -586,7 +586,7 @@ def get_wall_polygons(experiment, group):
     """
     polys = []
     polysall = []
-    for i in xrange(len(experiment['home'][group])):
+    for i in range(len(experiment['home'][group])):
         polys.append([])
         polysall.append([])
         # 1: food center
@@ -609,10 +609,10 @@ def get_wall_polygons(experiment, group):
         homecorners = [point_t(
                 experiment['home'][group][i].x + ix[j] * object_areas['home'].w/2,
                 experiment['home'][group][i].y + iy[j] * object_areas['home'].h/2) \
-                for j in xrange(4)]
+                for j in range(4)]
         dists = [math.hypot(homecorners[j].x - polys[-1][-1].x, homecorners[j].y - polys[-1][-1].y) \
-                for j in xrange(4)]
-        index1 = min(xrange(len(dists)),key=dists.__getitem__)
+                for j in range(4)]
+        index1 = min(range(len(dists)),key=dists.__getitem__)
         polys[i].append(homecorners[index1])
         # 4: home corner 2 - x same, y different: 0->1 1->0 2->3 3->2
         index2 = index1 + iy[index1]
@@ -652,10 +652,10 @@ def get_wall_polygons(experiment, group):
         wheelcorners = [point_t(
                 experiment['wheel'][group][i].x + ix[j] * object_areas['wheel'].w/2,
                 experiment['wheel'][group][i].y + iy[j] * object_areas['wheel'].h/2) \
-                for j in xrange(4)]
+                for j in range(4)]
         dists = [math.hypot(wheelcorners[j].x - polys[-1][-1].x, wheelcorners[j].y - polys[-1][-1].y) \
-                for j in xrange(4)]
-        index1 = min(xrange(len(dists)),key=dists.__getitem__)
+                for j in range(4)]
+        index1 = min(range(len(dists)),key=dists.__getitem__)
         polys[i].append(wheelcorners[index1])
         # 8/10: wheel corner 2 - x same, y different: 0->1 1->0 2->3 3->2
         index2 = index1 + iy[index1]

@@ -27,7 +27,7 @@ def list_conflicts(conflicts, colorids):
     colorids     -- global colorid database created by parse_colorid_file()
 
     """
-    for k in xrange(len(colorids)):
+    for k in range(len(colorids)):
         strid = colorids[k].strid
         for conflict in conflicts[k]:
             print("   ", conflict.ctype, strid, "f%d-%d" % (conflict.firstframe, \
@@ -46,7 +46,7 @@ def list_conflicted_trajs(conflicted_trajs, colorids, trajectories):
 
     """
     si = [] # si stands for 'sorted index'
-    for k in xrange(len(colorids)):
+    for k in range(len(colorids)):
         si += [(k, t) for t in conflicted_trajs[k]]
     si.sort(lambda x,y: algo_trajectory.traj_score(
             trajectories[y[0]][y[1]]) - algo_trajectory.traj_score(trajectories[x[0]][x[1]]))
@@ -63,19 +63,19 @@ def get_gap_conflicts(barcodes, colorids):
     very far away in space.
 
     This state is actually pre-stamped with MFIX_DEBUG so far.
-    
+
     Conflict is marked as the gap but actually trajs before or after also
     need to be resolved.
-    
+
     Keyword arguments:
     barcodes     -- global list of all barcodes
     colorids     -- global colorid database created by parse_colorid_file()
 
     """
-    conflicts = [[] for k in xrange(len(colorids))]
-    for frame in xrange(len(barcodes)):
+    conflicts = [[] for k in range(len(colorids))]
+    for frame in range(len(barcodes)):
         chosenindices = algo_barcode.get_chosen_barcode_indices(barcodes[frame])
-        for k in xrange(len(colorids)):
+        for k in range(len(colorids)):
             if chosenindices[k] is None: continue # TODO: is there a case like this at all?
             i = chosenindices[k]
             chosen = barcodes[frame][k][i]
@@ -88,11 +88,11 @@ def get_gap_conflicts(barcodes, colorids):
                 conflicts[k][-1].barcodeindices.append(i)
 
     return conflicts
-                
+
 
 def get_overlap_conflicts(barcodes, blobs, colorids):
     """Return all overlap conflicts, i.e. when two barcodes fully overlap.
-    
+
     MFIX_SHAREDBLOB should be assigned to all such cases, even though
     blobs are not actually shared. See algo_barcode.set_shared_mfix_flags()
     for more details.
@@ -103,10 +103,10 @@ def get_overlap_conflicts(barcodes, blobs, colorids):
     colorids     -- global colorid database created by parse_colorid_file()
 
     """
-    conflicts = [[] for k in xrange(len(colorids))]
-    for frame in xrange(len(barcodes)):
+    conflicts = [[] for k in range(len(colorids))]
+    for frame in range(len(barcodes)):
         chosenindices = algo_barcode.get_chosen_barcode_indices(barcodes[frame])
-        for k in xrange(len(colorids)):
+        for k in range(len(colorids)):
             if chosenindices[k] is None: continue
             i = chosenindices[k]
             chosen = barcodes[frame][k][i]
@@ -119,7 +119,7 @@ def get_overlap_conflicts(barcodes, blobs, colorids):
                 conflicts[k][-1].barcodeindices.append(i)
                 # get barcode that is conflicted with this one
                 # TODO: now we only save coloridindex, could be organized in a better way...
-                for kk in xrange(len(colorids)):
+                for kk in range(len(colorids)):
                     if k == kk or kk in conflicts[k][-1].cwith: continue
                     if chosenindices[kk] is None: continue
                     ii = chosenindices[kk]
@@ -133,7 +133,7 @@ def get_overlap_conflicts(barcodes, blobs, colorids):
 
 def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
     """Try to solve overlap conflicts by the following:
-    
+
     1. find not used blobs around with same color as conflicted, and try to
        assign this instead of conflicted if it is under barcode on previous frame
     2. TODO: somehow check which is MFIX_VIRTUAL or MFIX_DEBUG, etc. without nub
@@ -146,7 +146,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
 
     """
     resolved = 0
-    for k in xrange(len(colorids)):
+    for k in range(len(colorids)):
         strid = colorids[k].strid
         for conflict in conflicts[k]:
             if conflict.state == STATE_DELETED: continue
@@ -240,13 +240,13 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
 
     return resolved
 
-    
+
 def get_nub_conflicts(trajectories, barcodes, blobs, colorids):
     """Return all not-used-barcode conflicts.
 
     Check on traj level to separate more possible conflicts of same color,
     but store on barcode level.
-    
+
     Keyword arguments:
     trajectories -- global list of all trajectories
     barcodes     -- global list of all barcodes
@@ -254,10 +254,10 @@ def get_nub_conflicts(trajectories, barcodes, blobs, colorids):
     colorids     -- global colorid database created by parse_colorid_file()
 
     """
-    conflicts = [[] for k in xrange(len(colorids))]
-    conflicted_trajs = [set() for k in xrange(len(colorids))]
-    for k in xrange(len(colorids)):
-        for t in xrange(len(trajectories[k])):
+    conflicts = [[] for k in range(len(colorids))]
+    conflicted_trajs = [set() for k in range(len(colorids))]
+    for k in range(len(colorids)):
+        for t in range(len(trajectories[k])):
             traj = trajectories[k][t]
             # skip non-deleted
             if traj.state != STATE_DELETED: continue
@@ -273,7 +273,7 @@ def get_nub_conflicts(trajectories, barcodes, blobs, colorids):
                 # skip barcodes overlapping with chosen ones
                 # Note that this is a stricter condition than barcode_is_free()
                 skip = False
-                for kk in xrange(len(colorids)):
+                for kk in range(len(colorids)):
                     ii = chosenindices[kk]
                     if ii is None: continue
                     if algo_barcode.could_be_sharesblob(
@@ -297,7 +297,7 @@ def create_conflict_database(trajectories, barcodes, blobs, colorids):
     """List and store barcodes and trajs that are in conflicted state.
 
     Conflicts are the following:
-    
+
 *   1. too large gap between trajs --> stamped with MFIX_DEBUG in add_virtual_barcodes_to_gaps()
 *   2. sharesblobs between trajs
 *?  3. not used "blob trajectories"
@@ -324,9 +324,9 @@ def create_conflict_database(trajectories, barcodes, blobs, colorids):
 
     print("  Get total number of chosen barcodes...")
     numchosen = 0
-    for frame in xrange(len(barcodes)):
+    for frame in range(len(barcodes)):
         chosens = algo_barcode.get_chosen_barcode_indices(barcodes[frame])
-        for k in xrange(len(chosens)):
+        for k in range(len(chosens)):
             if chosens[k] is not None:
                 numchosen += 1
     print("    found", numchosen)

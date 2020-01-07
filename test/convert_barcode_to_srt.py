@@ -44,22 +44,22 @@ def main(argv=[]):
     coloridfile = argv[1]
     outputfile = open(inputfile + ".srt", 'w')
 
-    print "Project: %s" % trajognize.project.PROJECT
-    print "Image size: %gx%g" % trajognize.project.image_size
-    print "FPS: %g" % trajognize.project.FPS
+    print("Project: %s" % trajognize.project.PROJECT)
+    print("Image size: %gx%g" % trajognize.project.image_size)
+    print("FPS: %g" % trajognize.project.FPS)
 
-    print "\nParsing colorid file..."
+    print("\nParsing colorid file...")
     colorids = trajognize.parse.parse_colorid_file(coloridfile)
     if colorids is None:
         return
 
-    print "\nParsing input file '%s'..." % inputfile
+    print("\nParsing input file '%s'..." % inputfile)
     barcodes = trajognize.parse.parse_barcode_file(inputfile, colorids, lastframe=1000)
     if barcodes is None:
         return
-    print "  %d barcode lines parsed" % len(barcodes)
+    print("  %d barcode lines parsed" % len(barcodes))
 
-    print "\nWriting subtitles..."
+    print("\nWriting subtitles...")
     subtitleindex = 0
     for currentframe in range(len(barcodes)):
         for i in range(len(barcodes[currentframe])):
@@ -90,29 +90,29 @@ if colorids is None: sys.exit(1)
 # init barcode occurrence heatmaps
 if not args.noheatmap:
     heatmap_bin_size = 1 # [pixel]
-    heatmaps = [[[0 for y in xrange(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size))] for light in xrange(len(trajognize.project.good_light))] # [light][x][y]
+    heatmaps = [[[0 for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in range(int(trajognize.project.image_size.x/heatmap_bin_size))] for light in range(len(trajognize.project.good_light))] # [light][x][y]
 
 # init same id number distributions
 if not args.nosameiddist:
     MAX_SAME_ID_WARN = 10
     MAX_SAME_ID = 200
     PATEK_COUNT = 28
-    sameiddists = [[[[0 for x in xrange(MAX_SAME_ID + 1)] for deleted in xrange(2)] for ids in xrange(PATEK_COUNT+1)] for light in xrange(len(trajognize.project.good_light))] # [light][id/all][deleteddeleted][numsameid]
+    sameiddists = [[[[0 for x in range(MAX_SAME_ID + 1)] for deleted in range(2)] for ids in range(PATEK_COUNT+1)] for light in range(len(trajognize.project.good_light))] # [light][id/all][deleteddeleted][numsameid]
 
 # init 24h time distributions
 if not args.notimedist:
-    avg_24h = [[0.0 for x in xrange(1440)] for i in xrange(len(colorids)+1)] # one bin for all minutes, for all colorids + sum
-    std_24h = [[0.0 for x in xrange(1440)] for i in xrange(len(colorids)+1)] # one bin for all minutes, for all colorids + sum
-    num_24h = [[0 for x in xrange(1440)] for i in xrange(len(colorids)+1)] # one bin for all minutes, for all colorids + sum
+    avg_24h = [[0.0 for x in range(1440)] for i in range(len(colorids)+1)] # one bin for all minutes, for all colorids + sum
+    std_24h = [[0.0 for x in range(1440)] for i in range(len(colorids)+1)] # one bin for all minutes, for all colorids + sum
+    num_24h = [[0 for x in range(1440)] for i in range(len(colorids)+1)] # one bin for all minutes, for all colorids + sum
 
 # get input path
 path = trajognize.util.get_path_as_first_arg((None, args.inputpath))
 path += '*/OUT/*ts.blobs.barcodes'
-print "Using data: %s" % path
+print("Using data: %s" % path)
 
 # check for corrected cage position
 if args.correctcage:
-    print "Using cage position correction on the heatmaps."
+    print("Using cage position correction on the heatmaps.")
 
 # list files and check for error
 files = glob(path)
@@ -131,20 +131,20 @@ for inputfile in files:
         start = time.clock()
 
 
-        print "Parsing input log file from same path..."
+        print("Parsing input log file from same path...")
         (light_log, cage_log) = trajognize.parse.parse_log_file(inputfile_log)
         if light_log is None and cage_log is None: continue
         light_at_frame = trajognize.util.param_at_frame(light_log)
         cage_at_frame = trajognize.util.param_at_frame(cage_log)
-        print "  %d LED switches parsed" % len(light_log)
-        print "  %d CAGE coordinates parsed" % len(cage_log)
+        print("  %d LED switches parsed" % len(light_log))
+        print("  %d CAGE coordinates parsed" % len(cage_log))
 
         if not args.noheatmap:
-            print "Calculating barcode heatmaps..."
+            print("Calculating barcode heatmaps...")
             good = [0, 0]
             light_at_frame.reset()
             cage_at_frame.reset()
-            for currentframe in xrange(len(barcodes)):
+            for currentframe in range(len(barcodes)):
                 # get light
                 lightstr = light_at_frame(currentframe)
                 if lightstr == 'DAYLIGHT':
@@ -156,7 +156,7 @@ for inputfile in files:
                 # get cage
                 cagecenter = cage_at_frame(currentframe)
                 # store barcodes on heatmap
-                for k in xrange(len(barcodes[currentframe])):
+                for k in range(len(barcodes[currentframe])):
                     for barcode in barcodes[currentframe][k]:
                         # skip deleted
                         if barcode.mfix & trajognize.init.MFIX_DELETED: continue
@@ -171,14 +171,14 @@ for inputfile in files:
                         # store good ones on heatmap
                         heatmaps[light][int(centerx/heatmap_bin_size)][int(centery/heatmap_bin_size)] += 1
                         good[light] += 1
-            print "  %d barcodes added to daylight heatmap" % good[0]
-            print "  %d barcodes added to nightlight heatmap" % good[1]
+            print("  %d barcodes added to daylight heatmap" % good[0])
+            print("  %d barcodes added to nightlight heatmap" % good[1])
 
         if not args.nosameiddist:
-            print "Calculating simultaneous ID number distributions..."
+            print("Calculating simultaneous ID number distributions...")
             light_at_frame.reset()
-            max_sameid_warning = [0 for k in xrange(len(colorids))]
-            for currentframe in xrange(len(barcodes)):
+            max_sameid_warning = [0 for k in range(len(colorids))]
+            for currentframe in range(len(barcodes)):
                 lightstr = light_at_frame(currentframe)
                 if lightstr == 'DAYLIGHT':
                     light = 0
@@ -186,14 +186,14 @@ for inputfile in files:
                     light = 1
                 else:
                     continue
-                for k in xrange(len(colorids)):
+                for k in range(len(colorids)):
                     # clamp number of same ids to max
                     num = len(barcodes[currentframe][k])
                     if num > MAX_SAME_ID_WARN and not max_sameid_warning[k]:
-                        print "  WARNING: there seems to be a lot of %s barcodes (%d) at frame %d." % (colorids[k].strid, num, currentframe)
+                        print("  WARNING: there seems to be a lot of %s barcodes (%d) at frame %d." % (colorids[k].strid, num, currentframe))
                         max_sameid_warning[k] = 1
                     if num > MAX_SAME_ID:
-                        print "  ERROR: too many %s barcodes (%d) at frame %d. TODO: increase MAX_SAME_ID." % (colorids[k].strid, num, currentframe)
+                        print("  ERROR: too many %s barcodes (%d) at frame %d. TODO: increase MAX_SAME_ID." % (colorids[k].strid, num, currentframe))
                         num = MAX_SAME_ID
                     # store all (including deleted)
                     sameiddists[light][k][0][num] += 1
@@ -205,16 +205,16 @@ for inputfile in files:
                     sameiddists[light][k][1][num] += 1
                     sameiddists[light][PATEK_COUNT][1][num] += 1
             num = 0
-            for i in xrange(2,MAX_SAME_ID+1):
+            for i in range(2,MAX_SAME_ID+1):
                 num += sameiddists[0][PATEK_COUNT][1][i]
-            print "  0:%d, 1:%d, 1+:%d barcodes are in (not deleted) daylight sameiddist" % (sameiddists[0][PATEK_COUNT][1][0], sameiddists[0][PATEK_COUNT][1][1], num)
+            print("  0:%d, 1:%d, 1+:%d barcodes are in (not deleted) daylight sameiddist" % (sameiddists[0][PATEK_COUNT][1][0], sameiddists[0][PATEK_COUNT][1][1], num))
             num = 0
-            for i in xrange(2,MAX_SAME_ID+1):
+            for i in range(2,MAX_SAME_ID+1):
                 num += sameiddists[1][PATEK_COUNT][1][i]
-            print "  0:%d, 1:%d, 1+:%d barcodes are in (not deleted) nightlight sameiddist" % (sameiddists[1][PATEK_COUNT][1][0], sameiddists[1][PATEK_COUNT][1][1], num)
+            print("  0:%d, 1:%d, 1+:%d barcodes are in (not deleted) nightlight sameiddist" % (sameiddists[1][PATEK_COUNT][1][0], sameiddists[1][PATEK_COUNT][1][1], num))
 
         if not args.notimedist:
-            print "Calculating 24h time distributions..."
+            print("Calculating 24h time distributions...")
             # get file name
             head, tail = os.path.split(inputfile)
             # get starting time
@@ -226,12 +226,12 @@ for inputfile in files:
             secofday = hour * 3600 + minute * 60 + second
             # iterate for all frames
             numsumsum = 0
-            for currentframe in xrange(len(barcodes)):
+            for currentframe in range(len(barcodes)):
                 # get current frame in min
                 bin = ((secofday + currentframe/trajognize.project.FPS) % 86400 ) / 60
                 numsum = 0
                 # store number of barcodes in the proper time bin
-                for k in xrange(len(colorids)):
+                for k in range(len(colorids)):
                     # get number of not deleted barcodes
                     num = len(barcodes[currentframe][k])
                     for barcode in barcodes[currentframe][k]:
@@ -254,60 +254,60 @@ for inputfile in files:
                 avg_24h[k][bin] += (numsum - prev_avg) / num_24h[k][bin]
                 std_24h[k][bin] += (numsum - prev_avg) * (numsum - avg_24h[k][bin])
                 numsumsum += numsum
-            print "  %d barcodes added" % numsumsum
+            print("  %d barcodes added" % numsumsum)
 
-        print "Time elapsed: %gs" % (time.clock()-start)
+        print("Time elapsed: %gs" % (time.clock()-start))
         sys.stdout.flush()
 
     except KeyboardInterrupt:
-        print "Keyboard Interrupt detected: printing actual results before exit."
+        print("Keyboard Interrupt detected: printing actual results before exit.")
         break
 
 # print heatmaps
 if not args.noheatmap:
-    for light in xrange(len(trajognize.project.good_light)):
+    for light in range(len(trajognize.project.good_light)):
         print"\n\n# heatmap of %s barcodes" % trajognize.project.good_light[light]
-        print "heatmap_%s" % trajognize.project.good_light[light],
-        for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size)):
-            print "\t%d" % (x * heatmap_bin_size),
-        print ""
-        for y in xrange(int(trajognize.project.image_size.y/heatmap_bin_size)):
-            print "%d" % (y * heatmap_bin_size),
-            for x in xrange(int(trajognize.project.image_size.x/heatmap_bin_size)):
-                print "\t%d" % heatmaps[light][x][y],
-            print ""
+        print("heatmap_%s" % trajognize.project.good_light[light], end=" ")
+        for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+            print("\t%d" % (x * heatmap_bin_size), end=" ")
+        print("")
+        for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)):
+            print("%d" % (y * heatmap_bin_size), end=" ")
+            for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+                print("\t%d" % heatmaps[light][x][y], end=" ")
+            print("")
 
 # print sameiddists
 if not args.nosameiddist:
-    for light in xrange(len(trajognize.project.good_light)):
-        for deleted in xrange(2):
+    for light in range(len(trajognize.project.good_light)):
+        for deleted in range(2):
             print"\n\n# same id distribution of %s barcodes (%s)" % (trajognize.project.good_light[light], "including MFIX_DELETED" if deleted == 0 else "only valid")
-            print "sameiddists_%s_%s" % (trajognize.project.good_light[light], "withdeleted" if deleted == 0 else "onlyvalid"),
-            for j in xrange(PATEK_COUNT):
-                print "\t%s" % colorids[j].strid,
-            print "\tALL"
-            for i in xrange(MAX_SAME_ID+1):
-                print "%d" %i,
-                for j in xrange(PATEK_COUNT):
-                    print "\t%d" % sameiddists[light][j][deleted][i],
-                print "\t%d" % sameiddists[light][PATEK_COUNT][deleted][i]
+            print("sameiddists_%s_%s" % (trajognize.project.good_light[light], "withdeleted" if deleted == 0 else "onlyvalid"), end=" ")
+            for j in range(PATEK_COUNT):
+                print("\t%s" % colorids[j].strid, end=" ")
+            print("\tALL")
+            for i in range(MAX_SAME_ID+1):
+                print("%d" %i, end=" ")
+                for j in range(PATEK_COUNT):
+                    print("\t%d" % sameiddists[light][j][deleted][i], end=" ")
+                print("\t%d" % sameiddists[light][PATEK_COUNT][deleted][i])
 
 # print 24h time distributions
 if not args.notimedist:
-    name = [colorids[k].strid for k in xrange(len(colorids))]
+    name = [colorids[k].strid for k in range(len(colorids))]
     name.append("all")
-    print "\n\n# 24h time distribution of barcodes"
-    print "# Input is read from %d files from %s" % (len(files), path)
-    print "# Output bin size is one minute, range is from 00:00:00 to 23:59:59 (24*60 = 1440 bins)\n"
+    print("\n\n# 24h time distribution of barcodes")
+    print("# Input is read from %d files from %s" % (len(files), path))
+    print("# Output bin size is one minute, range is from 00:00:00 to 23:59:59 (24*60 = 1440 bins)\n")
     # write header
     s = "time_bin"
-    for k in xrange(len(name)):
+    for k in range(len(name)):
         s += "\tavg_%s\tstd_%s\tnum_%s" % (name[k], name[k], name[k])
     print s
     # write all minute bins (1440)
-    for bin in xrange(1440):
+    for bin in range(1440):
         s = "%02d:%02d:00" % (bin/60, bin%60)
-        for k in xrange(len(name)):
+        for k in range(len(name)):
             if num_24h[k][bin] > 0:
                 std_24h[k][bin] = sqrt(std_24h[k][bin] / num_24h[k][bin])
             s += "\t%f\t%f\t%d" % (avg_24h[k][bin], std_24h[k][bin], num_24h[k][bin])

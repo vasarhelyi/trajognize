@@ -120,7 +120,7 @@ class stat_t(object):
         No need to overload this function, only use it in print_status() if needed.
 
         """
-        for mfi in xrange(len(mfix_types)):
+        for mfi in range(len(mfix_types)):
             mft = mfix_types[mfi]
             print("  %s statistic is from %d files, %d frames and %d data points" % \
                     (mft, self. files, self.frames, self.points[mfi]))
@@ -132,7 +132,7 @@ class stat_t(object):
 
         """
         for light in trajognize.project.good_light:
-            for mfi in xrange(len(mfix_types)):
+            for mfi in range(len(mfix_types)):
                 mft = mfix_types[mfi]
                 print("  %s %s statistic is from %d files, %d frames and %d data points" % \
                         (light, mft, self.files, self.frames[light], self.points[light][mfi]))
@@ -158,7 +158,7 @@ class stat_t(object):
     def write_dailyoutput_results(self):
         """Saves the contents of self to a file (possibly as a summarized stat
         with daily outputs).
-        
+
         This method has to be implemented only if stat can produce dailyoutput
         results, such as heatmaps.
 
@@ -178,7 +178,7 @@ class heatmap_t(stat_t):
 
     heatmap.data[light][real/virtual][x][y] is the number of times a patek
     barcode center was at the coordinates (x,y) in the given light condition.
-    
+
     This class has one virtual subclass for each barcode and one for 'all' sum
     to avoid long execution times of stat and statsum (large memory needed for
     image matrices).
@@ -239,7 +239,7 @@ class heatmap_t(stat_t):
         """
         anymft = mfix_types + ["ANY"]
         for light in trajognize.project.good_light:
-            for mfi in xrange(len(anymft)):
+            for mfi in range(len(anymft)):
                 mft = anymft[mfi]
                 if mft == "ANY":
                     points = sum(self.points[light])
@@ -252,16 +252,16 @@ class heatmap_t(stat_t):
                 outputfile.write("# filter_for_valid_cage=%s\n" % str(trajognize.project.filter_for_valid_cage))
                 outputfile.write("# (0,0) = (top,left) corner of image.\n\n")
                 outputfile.write("%s_%s_%s" % (substat, light.lower(), mft))
-                for x in xrange(trajognize.project.image_size.x):
+                for x in range(trajognize.project.image_size.x):
                     outputfile.write("\t%d" % x)
                 outputfile.write("\n")
                 if mft == "ANY":
                     data = sum(self.data[light])
                 else:
                     data = self.data[light][mfi]
-                for y in xrange(trajognize.project.image_size.y):
+                for y in range(trajognize.project.image_size.y):
                     outputfile.write("%d" % y)
-                    for x in xrange(trajognize.project.image_size.x):
+                    for x in range(trajognize.project.image_size.x):
                         outputfile.write("\t%d" % data[x,y])
                     outputfile.write("\n")
                 outputfile.write("\n\n")
@@ -280,7 +280,7 @@ class heatmap_t(stat_t):
         simplified = dict()
         anymft = mfix_types + ["ANY"]
         for light in trajognize.project.good_light:
-            for mfi in xrange(len(anymft)):
+            for mfi in range(len(anymft)):
                 mft = anymft[mfi]
                 if mft == "ANY":
                     x = sum(self.data[light])
@@ -289,8 +289,8 @@ class heatmap_t(stat_t):
                 # get binned results
                 if binsize > 1:
                     xbin = numpy.array([[numpy.mean(x[i*binsize:i*binsize+binsize, j*binsize:j*binsize+binsize]) \
-                            for j in xrange(trajognize.project.image_size.y/binsize)] \
-                            for i in xrange(trajognize.project.image_size.x/binsize)])
+                            for j in range(trajognize.project.image_size.y/binsize)] \
+                            for i in range(trajognize.project.image_size.x/binsize)])
                 else:
                     xbin = x
                 x_nonzero = xbin[xbin > self.nonzero_threshold]
@@ -341,7 +341,7 @@ class heatmap_t(stat_t):
         keys = sorted(simplified.keys())
         anymft = mfix_types + ["ANY"]
         for light in trajognize.project.good_light:
-            for mfi in xrange(len(anymft)):
+            for mfi in range(len(anymft)):
                 mft = anymft[mfi]
                 if mft == "ANY":
                     points = sum(self.points[light])
@@ -431,12 +431,12 @@ class motionmap_t(stat_t):
             outputfile.write("# filter_for_valid_cage=%s\n" % str(trajognize.project.filter_for_valid_cage))
             outputfile.write("# (0,0) = (top,left) corner of image.\n\n")
             outputfile.write("%s_%s_ANY" % (substat, light.lower()))
-            for x in xrange(trajognize.project.image_size.x):
+            for x in range(trajognize.project.image_size.x):
                 outputfile.write("\t%d" % x)
             outputfile.write("\n")
-            for y in xrange(trajognize.project.image_size.y):
+            for y in range(trajognize.project.image_size.y):
                 outputfile.write("%d" % y)
-                for x in xrange(trajognize.project.image_size.x):
+                for x in range(trajognize.project.image_size.x):
                     outputfile.write("\t%d" % self.data[light][x,y])
                 outputfile.write("\n")
             outputfile.write("\n\n")
@@ -504,12 +504,12 @@ class aamap_t(stat_t):
             outputfile.write("# filter_for_valid_cage=%s\n" % str(trajognize.project.filter_for_valid_cage))
             outputfile.write("# (0,0) = (top,left) corner of image.\n\n")
             outputfile.write("aamap_%s_ANY" % light.lower())
-            for x in xrange(trajognize.project.image_size.x):
+            for x in range(trajognize.project.image_size.x):
                 outputfile.write("\t%d" % x)
             outputfile.write("\n")
-            for y in xrange(trajognize.project.image_size.y):
+            for y in range(trajognize.project.image_size.y):
                 outputfile.write("%d" % y)
-                for x in xrange(trajognize.project.image_size.x):
+                for x in range(trajognize.project.image_size.x):
                     outputfile.write("\t%d" % self.data[light][x,y])
                 outputfile.write("\n")
             outputfile.write("\n\n")
@@ -580,7 +580,7 @@ class dist24h_t(stat_t):
         are not additive. But they can be combined for non overlapping
         sets as described here (Q = sigma^2 * N, where sigma = std, Q = stv):
         http://en.wikipedia.org/wiki/Standard_deviation#Combining_standard_deviations
-        
+
         """
         self._check_version(X)
         # get combined values
@@ -596,7 +596,7 @@ class dist24h_t(stat_t):
         self.frames += X.frames
         self.points += X.points
         self.files += X.files
-        
+
         return self
 
     def calculate_group_sum(self, klist):
@@ -637,12 +637,12 @@ class dist24h_t(stat_t):
         # write results
         if exp == "all":
             # get sorted names and colorid indices
-            names = sorted([colorids[k].strid for k in xrange(len(colorids))])
+            names = sorted([colorids[k].strid for k in range(len(colorids))])
             klist = range(len(colorids))
             # calculate group sum
             self.calculate_group_sum(klist)
             # write results
-            for mfi in xrange(len(mfix_types)):
+            for mfi in range(len(mfix_types)):
                 mft = mfix_types[mfi]
                 outputfile.write("# 24h time distribution of %s barcodes from %d files, %d frames, %d points\n" %
                         (mft, self.files, self.frames, self.points[mfi]))
@@ -656,7 +656,7 @@ class dist24h_t(stat_t):
                 s.append("all_avg\tall_std\tall_num")
                 outputfile.write("\t".join(s) + "\n")
                 # write all minute bins (1440)
-                for bin in xrange(self.minutes_per_day):
+                for bin in range(self.minutes_per_day):
                     s = ["%02d:%02d:00" % (bin/60, bin%60)]
                     for k in klist:
                         s.append("%g\t%g" % (self.avg[k,mfi,bin], self.std[k,mfi,bin]))
@@ -667,13 +667,13 @@ class dist24h_t(stat_t):
         else:
             for group in exps[exp]['groups']:
                 # get sorted names and colorid indices
-                allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                allnames = [colorids[k].strid for k in range(len(colorids))]
                 names = sorted(exps[exp]['groups'][group])
                 klist = [allnames.index(name) for name in names]
                 # calculate group sum
                 self.calculate_group_sum(klist)
                 # write results
-                for mfi in xrange(len(mfix_types)):
+                for mfi in range(len(mfix_types)):
                     mft = mfix_types[mfi]
                     outputfile.write("# 24h time distribution of %s barcodes from %d files, %d frames, %d points\n" %
                             (mft, self.files, self.frames, self.points[mfi]))
@@ -688,7 +688,7 @@ class dist24h_t(stat_t):
                     s.append("all_avg\tall_std\tall_num")
                     outputfile.write("\t".join(s) + "\n")
                     # write all minute bins (1440)
-                    for bin in xrange(self.minutes_per_day):
+                    for bin in range(self.minutes_per_day):
                         s = ["%02d:%02d:00" % (bin/60, bin%60)]
                         for k in klist:
                             s.append("%g\t%g" % (self.avg[k,mfi,bin], self.std[k,mfi,bin]))
@@ -704,9 +704,9 @@ class dist24hobj_t(stat_t):
     dist24h.avg[patek/all][object][minute] is a number between 0 and 1, indicating at what
     percentage was a patek/ all pateks (virtually) visible on that minute of the day
     around (on/under) a given object.
-    
+
     Object locations and closeness thresholds are defined in stat.experiments.py
-    
+
     .stv is num*(standard variance) = num*(standard deviation)^2 of the distribution
     .std is the standard deviation,
     .num is the number of frames taken into account in the statistic.
@@ -819,12 +819,12 @@ class dist24hobj_t(stat_t):
         # write results
         if exp == "all":
             # get sorted names and colorid indices
-            names = sorted([colorids[k].strid for k in xrange(len(colorids))])
+            names = sorted([colorids[k].strid for k in range(len(colorids))])
             klist = range(len(colorids))
             # calculate group sum
             self.calculate_group_sum(klist)
             # write results
-            for obi in xrange(len(project.object_types)):
+            for obi in range(len(project.object_types)):
                 obj = project.object_types[obi] # hehe
                 outputfile.write("# 24h time distribution of barcodes around '%s' from %d files, %d frames, %d points\n" %
                         (obj, self.files, self.frames, self.points))
@@ -837,7 +837,7 @@ class dist24hobj_t(stat_t):
                 s.append("all_avg\tall_std\tall_num")
                 outputfile.write("\t".join(s) + "\n")
                 # write all minute bins (1440)
-                for bin in xrange(self.minutes_per_day):
+                for bin in range(self.minutes_per_day):
                     s = ["%02d:%02d:00" % (bin/60, bin%60)]
                     for k in klist:
                         s.append("%g\t%g" % (self.avg[k,obi,bin], self.std[k,obi,bin]))
@@ -848,13 +848,13 @@ class dist24hobj_t(stat_t):
         else:
             for group in exps[exp]['groups']:
                 # get sorted names and colorid indices
-                allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                allnames = [colorids[k].strid for k in range(len(colorids))]
                 names = sorted(exps[exp]['groups'][group])
                 klist = [allnames.index(name) for name in names]
                 # calculate group sum
                 self.calculate_group_sum(klist)
                 # write results
-                for obi in xrange(len(project.object_types)):
+                for obi in range(len(project.object_types)):
                     obj = project.object_types[obi] # hehe
                     outputfile.write("# 24h time distribution of barcodes around '%s' from %d files, %d frames, %d points\n" %
                             (obj, self.files, self.frames, self.points))
@@ -868,7 +868,7 @@ class dist24hobj_t(stat_t):
                     s.append("all_avg\tall_std\tall_num")
                     outputfile.write("\t".join(s) + "\n")
                     # write all minute bins (1440)
-                    for bin in xrange(self.minutes_per_day):
+                    for bin in range(self.minutes_per_day):
                         s = ["%02d:%02d:00" % (bin/60, bin%60)]
                         for k in klist:
                             s.append("%g\t%g" % (self.avg[k,obi,bin], self.std[k,obi,bin]))
@@ -1017,14 +1017,14 @@ class dailyobj_t(stat_t):
         # write results
         for group in exps[exp]['groups']:
             # get sorted names and colorid indices
-            allnames = [colorids[k].strid for k in xrange(len(colorids))]
+            allnames = [colorids[k].strid for k in range(len(colorids))]
             names = sorted(exps[exp]['groups'][group])
             klist = [allnames.index(name) for name in names]
             # calculate group sum
             self.calculate_group_sum(klist)
             # write results
             for light in trajognize.project.good_light:
-                for obi in xrange(len(project.object_types)):
+                for obi in range(len(project.object_types)):
                     obj = project.object_types[obi] # hehe
                     outputfile.write("# Daily amount of time (%s) around '%s' from %d files, %d frames, %d points\n" %
                             (light.lower(), obj, self.files, self.frames[light], self.points[light]))
@@ -1038,7 +1038,7 @@ class dailyobj_t(stat_t):
                     s.append("all_avg\tall_std\tall_num\tabsgrad_avg\tabsgrad_std")
                     outputfile.write("\t".join(s) + "\n")
                     # write all days
-                    for day in xrange(maxday + 1):
+                    for day in range(maxday + 1):
                         s = ["%d" % day]
                         absgrad = []
                         for k in klist:
@@ -1063,7 +1063,7 @@ class sameiddist_t(stat_t):
     of frames when a given patek was visible numsameid times simultanelously
     in the given light condition. Two statistics are given for including/excluding
     deleted barcodes.
-    
+
     """
     def __init__(self, id_count):
         """Initialize with zero elements.
@@ -1130,12 +1130,12 @@ class sameiddist_t(stat_t):
 
         """
         for light in trajognize.project.good_light:
-            for deleted in xrange(2):
+            for deleted in range(2):
                 outputfile.write("# same id distribution of %s barcodes from %d files, %d frames, %d points (%s)\n\n" % \
                         (light.lower(), self.files, self.frames[light], self.points[light][deleted],
                         "including MFIX_DELETED" if deleted == 0 else "only valid"))
                 # write header
-                names = [colorids[k].strid for k in xrange(len(colorids))]
+                names = [colorids[k].strid for k in range(len(colorids))]
                 names.append("all")
                 outputfile.write("sameiddists_%s_%s" % (light.lower(),
                         "withdeleted" if deleted == 0 else "onlyvalid"))
@@ -1143,9 +1143,9 @@ class sameiddist_t(stat_t):
                     outputfile.write("\t%s" % name)
                 outputfile.write("\n")
                 # write data
-                for i in xrange(self.max_same_id+1):
+                for i in range(self.max_same_id+1):
                     outputfile.write("%d" %i)
-                    for j in xrange(len(names)):
+                    for j in range(len(names)):
                         outputfile.write("\t%d" % self.data[light][j,deleted,i])
                     outputfile.write("\n")
                 outputfile.write("\n\n")
@@ -1198,7 +1198,7 @@ class nearestneighbor_t(stat_t):
 
     def write_results(self, outputfile, colorids, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
-        
+
         String IDs are ordered alphabetically.
         Other orders should be calculated with the plot/calc submodules.
 
@@ -1213,7 +1213,7 @@ class nearestneighbor_t(stat_t):
         realvirtany = ["real", "virtual", "any"]
         if exp == "all":
             for light in trajognize.project.good_light:
-                for rva in xrange(len(realvirtany)):
+                for rva in range(len(realvirtany)):
                     outputfile.write("# nearest neighbor distribution of %s barcodes from %d files, %d frames, %d points\n" %
                             (light.lower(), self.files, self.frames[light], self.points[light]))
                     outputfile.write("# X[row][col] = number of frames when patek [col] is the nearest neighbor of patek [row].\n")
@@ -1221,17 +1221,17 @@ class nearestneighbor_t(stat_t):
                     outputfile.write("# filter_for_valid_cage=%s\n" % str(trajognize.project.filter_for_valid_cage))
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
-                    names = [colorids[k].strid for k in xrange(len(colorids))]
+                    names = [colorids[k].strid for k in range(len(colorids))]
                     si = range(len(names))
                     si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     outputfile.write("nearestneighbor_%s_%s" % (light.lower(), realvirtany[rva]))
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
                     outputfile.write("\n")
                     # write data
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write(names[si[i]])
-                        for j in xrange(len(si)):
+                        for j in range(len(si)):
                             outputfile.write("\t%d" % self.data[light][rva][si[i],si[j]])
                         outputfile.write("\n")
                     outputfile.write("\n\n")
@@ -1239,7 +1239,7 @@ class nearestneighbor_t(stat_t):
         else:
             for light in trajognize.project.good_light:
                 for group in exps[exp]['groups']:
-                    for rva in xrange(len(realvirtany)):
+                    for rva in range(len(realvirtany)):
                         outputfile.write("# nearest neighbor distribution of %s barcodes from %d files, %d frames, %d points\n" %
                                 (light.lower(), self.files, self.frames[light], self.points[light]))
                         outputfile.write("# X[row][col] = number of frames when patek [col] is the nearest neighbor of patek [row].\n")
@@ -1251,15 +1251,15 @@ class nearestneighbor_t(stat_t):
                         names = exps[exp]['groups'][group]
                         si = range(len(names))
                         si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
-                        allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                        allnames = [colorids[k].strid for k in range(len(colorids))]
                         outputfile.write("nearestneighbor_%s_%s_group_%s" % (light.lower(), realvirtany[rva], group))
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             outputfile.write("\t%s" % names[si[i]])
                         outputfile.write("\n")
                         # write data
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             outputfile.write(names[si[i]])
-                            for j in xrange(len(si)):
+                            for j in range(len(si)):
                                 outputfile.write("\t%d" % self.data[light][rva][allnames.index(names[si[i]]),allnames.index(names[si[j]])])
                             outputfile.write("\n")
                         outputfile.write("\n\n")
@@ -1341,9 +1341,9 @@ class neighbor_t(stat_t):
                     names = exps[exp]['groups'][group]
                     si = range(len(names))
                     si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
-                    allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                    allnames = [colorids[k].strid for k in range(len(colorids))]
                     outputfile.write("neighbor_%s_%s_group_%s" % (networknumber, light.lower(), group))
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
                     outputfile.write("\n")
                     # write data
@@ -1351,14 +1351,14 @@ class neighbor_t(stat_t):
                     #       integrate this if daily output is needed:
                     #       dayoffset = experiments.get_day_offset(exps[exp])
                     x = sum(self.data[light][nn])
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         if not nn:
                             outputfile.write(names[si[i]])
-                            for j in xrange(len(si)):
+                            for j in range(len(si)):
                                 outputfile.write("\t%d" % x[allnames.index(names[si[i]]),allnames.index(names[si[j]])])
                         else:
                             outputfile.write("%d" % i)
-                            for j in xrange(len(si)):
+                            for j in range(len(si)):
                                 outputfile.write("\t%d" % x[allnames.index(names[si[j]]), i])
                         outputfile.write("\n")
                     outputfile.write("\n\n")
@@ -1375,7 +1375,7 @@ class fqobj_t(stat_t):
     Output is normalized with
     X.qorq[light][object][i][j], the total number of frames when patek i or j was
     around the object (on it or queuing) in the given light condition.
-    
+
     Queuing is applicable only with orientation towards object center (+- 90 deg)
 
     """
@@ -1418,7 +1418,7 @@ class fqobj_t(stat_t):
                     dtype=numpy.float)
             self.frames[light] = 0
             self.points[light] = 0
-            
+
     def __add__(self, X):
         """Add another fqobj object to self with the '+' and '+=' operators."""
         self._check_version(X)
@@ -1453,7 +1453,7 @@ class fqobj_t(stat_t):
             # OR normalize results
             ornormdata = numpy.where(self.qorq[light] > 0, self.fandq[light] / self.qorq[light], 0)
             if exp == "all":
-                for obi in xrange(len(project.object_types)):
+                for obi in range(len(project.object_types)):
                     obj = project.object_types[obi] # hehe
                     # skip not queueable objects
                     if not experiments.is_object_queueable(obj): continue
@@ -1464,23 +1464,23 @@ class fqobj_t(stat_t):
                     outputfile.write("# Queuing is applicable only with orientation towards %s obj center (+- 90 deg)\n" % obj)
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
-                    names = [colorids[k].strid for k in xrange(len(colorids))]
+                    names = [colorids[k].strid for k in range(len(colorids))]
                     si = range(len(names))
                     si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     outputfile.write("fqobj_%s_%s" % (light.lower(), obj))
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
                     outputfile.write("\n")
                     # write data
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write(names[si[i]])
-                        for j in xrange(len(si)):
+                        for j in range(len(si)):
                             outputfile.write("\t%g" % ornormdata[obi,si[i],si[j]])
                         outputfile.write("\n")
                     outputfile.write("\n\n")
                 outputfile.flush()
             else:
-                for obi in xrange(len(project.object_types)):
+                for obi in range(len(project.object_types)):
                     obj = project.object_types[obi] # hehe
                     # skip not relevant and not queueable objects
                     if not experiments.is_object_queueable(obj): continue
@@ -1497,15 +1497,15 @@ class fqobj_t(stat_t):
                         names = exps[exp]['groups'][group]
                         si = range(len(names))
                         si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
-                        allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                        allnames = [colorids[k].strid for k in range(len(colorids))]
                         outputfile.write("fqobj_%s_%s_group_%s" % (light.lower(), obj, group))
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             outputfile.write("\t%s" % names[si[i]])
                         outputfile.write("\n")
                         # write data
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             outputfile.write(names[si[i]])
-                            for j in xrange(len(si)):
+                            for j in range(len(si)):
                                 outputfile.write("\t%g" % ornormdata[obi,allnames.index(names[si[i]]),allnames.index(names[si[j]])])
                             outputfile.write("\n")
                         outputfile.write("\n\n")
@@ -1602,13 +1602,13 @@ class dailyfqobj_t(stat_t):
             """Helper function."""
             # write header
             outputfile.write("%s_%s_%s_group_%s_day_%d" % (datatype, light.lower(), obj, group, day))
-            for i in xrange(len(si)):
+            for i in range(len(si)):
                 outputfile.write("\t%s" % names[si[i]])
             outputfile.write("\n")
             # write data
-            for i in xrange(len(si)):
+            for i in range(len(si)):
                 outputfile.write(names[si[i]])
-                for j in xrange(len(si)):
+                for j in range(len(si)):
                     outputfile.write("\t%g" % data[obi,allnames.index(names[si[i]]),allnames.index(names[si[j]]),day+dayoffset])
                 outputfile.write("\n")
             outputfile.write("\n\n")
@@ -1628,10 +1628,10 @@ class dailyfqobj_t(stat_t):
             movavgfandq = numpy.copy(self.fandq[light])
 
             # calculate cumulative and moving average data
-            for obi in xrange(len(project.object_types)):
-                for i in xrange(len(colorids)):
-                    for j in xrange(len(colorids)):
-                        for day in xrange(1, maxday + 1):
+            for obi in range(len(project.object_types)):
+                for i in range(len(colorids)):
+                    for j in range(len(colorids)):
+                        for day in range(1, maxday + 1):
                             cumulqorq[obi,i,j,day+dayoffset] += cumulqorq[obi,i,j,day+dayoffset-1]
                             cumulfandq[obi,i,j,day+dayoffset] += cumulfandq[obi,i,j,day+dayoffset-1]
                             movavgqorq[obi,i,j,day+dayoffset] = sum(self.qorq[light][obi,i,j,max(0, day+dayoffset - self.dayavg + 1):day+dayoffset + 1])
@@ -1643,7 +1643,7 @@ class dailyfqobj_t(stat_t):
             movavgdata = numpy.where(movavgqorq > 0, movavgfandq / movavgqorq, 0)
 
             # write it
-            for obi in xrange(len(project.object_types)):
+            for obi in range(len(project.object_types)):
                 obj = project.object_types[obi] # hehe
                 # skip not relevant and not queueable objects
                 if not experiments.is_object_queueable(obj): continue
@@ -1662,8 +1662,8 @@ class dailyfqobj_t(stat_t):
                     names = exps[exp]['groups'][group]
                     si = range(len(names))
                     si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
-                    allnames = [colorids[k].strid for k in xrange(len(colorids))]
-                    for day in xrange(maxday + 1):
+                    allnames = [colorids[k].strid for k in range(len(colorids))]
+                    for day in range(maxday + 1):
                         # daily results
                         writedata("dailyfqobj", ornormdata)
                         # moving average results
@@ -1766,17 +1766,17 @@ class fqfood_t(stat_t):
                 outputfile.write("# Statistic is restricted to real feeding times, no friday\n")
                 outputfile.write("# IDs are ordered alphabetically.\n\n")
                 # write header
-                names = [colorids[k].strid for k in xrange(len(colorids))]
+                names = [colorids[k].strid for k in range(len(colorids))]
                 si = range(len(names))
                 si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                 outputfile.write("fqfood_%s" % light.lower())
-                for i in xrange(len(si)):
+                for i in range(len(si)):
                     outputfile.write("\t%s" % names[si[i]])
                 outputfile.write("\n")
                 # write data
-                for i in xrange(len(si)):
+                for i in range(len(si)):
                     outputfile.write(names[si[i]])
-                    for j in xrange(len(si)):
+                    for j in range(len(si)):
                         outputfile.write("\t%g" % ornormdata[si[i],si[j]])
                     outputfile.write("\n")
                 outputfile.write("\n\n")
@@ -1794,15 +1794,15 @@ class fqfood_t(stat_t):
                     names = exps[exp]['groups'][group]
                     si = range(len(names))
                     si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
-                    allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                    allnames = [colorids[k].strid for k in range(len(colorids))]
                     outputfile.write("fqfood_%s_group_%s" % (light.lower(), group))
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
                     outputfile.write("\n")
                     # write data
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write(names[si[i]])
-                        for j in xrange(len(si)):
+                        for j in range(len(si)):
                             outputfile.write("\t%g" % ornormdata[allnames.index(names[si[i]]),allnames.index(names[si[j]])])
                         outputfile.write("\n")
                     outputfile.write("\n\n")
@@ -1885,7 +1885,7 @@ class fqwhilef_t(stat_t):
         # write it
         for light in trajognize.project.good_light:
             if exp == "all":
-                for obi in xrange(len(project.object_types)):
+                for obi in range(len(project.object_types)):
                     obj = project.object_types[obi] # hehe
                     # skip not queueable objects
                     if not experiments.is_object_queueable(obj): continue
@@ -1896,40 +1896,40 @@ class fqwhilef_t(stat_t):
                     outputfile.write("# In case of food, statistic is restricted to real feeding times, no friday\n")
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
-                    names = [colorids[k].strid for k in xrange(len(colorids))]
+                    names = [colorids[k].strid for k in range(len(colorids))]
                     si = range(len(names))
                     si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     outputfile.write("fqwhilef_%s_%s" % (light.lower(), obj))
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
                     outputfile.write("\n")
                     # write data
-                    for n in xrange(len(si)):
+                    for n in range(len(si)):
                         outputfile.write("%d" % n)
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             outputfile.write("\t%g" % self.data[light][obi,si[i],n])
                         outputfile.write("\n")
                     # write average, standard deviation and number of frames per patek
                     avg = [0]*len(si)
                     std = [0]*len(si)
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         avg[i], std[i] = weighted_avg_and_std(
                                 range(len(self.data[light][obi,si[i]])),
                                 self.data[light][obi,si[i]])
                     outputfile.write("avg")
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%g" % avg[i])
                     outputfile.write("\n")
                     outputfile.write("std")
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%g" % std[i])
                     outputfile.write("\n")
                     outputfile.write("num")
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%g" % numpy.sum(self.data[light][obi,si[i]]))
                     outputfile.write("\n\n")
             else:
-                for obi in xrange(len(project.object_types)):
+                for obi in range(len(project.object_types)):
                     obj = project.object_types[obi] # hehe
                     # skip non relevant and not queueable objects
                     if not experiments.is_object_queueable(obj): continue
@@ -1946,34 +1946,34 @@ class fqwhilef_t(stat_t):
                         names = exps[exp]['groups'][group]
                         si = range(len(names))
                         si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
-                        allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                        allnames = [colorids[k].strid for k in range(len(colorids))]
                         outputfile.write("fqwhilef_%s_%s_group_%s" % (light.lower(), obj, group))
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             outputfile.write("\t%s" % names[si[i]])
                         outputfile.write("\n")
                         # write data
-                        for n in xrange(len(si)):
+                        for n in range(len(si)):
                             outputfile.write("%d" % n)
-                            for i in xrange(len(si)):
+                            for i in range(len(si)):
                                 outputfile.write("\t%g" % self.data[light][obi,allnames.index(names[si[i]]),n])
                             outputfile.write("\n")
                         # write average, standard deviation and number of frames per patek
                         avg = [0]*len(si)
                         std = [0]*len(si)
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             avg[i], std[i] = weighted_avg_and_std(
                                     range(len(self.data[light][obi,allnames.index(names[si[i]])])),
                                     self.data[light][obi,allnames.index(names[si[i]])])
                         outputfile.write("avg")
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             outputfile.write("\t%g" % avg[i])
                         outputfile.write("\n")
                         outputfile.write("std")
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             outputfile.write("\t%g" % std[i])
                         outputfile.write("\n")
                         outputfile.write("num")
-                        for i in xrange(len(si)):
+                        for i in range(len(si)):
                             outputfile.write("\t%g" % numpy.sum(self.data[light][obi,allnames.index(names[si[i]])]))
                         outputfile.write("\n\n")
 
@@ -1986,7 +1986,7 @@ class aa_t(stat_t):
     of each other and both i and j was moving at least 25 cm/s ~ 125 px/s = 5 px/frame
     and approacher points towards the avoider and avoider points away from approacher.
     AA_ij is positive if i tends to approach j and negative if i tends to avoid j.
-    
+
     TODO: will work better on smoothed velocities, with less false positives.
 
     """
@@ -2073,17 +2073,17 @@ class aa_t(stat_t):
                 outputfile.write("# filter_for_valid_cage=%s\n" % str(trajognize.project.filter_for_valid_cage))
                 outputfile.write("# IDs are ordered alphabetically.\n\n")
                 # write header
-                names = [colorids[k].strid for k in xrange(len(colorids))]
+                names = [colorids[k].strid for k in range(len(colorids))]
                 si = range(len(names))
                 si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                 outputfile.write("aa_%s" % light.lower())
-                for i in xrange(len(si)):
+                for i in range(len(si)):
                     outputfile.write("\t%s" % names[si[i]])
                 outputfile.write("\n")
                 # write data
-                for i in xrange(len(si)):
+                for i in range(len(si)):
                     outputfile.write(names[si[i]])
-                    for j in xrange(len(si)):
+                    for j in range(len(si)):
                         outputfile.write("\t%g" % self.data[light][si[i],si[j]])
                     outputfile.write("\n")
                 outputfile.write("\n\n")
@@ -2101,15 +2101,15 @@ class aa_t(stat_t):
                     names = exps[exp]['groups'][group]
                     si = range(len(names))
                     si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
-                    allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                    allnames = [colorids[k].strid for k in range(len(colorids))]
                     outputfile.write("aa_%s_group_%s" % (light.lower(), group))
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
                     outputfile.write("\n")
                     # write data
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write(names[si[i]])
-                        for j in xrange(len(si)):
+                        for j in range(len(si)):
                             outputfile.write("\t%g" % self.data[light][allnames.index(names[si[i]]),allnames.index(names[si[j]])])
                         outputfile.write("\n")
                     outputfile.write("\n\n")
@@ -2184,17 +2184,17 @@ class butthead_t(stat_t):
                 outputfile.write("# patek_length = %g px\n" % self.patek_length)
                 outputfile.write("# cos_approacher_threshold = %g\n\n" % self.cos_approacher_threshold)
                 # write header
-                names = [colorids[k].strid for k in xrange(len(colorids))]
+                names = [colorids[k].strid for k in range(len(colorids))]
                 si = range(len(names))
                 si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                 outputfile.write("butthead_%s" % light.lower())
-                for i in xrange(len(si)):
+                for i in range(len(si)):
                     outputfile.write("\t%s" % names[si[i]])
                 outputfile.write("\n")
                 # write data
-                for i in xrange(len(si)):
+                for i in range(len(si)):
                     outputfile.write(names[si[i]])
-                    for j in xrange(len(si)):
+                    for j in range(len(si)):
                         outputfile.write("\t%d" % self.data[light][si[i],si[j]])
                     outputfile.write("\n")
                 outputfile.write("\n\n")
@@ -2214,15 +2214,15 @@ class butthead_t(stat_t):
                     names = exps[exp]['groups'][group]
                     si = range(len(names))
                     si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
-                    allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                    allnames = [colorids[k].strid for k in range(len(colorids))]
                     outputfile.write("butthead_%s_group_%s" % (light.lower(), group))
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
                     outputfile.write("\n")
                     # write data
-                    for i in xrange(len(si)):
+                    for i in range(len(si)):
                         outputfile.write(names[si[i]])
-                        for j in xrange(len(si)):
+                        for j in range(len(si)):
                             outputfile.write("\t%d" % self.data[light][allnames.index(names[si[i]]),allnames.index(names[si[j]])])
                         outputfile.write("\n")
                     outputfile.write("\n\n")
@@ -2279,7 +2279,7 @@ class sdist_t(stat_t):
             # write header
             outputfile.write("sdist_%s\tnum\n" % (light.lower()))
             # write data
-            for i in xrange(self.maxdist):
+            for i in range(self.maxdist):
                 outputfile.write("%d\t%d\n" % (i, self.data[light][i]))
             outputfile.write("\n\n")
         outputfile.flush()
@@ -2339,21 +2339,21 @@ class veldist_t(stat_t):
             outputfile.write("# filter_for_valid_cage=%s\n" % str(trajognize.project.filter_for_valid_cage))
             outputfile.write("# only CHOSEN barcodes are taken into account.\n\n")
             # write header
-            names = [colorids[k].strid for k in xrange(len(colorids))]
+            names = [colorids[k].strid for k in range(len(colorids))]
             names.append("all")
             outputfile.write("veldist_%s" % (light.lower()))
             for name in names:
                 outputfile.write("\t%s" % name)
             outputfile.write("\n")
             # write data
-            for i in xrange(self.maxvel):
+            for i in range(self.maxvel):
                 outputfile.write("%d" % i)
-                for k in xrange(len(names)):
+                for k in range(len(names)):
                     outputfile.write("\t%d" % self.data[light][k,i])
                 outputfile.write("\n")
             outputfile.write("\n\n")
         outputfile.flush()
-        
+
 
 class accdist_t(stat_t):
     """Storage class for the acceleration distribution of barcodes
@@ -2408,16 +2408,16 @@ class accdist_t(stat_t):
             outputfile.write("# filter_for_valid_cage=%s\n" % str(trajognize.project.filter_for_valid_cage))
             outputfile.write("# only CHOSEN barcodes are taken into account.\n\n")
             # write header
-            names = [colorids[k].strid for k in xrange(len(colorids))]
+            names = [colorids[k].strid for k in range(len(colorids))]
             names.append("all")
             outputfile.write("accdist_%s" % (light.lower()))
             for name in names:
                 outputfile.write("\t%s" % name)
             outputfile.write("\n")
             # write data
-            for i in xrange(self.maxacc):
+            for i in range(self.maxacc):
                 outputfile.write("%d" % i)
-                for k in xrange(len(names)):
+                for k in range(len(names)):
                     outputfile.write("\t%d" % self.data[light][k,i])
                 outputfile.write("\n")
             outputfile.write("\n\n")
@@ -2503,7 +2503,7 @@ class basic_t(stat_t):
         """
         outputfile.write("# Basic statistics on video files and errors from %d files\n\n" % self.files)
         if exp != "all":
-            dt = exps[exp]['stop'] - exps[exp]['start'] 
+            dt = exps[exp]['stop'] - exps[exp]['start']
             if sys.hexversion < 0x02070000:
                 totalframes = int(dt.seconds + dt.microseconds / 1E6 + dt.days * 86400 * trajognize.project.FPS)
             else:
@@ -2537,12 +2537,12 @@ class basic_t(stat_t):
             outputfile.write("Number of not chosen barcodes:\t%d\t(%1.2f%% of valid)\n" % \
                     (self.mfixcount[light][-1], 100.0*self.mfixcount[light][-1]/(len(colorids)*x)))
             outputfile.write("Number of chosen barcodes with the following flags:\n")
-            for i in xrange(len(trajognize.init.MFIX_STR)):
+            for i in range(len(trajognize.init.MFIX_STR)):
                 outputfile.write("%-22s\t%d\t(%1.2f%% of chosen)\n" % \
                         (trajognize.init.MFIX_STR[i], self.mfixcount[light][i],
                         100.0*self.mfixcount[light][i] / max(1, len(colorids)*x - self.mfixcount[light][-1])))
             outputfile.write("Number of barcodes containing a given color:\tall_novirt\tchosen\n")
-            for i in xrange(trajognize.init.MBASE):
+            for i in range(trajognize.init.MBASE):
                 outputfile.write("%-6s\t%d\t%d\n" % (trajognize.project.colornames[i],
                         self.colors_all[light][i],
                         self.colors_chosen[light][i]))
@@ -2643,7 +2643,7 @@ class distfromwall_t(stat_t):
         for light in trajognize.project.good_light:
             for group in exps[exp]['groups']:
                 # get sorted names and colorid indices
-                allnames = [colorids[k].strid for k in xrange(len(colorids))]
+                allnames = [colorids[k].strid for k in range(len(colorids))]
                 names = sorted(exps[exp]['groups'][group])
                 klist = [allnames.index(name) for name in names]
                 outputfile.write("# daily distance-from-wall distribution of %s barcodes of group %s from %d files, %d frames, %d points\n" %
@@ -2660,7 +2660,7 @@ class distfromwall_t(stat_t):
                         outputfile.write("\tabsgrad_avg\tabsgrad_std\n")
                         # data
                         lastdayavg = [0]*len(klist)
-                        for day in xrange(maxday + 1):
+                        for day in range(maxday + 1):
                             absgrad = []
                             outputfile.write(dayrange[day])
                             for i,k in enumerate(klist):
@@ -2685,9 +2685,9 @@ class distfromwall_t(stat_t):
                                 x = sum(self.data[light][k][moi])
                             else:
                                 x = self.data[light][k][moi][mfi]
-                            for i in xrange(len(x[0])):
+                            for i in range(len(x[0])):
                                 outputfile.write("%d" % i)
-                                for day in xrange(maxday + 1):
+                                for day in range(maxday + 1):
                                     outputfile.write("\t%d" % x[day+dayoffset][i])
                                 outputfile.write("\n")
                             outputfile.write("\n\n")

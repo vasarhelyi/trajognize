@@ -44,14 +44,14 @@ def main(argv=[]):
         name = data[0][0]
         headerline = data[0]
         dates = [datetime.datetime.strptime(data[i][0],"%Y.%m.%d.").date() \
-                for i in xrange(1, len(data))]
+                for i in range(1, len(data))]
         for exp in exps:
             firstday = exps[exp]['start'].date()
             lastday = exps[exp]['stop'].date()
             alldata = []
             index = 0
             # interpolate all data
-            for date in [firstday +  datetime.timedelta(i) for i in xrange((lastday-firstday).days+1)]:
+            for date in [firstday +  datetime.timedelta(i) for i in range((lastday-firstday).days+1)]:
                 while index < len(dates) and dates[index] < date:
                     lastindex = index
                     index += 1
@@ -75,7 +75,7 @@ def main(argv=[]):
                 afterdate = dates[index]
                 n = (afterdate - beforedate).days
                 i = (date - beforedate).days
-                alldata.append([str(date)] + ["%g" % (float(before[j]) + i * (float(after[j]) - float(before[j])) / n) for j in xrange(1, len(before))])
+                alldata.append([str(date)] + ["%g" % (float(before[j]) + i * (float(after[j]) - float(before[j])) / n) for j in range(1, len(before))])
             # write interpolated data
             outdir = os.path.join(head, plotdir)
             if not os.path.isdir(outdir): os.makedirs(outdir)
@@ -89,7 +89,7 @@ def main(argv=[]):
             if nogroup:
                 outputfile.write("\t".join(data[0]))
                 outputfile.write("\n")
-                for i in xrange(len(alldata)):
+                for i in range(len(alldata)):
                     outputfile.write("\t".join(alldata[i]))
                     outputfile.write("\n")
             else:
@@ -97,7 +97,7 @@ def main(argv=[]):
                     names = sorted(exps[exp]['groups'][group])
                     outputfile.write("\t".join(["%s_group_%s" % (name, group)] + names))
                     outputfile.write("\n")
-                    for i in xrange(len(alldata)):
+                    for i in range(len(alldata)):
                         outputfile.write("\t".join([alldata[i][0].strip('.').replace('.', '-')] +
                                 [alldata[i][headerline.index(strid)] for strid in names]))
                         outputfile.write("\n")

@@ -16,7 +16,7 @@ except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "..")))
     import trajognize
-    
+
 # check bad arguments
 if len(sys.argv) > 2 or (len(sys.argv)>1 and sys.argv[1] == '--help'):
     exit(__doc__, 2)
@@ -24,7 +24,7 @@ if len(sys.argv) > 2 or (len(sys.argv)>1 and sys.argv[1] == '--help'):
 # get input path
 path = trajognize.util.get_path_as_first_arg(sys.argv)
 path += '*/OUT/*.blobs'
-print "# Using data: %s" % path
+print("# Using data: %s" % path)
 
 # list files and check for error
 files = glob(path)
@@ -38,8 +38,8 @@ for inputfile in files:
     i += 1
     # get file name
     head, tail = os.path.split(inputfile)
-    print "\n\nParsing input file #%d: '%s'...\n" % (i, tail)
+    print("\n\nParsing input file #%d: '%s'...\n" % (i, tail))
     # TODO: to force overwrite of output files, add '-f' to params
     trajognize.main('--inputfile=%s' % inputfile)
 end = time.clock()
-print "\n\nTotal time elapsed parsing %d files: %f hours" % (len(files), (end-start)/3600)
+print("\n\nTotal time elapsed parsing %d files: %f hours" % (len(files), (end-start)/3600))

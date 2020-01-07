@@ -67,7 +67,7 @@ def main(argv=[]):
         # parse data file
         alldata = trajognize.parse.parse_stat_output_file(orderedfile)
         # TODO: common cbrange for F, C, D
-        for index in xrange(len(alldata)):
+        for index in range(len(alldata)):
             # get categories
             name = alldata[index][0][0]
             (light, realvirtany, group) = get_categories_from_name(name)

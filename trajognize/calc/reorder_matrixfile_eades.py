@@ -48,7 +48,7 @@ def main(argv=[]):
     out.write("# It contains original data reordered with the Eades-heuristic, and separated into Common and Dominant part.\n")
     out.write("# Results written on %s\n\n" % str(datetime.datetime.now()))
     alldata = trajognize.parse.parse_stat_output_file(inputfile)
-    for index in xrange(len(alldata)):
+    for index in range(len(alldata)):
         # convert list to dict
         n = len(alldata[index][0])-1
         name = alldata[index][0][0]
@@ -56,8 +56,8 @@ def main(argv=[]):
         data = collections.defaultdict(collections.defaultdict)
         minvalue = float('Inf')
         maxvalue = -minvalue
-        for i in xrange(n):
-            for j in xrange(n):
+        for i in range(n):
+            for j in range(n):
                 x = float(alldata[index][i+1][j+1])
                 if x < minvalue: minvalue = x
                 if x > maxvalue: maxvalue = x

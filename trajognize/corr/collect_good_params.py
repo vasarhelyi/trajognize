@@ -65,7 +65,7 @@ def main(argv=[]):
                         if re.match(s, paramname):
                             print('     (good)', paramname)
                             # this is a good param, parse it into a common dict for all groups in that experiment
-                            for i in xrange(len(headers)):
+                            for i in range(len(headers)):
                                 alldata[expdir][goodparamname][headers[i]] = data[paramname][i]
                             break
                     # collect all params
@@ -73,7 +73,7 @@ def main(argv=[]):
                         if re.match(s, paramname):
                             print('     (all)', paramname)
                             # this is a good param, parse it into a common dict for all groups in that experiment
-                            for i in xrange(len(headers)):
+                            for i in range(len(headers)):
                                 alldataall[expdir][goodparamname][headers[i]] = data[paramname][i]
                             break
 
