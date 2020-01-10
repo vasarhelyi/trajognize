@@ -114,11 +114,11 @@ for inputfile in files:
             good = 0
             for currentframe in range(len(color_blobs)):
                 for blob in color_blobs[currentframe]:
-                    d = int(blob.radius)
+                    d = int(blob.radius * 2)
                     if d > max_sizedist: continue
                     sizedists[d] += 1
                     good += 1
-            print("  %d blobs added with size <= %d" % (good, max_sizedist))
+            print("  %d blobs added with diameter <= %d" % (good, max_sizedist))
             sys.stdout.flush()
 
             try:
@@ -345,17 +345,17 @@ for inputfile in files:
 # print color blob distributions
 if not args.nodist:
     print("\n\n# size distribution of blobs")
-    print("sizedist\tnum")
+    print("diameter\tnum")
     for i in range(max_sizedist + 1):
         print("%d\t%d" % (i, sizedists[i]))
 
     print("\n\n# axisA distribution of blobs")
-    print("axisAdist\tnum")
+    print("axisA\tnum")
     for i in range(max_sizedist + 1):
         print("%d\t%d" % (i, axisAdists[i]))
 
     print("\n\n# 10*axisA/axisB distribution of blobs")
-    print("axisABdist\tnum")
+    print("axisAB\tnum")
     for i in range(max_sizedist + 1):
         print("%d\t%d" % (i, axisABdists[i]))
 
