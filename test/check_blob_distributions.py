@@ -15,7 +15,7 @@ Added: distance distribution of motion blobs
 
 Added: check size distribution of blobs
 
-Input is taken from all blob files from [inputpath]*/OUT/*ts.blobs and [inputpath]*/OUT/*ts.log,
+Input is taken from all blob files from [inputpath]*/OUT/*.blobs and [inputpath]*/OUT/*.log,
 where inputpath is an optional path where subdirectories with ratognize output data can be found.
 Note that a single blob file can also be given instead of a path.
 Default value is defined in util.py.
@@ -40,7 +40,7 @@ argparser.add_argument("-nd", "--nodist", dest="nodist", action="store_true", de
 argparser.add_argument("-nm", "--nomotiondist", dest="nomotiondist", action="store_true", default=False, help="do not calculate distribution of motion blobs")
 argparser.add_argument("-nh", "--noheatmap", dest="noheatmap", action="store_true", default=False, help="do not calculate heatmaps")
 argparser.add_argument("-cc", "--correctcage", dest="correctcage", action="store_true", default=False, help="correct for cage center dislocations")
-argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define blob input path to have blob files at [PATH]*/OUT/*ts.blobs", metavar="PATH")
+argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define blob input path to have blob files at [PATH]*/OUT/*.blobs", metavar="PATH")
 args = argparser.parse_args()
 
 # init distance distribution matrices
