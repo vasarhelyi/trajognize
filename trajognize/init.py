@@ -153,7 +153,7 @@ class trajectory_t:
 
     """
     # Keep memory requirements low by preventing the creation of instance dictionaries.
-    __slots__ = ('firstframe', 'barcodeindices', 'fullfound_count', 'fullnocluster_count',
+    __slots__ = ('k', 'firstframe', 'barcodeindices', 'fullfound_count', 'fullnocluster_count',
             'colorblob_count', 'sharesblob_count', 'offset_count', 'state')
 
     def __init__(self, firstframe, coloridindex):

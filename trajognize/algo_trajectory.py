@@ -514,8 +514,7 @@ def index_of_least_color(traj):
     traj -- a trajectory
 
     """
-    si = range(MCHIPS)
-    si.sort(lambda x,y: traj.colorblob_count[x] - traj.colorblob_count[y])
+    si = sorted(list(range(MCHIPS)), key=lambda x: traj.colorblob_count[x])
     if traj.colorblob_count[si[0]] == traj.colorblob_count[si[1]]:
         return -1
     else:
@@ -807,8 +806,9 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
                 scores[i] += traj_score(trajx, k, kk)
         # choose best (reverse sort according to total score) and continue search
         # using this as beginning
-        si = range(len(connections.data))
-        si.sort(lambda x,y: scores[y] - scores[x])
+        si = sorted(list(range(len(connections.data))),
+            key=lambda x: scores[x], reverse=True
+        )
         if mode == 'b':
             # reverse list (backward backward == forward)
             tempconn = connections.data[si[0]][::-1]
@@ -860,8 +860,9 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
             scores[i] += traj_score(trajectories[kk][j], k, kk)
 
     # choose best (reverse sort according to total score) and return
-    si = range(len(connections.data))
-    si.sort(lambda x,y: scores[y] - scores[x])
+    si = sorted(list(range(len(connections.data))),
+        key=lambda x: scores[x], reverse=True
+    )
 
     # In case of pure extention, if there is a chosen neighbor,
     # we check if selected connection ends there. If so, we include neighbor
@@ -1463,8 +1464,9 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
             sum_scores[k] = sum(traj_score(x) for x in trajectories[k])
             sum_good_scores[k] = sum(traj_score(x) if is_traj_good(x,
                     settings.good_score_threshold) else 0 for x in trajectories[k])
-    sortedk = range(len(colorids))
-    sortedk.sort(lambda x,y: sum_scores[y] - sum_scores[x])
+    sortedk = sorted(list(range(len(colorids))),
+        key=lambda x: sum_scores[x], reverse=True
+    )
     for k in sortedk:
         strid = colorids[k].strid
         deleteit = False
@@ -1481,10 +1483,10 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
     ############################################################################
     # first phase: assign chosen state to very good trajs, regardless of color
     # sort all trajectories according to reverse global score
-    si = [] # si stands for 'sorted index'
-    for k in range(len(colorids)):
-        si += [(k, i) for i in range(len(trajectories[k]))]
-    si.sort(lambda x,y: traj_score(trajectories[y[0]][y[1]]) - traj_score(trajectories[x[0]][x[1]]))
+    # si stands for 'sorted index'
+    si = sorted([[(k, i) for i in range(len(trajectories[k]))] for k in range(len(colorids))],
+        key=lambda x: traj_score(trajectories[x[0]][x[1]]), reverse=True
+    )
     # choose and connect them
     choose_and_connect_trajs(si, settings.good_for_sure_score_threshold, trajectories,
             trajsonframe, colorids, barcodes, blobs, kkkk=None, framelimit=settings.framelimit)
@@ -1497,8 +1499,10 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
         for traj in trajectories[k]:
             recalculate_score(traj, k, barcodes, blobs, colorids)
         # sort all trajectories in given color according to reverse score
-        si = [(k, i) for i in range(len(trajectories[k]))] # si stands for 'sorted index'
-        si.sort(lambda x,y: traj_score(trajectories[y[0]][y[1]]) - traj_score(trajectories[x[0]][x[1]]))
+        # si stands for 'sorted index'
+        si = sorted([(k, i) for i in range(len(trajectories[k]))],
+            key=lambda x: traj_score(trajectories[x[0]][x[1]]), reverse=True
+        )
         # choose and connect them
         choose_and_connect_trajs(si, settings.good_score_threshold, trajectories,
                 trajsonframe, colorids, barcodes, blobs, kkkk=k, framelimit=settings.framelimit)
