@@ -52,6 +52,17 @@ elif PROJECT == PROJECT_ANTS_2019:
     experiments = project_ants_2019.experiments
     get_wall_polygons = project_ants_2019.get_wall_polygons
 
+elif PROJECT == PROJECT_STORKS:
+    import project_storks
+    weekly_feeding_times = {}
+    object_types = project_storks.object_types
+    object_areas = project_storks.object_areas
+    object_queuing_areas = project_storks.object_queuing_areas
+    max_day = project_storks.max_day
+
+    experiments = project_storks.experiments
+    get_wall_polygons = project_storks.get_wall_polygons
+
 else:
     weekly_feeding_times = {}
     object_types = []

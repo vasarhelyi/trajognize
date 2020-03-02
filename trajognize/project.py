@@ -13,6 +13,7 @@ PROJECT_MAZE = 2 # the rat maze experiment in 2015 summer at ELTE
 PROJECT_FISH = 3 # fish experiments 2015 by Ian Cousin Lab
 PROJECT_ANTS = 4 # ant experiments 2016 by Stephen Pratt
 PROJECT_ANTS_2019 = 5 # ant experiments 2019 by Stephen Pratt
+PROJECT_STORKS = 6 # storks experiment 2019/2020 by Iris and Mate
 
 project_str = {
     PROJECT_2011: 'PROJECT_2011',
@@ -20,10 +21,11 @@ project_str = {
     PROJECT_FISH: 'PROJECT_FISH',
     PROJECT_ANTS: 'PROJECT_ANTS',
     PROJECT_ANTS_2019: 'PROJECT_ANTS_2019',
+    PROJECT_STORKS: 'PROJECT_STORKS',
 }
 
 # define current project
-PROJECT = PROJECT_ANTS_2019
+PROJECT = PROJECT_STORKS # PROJECT_ANTS_2019
 
 ################################################################################
 # image/video parameters
@@ -57,6 +59,8 @@ if PROJECT == PROJECT_ANTS:
     colornames = ('orange', 'blue', 'yellow', 'green', 'magenta', 'purple')
 elif PROJECT == PROJECT_ANTS_2019:
     colornames = ('orange', 'yellow', 'green', 'blue', 'magenta')
+elif PROJECT == PROJECT_STORKS:
+    colornames = ('red', 'yellow', 'cyan', 'blue', 'purple', 'white')
 else:
     colornames = ('red', 'orange', 'green', 'blue', 'pink')
 
@@ -87,6 +91,8 @@ elif PROJECT == PROJECT_ANTS:
 #    MAX_INRAT_DIST = 40 # closeup2
 elif PROJECT == PROJECT_ANTS_2019:
     MAX_INRAT_DIST = 40 # TODO
+elif PROJECT == PROJECT_STORKS:
+    MAX_INRAT_DIST = 40 # TODO: define it from blob radii as we have it dynamically by now
 else:
     MAX_INRAT_DIST = 35
 
@@ -102,6 +108,8 @@ elif PROJECT == PROJECT_ANTS:
 #    AVG_INRAT_DIST = 23 # closeup1
 elif PROJECT == PROJECT_ANTS_2019:
     AVG_INRAT_DIST = 27
+elif PROJECT == PROJECT_STORKS:
+    AVG_INRAT_DIST = 27 # TODO: this is different for white and other blobs
 else:
     AVG_INRAT_DIST = 23
 
@@ -117,6 +125,8 @@ elif PROJECT == PROJECT_ANTS:
 #    MAX_PERFRAME_DIST = 35 # closeup1
 elif PROJECT == PROJECT_ANTS_2019:
     MAX_PERFRAME_DIST = 15
+elif PROJECT == PROJECT_STORKS:
+    MAX_PERFRAME_DIST = 15
 else:
     MAX_PERFRAME_DIST = 15
 
@@ -128,6 +138,8 @@ elif PROJECT == PROJECT_FISH:
 elif PROJECT == PROJECT_ANTS:
     MAX_PERFRAME_DIST_MD = 10 # closeup1, 2, dueling, 001.MTS, does not count
 elif PROJECT == PROJECT_ANTS_2019:
+    MAX_PERFRAME_DIST_MD = 10
+elif PROJECT == PROJECT_STORKS:
     MAX_PERFRAME_DIST_MD = 10
 else:
     MAX_PERFRAME_DIST_MD = 40 # 35 #30 - lets try 40, it occurs sometimes, some false positives but they can be filtered out later...
@@ -177,6 +189,9 @@ elif PROJECT == PROJECT_ANTS:
 elif PROJECT == PROJECT_ANTS_2019:
     find_best_trajectories_settings = find_best_trajectories_settings_t(
             100, 200, 500, 100, 100)
+elif PROJECT == PROJECT_STORKS:
+    find_best_trajectories_settings = find_best_trajectories_settings_t(
+            100, 200, 500, 100, 100)
 else:
     find_best_trajectories_settings = find_best_trajectories_settings_t(
             100, 200, 500, 100, 1500)
@@ -196,15 +211,18 @@ def get_datetime_from_filename(filename):
     head, tail = os.path.split(filename)
     if PROJECT == PROJECT_2011:
         # get datetime part and return it
-        return datetime.datetime.strptime(tail[:tail.find('.ts.blob')],"%Y-%m-%d_%H-%M-%S.%f")
+        return datetime.datetime.strptime(tail[:tail.find('.ts.blob')], "%Y-%m-%d_%H-%M-%S.%f")
     elif PROJECT == PROJECT_MAZE:
-        return datetime.datetime.strptime(tail.split('_')[1],"%Y%m%d")
+        return datetime.datetime.strptime(tail.split('_')[1], "%Y%m%d")
     elif PROJECT == PROJECT_ANTS:
         # TODO: this is a hack, we do not really need time in this experiment...
         return datetime.datetime(2016, 11, 1, 0, 0)
     elif PROJECT == PROJECT_ANTS_2019:
         # TODO: this is a hack, we do not really need time in this experiment...
         return datetime.datetime(2018, 9, 25, 0, 0)
+    elif PROJECT == PROJECT_STORKS:
+        # TODO: make sure all storks files start with this date format
+        return datetime.datetime.strptime(tail[:19], "%Y-%m-%d_%H-%M-%S")
     else:
         return None
 
