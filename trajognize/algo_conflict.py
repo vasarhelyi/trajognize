@@ -48,8 +48,9 @@ def list_conflicted_trajs(conflicted_trajs, colorids, trajectories):
     si = [] # si stands for 'sorted index'
     for k in range(len(colorids)):
         si += [(k, t) for t in conflicted_trajs[k]]
-    si.sort(lambda x,y: algo_trajectory.traj_score(
-            trajectories[y[0]][y[1]]) - algo_trajectory.traj_score(trajectories[x[0]][x[1]]))
+    si.sort(key=lambda x: algo_trajectory.traj_score(trajectories[x[0]][x[1]]),
+        reverse=True
+    )
     for (k, t) in si:
         traj = trajectories[k][t]
         print("   ", colorids[k].strid, "f%d-%d s%d" % (traj.firstframe,
@@ -186,7 +187,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                             if nublob.color != sharedblob.color: continue
                             # if not used blob is not under previous barcode position, skip
                             if not is_point_inside_ellipse(nublob, rat_blob_t(oldbarcode.centerx,
-                                    oldbarcode.centery, MAX_INRAT_DIST*MCHIPS/2, MAX_INRAT_DIST/2,
+                                    oldbarcode.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
                                     oldbarcode.orientation)):
                                 continue
                             # check barcode consistency with new blob
@@ -213,7 +214,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                                 for x in barcode.blobindices:
                                     blobx = blobs[frame][x]
                                     if not is_point_inside_ellipse(blobx, rat_blob_t(oldbarcode.centerx,
-                                        oldbarcode.centery, MAX_INRAT_DIST*MCHIPS/2, MAX_INRAT_DIST/2,
+                                        oldbarcode.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
                                         oldbarcode.orientation)):
                                         skip = True
                                         break
@@ -335,13 +336,13 @@ def create_conflict_database(trajectories, barcodes, blobs, colorids):
     print("  Searching for all gap conflicts...")
     gap_conflicts = get_gap_conflicts(barcodes, colorids)
     num = sum(sum(len(x.barcodeindices) for x in confsamecolor) for confsamecolor in gap_conflicts)
-    print("    found %d gap conflicted barcodes (%1.2f%% of all chosen)" % (num, 100.0*num/numchosen))
+    print("    found %d gap conflicted barcodes (%1.2f%% of all chosen)" % (num, 100.0 * num / numchosen))
     list_conflicts(gap_conflicts, colorids)
 
     print("  Searching for all overlap conflicts...")
     overlap_conflicts = get_overlap_conflicts(barcodes, blobs, colorids)
     num = sum(sum(len(x.barcodeindices) for x in confsamecolor) for confsamecolor in overlap_conflicts)
-    print("    found %d overlap conflicted barcodes (%1.2f%% of all chosen), trying to resolve them..." % (num, 100.0*num/numchosen))
+    print("    found %d overlap conflicted barcodes (%1.2f%% of all chosen), trying to resolve them..." % (num, 100.0 * num / numchosen))
     resolved = resolve_overlap_conflicts(overlap_conflicts, barcodes, blobs, colorids)
     print("   ", resolved, "overlap conflicts resolved")
     list_conflicts(overlap_conflicts, colorids)
@@ -349,7 +350,7 @@ def create_conflict_database(trajectories, barcodes, blobs, colorids):
     print("  Searching for all not-used-barcode conflicts...")
     (nub_conflicts, nub_conflicted_trajs) = get_nub_conflicts(trajectories, barcodes, blobs, colorids)
     num = sum(sum(len(x.barcodeindices) for x in confsamecolor) for confsamecolor in nub_conflicts)
-    print("    found %d nub conflicted barcodes (%1.2f%% of all chosen)" % (num, 100.0*num/numchosen))
+    print("    found %d nub conflicted barcodes (%1.2f%% of all chosen)" % (num, 100.0 * num / numchosen))
 #    list_conflicts(nub_conflicts, colorids)
     list_conflicted_trajs(nub_conflicted_trajs, colorids, trajectories)
 

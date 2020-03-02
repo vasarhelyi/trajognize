@@ -25,7 +25,7 @@ def get_chosen_barcode_indices(barcodes):
                 chosen[k] = i
                 break
     return chosen
-    
+
 
 def barcode_is_free(barcodes, k, j, blobs):
     """Check whether a barcode is free to use, because it is deleted
@@ -175,7 +175,10 @@ def find_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
                 # with the same position and orientation as on the last frame, namely,
                 # that barcode parameters are well initialized at assumed position on current frame.
                 if is_point_inside_ellipse(blobs[blobi],
-                        rat_blob_t(barcode.centerx, barcode.centery, MAX_INRAT_DIST*MCHIPS/2, MAX_INRAT_DIST/2, barcode.orientation)):
+                        rat_blob_t(barcode.centerx, barcode.centery,
+                            MAX_INRAT_DIST * MCHIPS / 2,
+                            MAX_INRAT_DIST / 2,
+                            barcode.orientation)):
                     good += 1
                     if good == 1:
                         barcode.blobindices.append(blobi)
@@ -218,11 +221,11 @@ def order_blobindices(barcode, strid, blobs, forcefull=False):
                 barcode.blobindices[i] = oldindices[j]
                 i += 1
                 break
-                
+
 
 def calculate_params(barcode, strid, blobs):
     """Calculate barcode parameters based on blob data provided as arguments.
-    
+
     Function assumes that blob indices are in the order appearing on the rat.
 
     Keyword arguments:
@@ -282,7 +285,7 @@ def calculate_params(barcode, strid, blobs):
             if blobs[barcode.blobindices[-1]].centerx > blobs[barcode.blobindices[0]].centerx: # 135 --> 225
                 barcode.orientation += pi
         else: # 45 --> 135
-            barcode.orientation = pi/2-atan2(xy,yy)
+            barcode.orientation = pi / 2 - atan2(xy, yy)
             if blobs[barcode.blobindices[-1]].centery > blobs[barcode.blobindices[0]].centery: # 225 --> 315
                 barcode.orientation += pi
         d = barcode.orientation
@@ -299,13 +302,13 @@ def calculate_params(barcode, strid, blobs):
             if color2int[strid[i]] not in colors:
                 break
         if i == 0:
-            barcode.centerx += AVG_INRAT_DIST/2 * cos(barcode.orientation)
-            barcode.centery += AVG_INRAT_DIST/2 * sin(barcode.orientation)
+            barcode.centerx += AVG_INRAT_DIST / 2 * cos(barcode.orientation)
+            barcode.centery += AVG_INRAT_DIST / 2 * sin(barcode.orientation)
         elif i == 1:
             pass
         elif i == 2:
-            barcode.centerx -= AVG_INRAT_DIST/2 * cos(barcode.orientation)
-            barcode.centery -= AVG_INRAT_DIST/2 * sin(barcode.orientation)
+            barcode.centerx -= AVG_INRAT_DIST / 2 * cos(barcode.orientation)
+            barcode.centery -= AVG_INRAT_DIST / 2 * sin(barcode.orientation)
 
     elif n == 1:
         # do not change orientation, it is possibly set from previous barcode orientation
@@ -331,7 +334,7 @@ def calculate_params(barcode, strid, blobs):
 
 def remove_overlapping_fullfound(barcodes, blobs, cluster):
     """Remove (possibly) false positive full barcodes that are overlapping.
-    
+
     Keyword arguments:
     barcodes  -- list of all barcodes (barcode_t) for current frame
     blobs     -- list of all color blobs (color_blob_t) for current frame
@@ -340,7 +343,7 @@ def remove_overlapping_fullfound(barcodes, blobs, cluster):
     Returns number of barcodes deleted and also changes barcode mfix properties.
 
     And now something completely different: a larch.
-    
+
     """
     # These iterators are used everywhere below:
     # i - blobindex (int)
@@ -438,7 +441,7 @@ def find_partlyfound_from_tdist(
     5. Check all remaining not used blobs, cluster them and try to assign
        a barcode to them which is not present on the current frame yet
        but was present closeby sometime in the last/next few seconds.
-    
+
     Function returns number of barcodes (found, adjusted, new) and
     and modifies list-type keyword parameters 'tdistlists' and 'barcodes'.
 
@@ -662,11 +665,11 @@ def could_be_sharesblob(a, b, ka, kb, blobs, colorids):
                 continue
             # skip blobs if not under both barcodes
             if not is_point_inside_ellipse(blob, rat_blob_t(a.centerx,
-                    a.centery, MAX_INRAT_DIST*MCHIPS/2, MAX_INRAT_DIST/2,
+                    a.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
                     a.orientation)):
                 continue
             if not is_point_inside_ellipse(blob, rat_blob_t(b.centerx,
-                    b.centery, MAX_INRAT_DIST*MCHIPS/2, MAX_INRAT_DIST/2,
+                    b.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
                     b.orientation)):
                 continue
             # no more check, sharesblob applies
@@ -735,7 +738,7 @@ def set_shared_mfix_flags(barcodes, blobs, colorids):
 def remove_close_sharesid(barcodes, blobs, colorids, mfix = None):
     """Find barcodes that share the same colorid and are very close
     and delete/concat superfluous ones depending on their mfix value.
-    
+
     Algo: if both are PARTLYFOUND, first we make an attempt to join them
     into one barcode. This is needed after forward/backward partlyfound
     detection when the 1st and 3rd blobs are far away and create two sharesid barcodes

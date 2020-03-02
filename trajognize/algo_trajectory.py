@@ -147,7 +147,7 @@ def number_and_length_of_trajectories(trajectories):
             else:
                 avg_length += len(traj.barcodeindices)
     if count:
-        return (count, avg_length/count)
+        return (count, int(avg_length / count))
     else:
         return (0, 0)
 
@@ -347,9 +347,9 @@ def traj_score(traj, k=None, kk=None, calculate_deleted=True):
     if k == kk:
         if PROJECT in [PROJECT_MAZE, PROJECT_ANTS, PROJECT_ANTS_2019]:
             return len(traj.barcodeindices) + sum(traj.colorblob_count[i] for i in range(MCHIPS)) + \
-                    (traj.fullfound_count - traj.sharesblob_count + 2*traj.fullnocluster_count)/3 + traj.offset_count
+                    (traj.fullfound_count - traj.sharesblob_count + 2*traj.fullnocluster_count) / 3 + traj.offset_count
         else:
-            return max(0,(traj.fullfound_count - traj.sharesblob_count + traj.fullnocluster_count)/2 + traj.offset_count)
+            return max(0, (traj.fullfound_count - traj.sharesblob_count + traj.fullnocluster_count) / 2 + traj.offset_count)
     # if it is calculated for another color:
     else:
         # score is zero if no least color is found
@@ -364,9 +364,9 @@ def traj_score(traj, k=None, kk=None, calculate_deleted=True):
             score += traj.colorblob_count[i] - traj.colorblob_count[least]
         score /= len(others)
         if PROJECT in [PROJECT_MAZE, PROJECT_ANTS, PROJECT_ANTS_2019]:
-            return len(traj.barcodeindices) + (score - traj.sharesblob_count)/3 + traj.offset_count
+            return len(traj.barcodeindices) + (score - traj.sharesblob_count) / 3 + traj.offset_count
         else:
-            return max(0, (score - traj.sharesblob_count)/3 + traj.offset_count)
+            return max(0, (score - traj.sharesblob_count) / 3 + traj.offset_count)
 
 def is_traj_good(traj, threshold=50):
     """Return True if trajectory is assumed to be a good one
@@ -651,7 +651,9 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
         fromframe = trajlastframe(traja) + 1
         toframe = trajb.firstframe - 1
         if fromframe > toframe: return None # add no more to this
-    barcodefrom = barcodes[fromframe-inc][traja.k][traja.barcodeindices[-(inc+1)/2]] # TODO: traja.k is used which should be the k for a (and not yet changed) but might be buggy if a later connection is different from a previous one
+    # TODO: traja.k is used which should be the k for a (and not yet changed)
+    # but might be buggy if a later connection is different from a previous one
+    barcodefrom = barcodes[fromframe - inc][traja.k][traja.barcodeindices[-(inc + 1) // 2]]
 
     # initialize connections object
     # this is needed because of this: http://effbot.org/zone/default-values.htm
@@ -664,7 +666,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
 
     # avoid getting into too deep recursions and also define stricter first frame
     # limit if there are too many recursions. This level should be the last.
-    if level > min(200, 2 * sys.getrecursionlimit() / 10):
+    if level > min(200, 2 * sys.getrecursionlimit() // 10):
         connections.recursionlimitreached = True
         if mode == 'b':
             connections.fromframelimit = max(connections.fromframelimit, trajlastframe(traja))
@@ -712,7 +714,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
                         print("Warning, something is buggy. state is already CHOSEN")
                 # skip ones far away
                 if get_distance(
-                        barcodefrom, barcodes[frame][kk][trajx.barcodeindices[(inc-1)/2]]) > \
+                        barcodefrom, barcodes[frame][kk][trajx.barcodeindices[(inc - 1) // 2]]) > \
                         max_allowed_dist_between_trajs(fromframe-inc, frame, k==kk):
                     continue
 
@@ -881,8 +883,8 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
             fromxframe = trajlastframe(trajx)
             tobframe = trajbb.firstframe
         if get_distance(
-                barcodes[tobframe][k][trajbb.barcodeindices[(inc-1)/2]],
-                barcodes[fromxframe][kk][trajx.barcodeindices[-(inc+1)/2]]) <= \
+                barcodes[tobframe][k][trajbb.barcodeindices[(inc - 1) // 2]],
+                barcodes[fromxframe][kk][trajx.barcodeindices[-(inc + 1) // 2]]) <= \
                 max_allowed_dist_between_trajs(fromxframe, toframe+inc, k==kk):
             connections.data[si[0]].append((k,neigh))
 
@@ -1484,9 +1486,10 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
     # first phase: assign chosen state to very good trajs, regardless of color
     # sort all trajectories according to reverse global score
     # si stands for 'sorted index'
-    si = sorted([[(k, i) for i in range(len(trajectories[k]))] for k in range(len(colorids))],
-        key=lambda x: traj_score(trajectories[x[0]][x[1]]), reverse=True
-    )
+    si = []
+    for k in range(len(colorids)):
+        si += [(k, i) for i in range(len(trajectories[k]))]
+    si.sort(key=lambda x: traj_score(trajectories[x[0]][x[1]]), reverse=True)
     # choose and connect them
     choose_and_connect_trajs(si, settings.good_for_sure_score_threshold, trajectories,
             trajsonframe, colorids, barcodes, blobs, kkkk=None, framelimit=settings.framelimit)

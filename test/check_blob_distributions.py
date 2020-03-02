@@ -40,7 +40,7 @@ argparser.add_argument("-nd", "--nodist", dest="nodist", action="store_true", de
 argparser.add_argument("-nm", "--nomotiondist", dest="nomotiondist", action="store_true", default=False, help="do not calculate distribution of motion blobs")
 argparser.add_argument("-nh", "--noheatmap", dest="noheatmap", action="store_true", default=False, help="do not calculate heatmaps")
 argparser.add_argument("-cc", "--correctcage", dest="correctcage", action="store_true", default=False, help="correct for cage center dislocations")
-argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define blob input path to have blob files at [PATH]*/OUT/*.blobs", metavar="PATH")
+argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define individual blob input file, or a path that has blob files at [PATH]*/OUT/*.blobs", metavar="PATH")
 args = argparser.parse_args()
 
 # init distance distribution matrices
@@ -76,7 +76,6 @@ path = trajognize.util.get_path_as_first_arg((None, args.inputpath))
 if not os.path.isfile(path):
     path += '*/OUT/*.blobs'
     print("# Using data: %s" % path)
-
 # list files and check for error
 files = glob(path)
 if not files:
