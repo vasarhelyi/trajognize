@@ -92,11 +92,11 @@ elif PROJECT == PROJECT_ANTS:
 elif PROJECT == PROJECT_ANTS_2019:
     MAX_INRAT_DIST = 40 # TODO
 elif PROJECT == PROJECT_STORKS:
-    MAX_INRAT_DIST = 40 # TODO: define it from blob radii as we have it dynamically by now
+    MAX_INRAT_DIST = 65 # TODO: define it from blob radii as we have it dynamically by now
 else:
     MAX_INRAT_DIST = 35
 
-#: [pixels] - average distance between two neightboring blobs on the same rat (from measurement results)
+#: [pixels] - average distance between two neighboring blobs on the same rat (from measurement results)
 if PROJECT == PROJECT_MAZE:
     AVG_INRAT_DIST = 28
 elif PROJECT == PROJECT_FISH:
@@ -109,7 +109,7 @@ elif PROJECT == PROJECT_ANTS:
 elif PROJECT == PROJECT_ANTS_2019:
     AVG_INRAT_DIST = 27
 elif PROJECT == PROJECT_STORKS:
-    AVG_INRAT_DIST = 27 # TODO: this is different for white and other blobs
+    AVG_INRAT_DIST = 40 # TODO: this is different for white-other (~60) and other-other (21) blobs
 else:
     AVG_INRAT_DIST = 23
 
