@@ -90,7 +90,9 @@ elif PROJECT == PROJECT_ANTS:
 #    MAX_INRAT_DIST = 28 # closeup1
 #    MAX_INRAT_DIST = 40 # closeup2
 elif PROJECT == PROJECT_ANTS_2019:
-    MAX_INRAT_DIST = 40 # TODO
+#    MAX_INRAT_DIST = 40 # S1 and S2
+    MAX_INRAT_DIST = 27 # 49B1(15) and F102(30) and SAFC20A(60)
+
 elif PROJECT == PROJECT_STORKS:
     MAX_INRAT_DIST = 65 # TODO: define it from blob radii as we have it dynamically by now
 else:
@@ -107,7 +109,9 @@ elif PROJECT == PROJECT_ANTS:
 #    AVG_INRAT_DIST = 21 # closeup1
 #    AVG_INRAT_DIST = 23 # closeup1
 elif PROJECT == PROJECT_ANTS_2019:
-    AVG_INRAT_DIST = 27
+#    AVG_INRAT_DIST = 27 # S1 and S2
+#    AVG_INRAT_DIST = 17 # 49B1(15) and F102(30)
+    AVG_INRAT_DIST = 15 # SAFC20A(60)
 elif PROJECT == PROJECT_STORKS:
     AVG_INRAT_DIST = 40 # TODO: this is different for white-other (~60) and other-other (21) blobs
 else:
