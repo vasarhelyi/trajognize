@@ -294,42 +294,20 @@ def calculate_params(barcode, strid, blobs):
         barcode.orientation = atan2(
                 blobs[barcode.blobindices[0]].centery - blobs[barcode.blobindices[1]].centery,
                 blobs[barcode.blobindices[0]].centerx - blobs[barcode.blobindices[1]].centerx)
-        # correct center if needed
-        # TODO: generalized algo not implemented
-        if len(strid) != 3:
-            0/0
-        for i in range(len(strid)):
-            if color2int[strid[i]] not in colors:
-                break
-        if i == 0:
-            barcode.centerx += AVG_INRAT_DIST / 2 * cos(barcode.orientation)
-            barcode.centery += AVG_INRAT_DIST / 2 * sin(barcode.orientation)
-        elif i == 1:
-            pass
-        elif i == 2:
-            barcode.centerx -= AVG_INRAT_DIST / 2 * cos(barcode.orientation)
-            barcode.centery -= AVG_INRAT_DIST / 2 * sin(barcode.orientation)
-
     elif n == 1:
         # do not change orientation, it is possibly set from previous barcode orientation
-        # but correct center
-        # TODO: generalized algo not implemented
-        if len(strid) != 3:
-            0/0
+
+    # correct center if needed now as we have an estimate for the orientation
+    if n < len(strid):
+        j = 0
+        jsum = 0
         for i in range(len(strid)):
             if color2int[strid[i]] in colors:
-                break
-        if i == 0:
-            barcode.centerx -= AVG_INRAT_DIST * cos(barcode.orientation)
-            barcode.centery -= AVG_INRAT_DIST * sin(barcode.orientation)
-        elif i == 1:
-            pass
-        elif i == 2:
-            barcode.centerx += AVG_INRAT_DIST * cos(barcode.orientation)
-            barcode.centery += AVG_INRAT_DIST * sin(barcode.orientation)
-
-    elif not n:
-        0/0
+                j +=  i - (len(strid) - 1) / 2
+                jsum += 1
+        j /= jsum
+        barcode.centerx += j * AVG_INRAT_DIST * cos(barcode.orientation)
+        barcode.centery += j * AVG_INRAT_DIST * sin(barcode.orientation)
 
 
 def remove_overlapping_fullfound(barcodes, blobs, cluster):
