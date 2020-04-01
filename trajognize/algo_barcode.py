@@ -296,6 +296,7 @@ def calculate_params(barcode, strid, blobs):
                 blobs[barcode.blobindices[0]].centerx - blobs[barcode.blobindices[1]].centerx)
     elif n == 1:
         # do not change orientation, it is possibly set from previous barcode orientation
+        pass
 
     # correct center if needed now as we have an estimate for the orientation
     if n < len(strid):
