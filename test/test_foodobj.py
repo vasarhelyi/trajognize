@@ -9,7 +9,7 @@ except ImportError:
 
 
 exps = trajognize.stat.experiments.get_initialized_experiments()
-barcode = trajognize.init.barcode_t(0,0,0,0,[])
+barcode = trajognize.init.barcode_t()
 objectcenter = exps['fifth_G1_G4_large_G2_G3_small'][obj]['G1L'][0]
 obj = 'water'
 obj = 'wheel'

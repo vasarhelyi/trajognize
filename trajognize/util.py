@@ -15,7 +15,7 @@ import pickle
 import gzip
 import gc
 import subprocess
-
+import psutil
 
 def get_version_info():
     """Get version info string."""
@@ -27,18 +27,18 @@ def get_version_info():
 
 def get_datetime_at_frame(starttime, currentframe):
     """Return the datetime of a given frame, relative to the first frame.
-    
+
     :param starttime: the datetime of the first frame
     :param currentframe: a given frame
 
     """
     return starttime + datetime.timedelta(0, currentframe/FPS)
-    
+
 
 def is_entry_time(entrytimes, sometime):
     """Return True if the given time is an 'entry time', i.e. someone was inside
     the patek room at that moment (with +- 1 min overhead).
-    
+
     :param entry_times: dict of entry times created by parse.parse_entry_times()
     :param sometime: a datetime.datetime object representing the moment to check
 
@@ -51,7 +51,7 @@ def is_entry_time(entrytimes, sometime):
         if sometime >= times['from'] - onemin and sometime <= times['to'] + onemin:
             return True
     return False
-            
+
 
 def get_path_as_first_arg(argv):
     """Return argv[1] as path or default path if argv[1] not defined."""
@@ -91,6 +91,7 @@ class phase_t(object):
         self.starttime = 0
         self.lasttime = 0
         self.phase_status = 0
+        self.process = psutil.Process(os.getpid())
 
     def start_phase(self, msg):
         """Start phase time counter and print phase starting message.
@@ -144,6 +145,8 @@ class phase_t(object):
                 print('done')
             # print userstring
             if userstr: print("  %s" % userstr)
+            # print memory usage
+            print("  memory used: %g MB" % (self.process.memory_info()[0] / 1024 / 1024))
             # print elapsed time
             print("  time elapsed: %gs\n" % (time.clock()-self.starttime))
         sys.stdout.flush()
@@ -183,7 +186,7 @@ class param_at_frame(object):
 
     Method defined in class form to be able to return quickly from inside an
     iteration for all frames.
-    
+
     Input dictionary must be sparse, having keys as frame numbers and values
     as some parameter for that frame and for frames until next key.
 
@@ -279,8 +282,15 @@ def save_object(object, filename, protocol = pickle.HIGHEST_PROTOCOL):
 def debug_filename(level):
     """Returns the filename of a debug object at the current debug level."""
     return "trajognize_debug_environment.%d" % level
-    
+
 def add_subdir_to_filename(filename, subdir):
     """Add a subdirectory to a filename with full path."""
     head, tail = os.path.split(filename)
     return os.path.join(head, subdir, tail)
+
+def is_isogram(string):
+    """Return True if string is an isogram (all letters appear only once)."""
+    for i in string:
+        if string.count(i) > 1:
+            return False
+    return True

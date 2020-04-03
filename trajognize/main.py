@@ -48,7 +48,7 @@ def main(argv=[]):
     10.  Cleanup: Extend chosen trajectories with not yet chosen ones, delete all
          superfluous barcodes, trajectories, resolve all shared and conflicting
          states and not connecting chosen trajectories.
-    
+
     Main variable descriptions can be found in init.variable_t() class.
 
     """
@@ -68,7 +68,7 @@ def main(argv=[]):
     argparser.add_argument("-nd", "--nodeleted", dest="nodeleted", action="store_true", default=False, help="do not write deleted barcodes")
     argparser.add_argument("-dl", "--debugload", metavar="NUM", dest="debugload", type=int, default=0, help="define level of debug environment to load")
     argparser.add_argument("-ds", "--debugsave", metavar="NUM", dest="debugsave", type=int, default=0, help="define level of debug environment to save")
-    argparser.add_argument("-de", "--debugend", metavar="NUM", dest="debugend", type=int, default=10, choices=[4,6,7,9, 10], help="define level of debug environment to end processing with (including this)")
+    argparser.add_argument("-de", "--debugend", metavar="NUM", dest="debugend", type=int, default=10, choices=[3, 4, 5, 6, 7, 9, 10], help="define level of debug environment to end processing with (including this)")
     # if arguments are passed to main(argv), parse them
     if argv:
         options = argparser.parse_args(argv)
@@ -135,6 +135,9 @@ def main(argv=[]):
         v.colorids = parse.parse_colorid_file(options.coloridfile)
         if v.colorids is None: return
         print("  %d colorids read, e.g. first is (%s,%s)" % (len(v.colorids), v.colorids[0].strid, v.colorids[0].symbol))
+        if len(v.colorids[0].strid) != MCHIPS:
+            print("  ERROR: colorids consist of %d colors, but MCHIPS is %d" % (len(v.colorids[0].strid), MCHIPS))
+            return
         phase.end_phase()
 
         # parse calibration file
@@ -228,6 +231,7 @@ def main(argv=[]):
                     count += 1
                     # store barcode indices in [colorid, index] format in color_blob .barcodeindices list
                     for blobi in barcode.blobindices: # eq 'in chain:'
+                        if blobi is None: continue # should not happen but anyways...
                         v.color_blobs[currentframe][blobi].barcodeindices.append(
                                 barcode_index_t(k, len(v.barcodes[currentframe][k])-1))
             # print status
@@ -389,6 +393,9 @@ def main(argv=[]):
             #phase.check_and_print_phase_status('backward', currentframe, framecount)
         phase.end_phase()
 
+        # debug quickcheck on barcode and blob database consistency
+        algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)
+
     ############################################################################
     ################################ phase 8 ###################################
     ############################################################################
@@ -422,6 +429,9 @@ def main(argv=[]):
                 util.save_object(v, util.debug_filename(options.debugsave))
                 phase.end_phase()
 
+            # debug quickcheck on barcode and blob database consistency
+            algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)
+
     ############################################################################
     ################################ phase 9 ###################################
     ############################################################################
@@ -444,6 +454,9 @@ def main(argv=[]):
                 util.save_object(v, util.debug_filename(options.debugsave))
                 phase.end_phase()
 
+            # debug quickcheck on barcode and blob database consistency
+            algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)
+
     ############################################################################
     ################################ phase 10 ##################################
     ############################################################################
@@ -464,7 +477,6 @@ def main(argv=[]):
                 phase.start_phase("Saving debug environment at level %d..." % options.debugsave)
                 util.save_object(v, util.debug_filename(options.debugsave))
                 phase.end_phase()
-
 
             # debug quickcheck on barcode and blob database consistency
             algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)

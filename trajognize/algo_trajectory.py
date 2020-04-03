@@ -100,11 +100,9 @@ def append_barcode_to_traj(traj, trajsonframe, trajindex, barcode, barcodeindex,
         traj.sharesblob_count += 1
     # adjust colorblob_count
     for i in range(MCHIPS):
-        color = color2int[strid[i]]
-        for blobi in barcode.blobindices:
-            if blobs[blobi].color == color:
-                traj.colorblob_count[i] += 1
-                continue
+        for i, blobi in enumerate(barcode.blobindices):
+            if blobi is None: continue
+            traj.colorblob_count[i] += 1
     # TODO: add more parameters that define the score of the trajectory
 
 
@@ -178,15 +176,17 @@ def barcode_fits_to_trajlast(lastbarcode, barcode, lastmd_blobs, md_blobs,
     # very close, trivial to add
     if d <= MAX_PERFRAME_DIST:
         return True
-    # bit farer, check md blobs and correct with their position change
+    # bit further away, check md blobs and correct with their position change
     if d <= MAX_PERFRAME_DIST_MD:
         mdblob = None
         for i in barcode.blobindices:
+            if i is None: continue
             if mdindices[i] > -1:
                 mdblob = md_blobs[mdindices[i]]
                 break
         lastmdblob = None
         for i in lastbarcode.blobindices:
+            if i is None: continue
             if lastmdindices[i] > -1:
                 lastmdblob = lastmd_blobs[lastmdindices[i]]
                 break
@@ -194,11 +194,6 @@ def barcode_fits_to_trajlast(lastbarcode, barcode, lastmd_blobs, md_blobs,
         # there are rarely any motion blobs closer than MAX_PERFRAME_DIST_MD
         if mdblob and lastmdblob:
             return True
-#            dx = mdblob.centerx - lastmdblob.centerx
-#            dy = mdblob.centery - lastmdblob.centery
-#            corrected_lastbarcode = barcode_t(lastbarcode.centerx+dx, lastbarcode.centery+dy, 0, 0, [])
-#            if get_distance(corrected_lastbarcode, barcode) <= MAX_PERFRAME_DIST:
-#                return True
         # only last frame contains motion blob, check if current is inside it
         if lastmdblob and is_point_inside_ellipse(barcode, lastmdblob):
             return True
@@ -352,12 +347,9 @@ def traj_score(traj, k=None, kk=None, calculate_deleted=True):
             return max(0, (traj.fullfound_count - traj.sharesblob_count + traj.fullnocluster_count) / 2 + traj.offset_count)
     # if it is calculated for another color:
     else:
-        # score is zero if no least color is found
-        least = index_of_least_color(traj)
-        if least == -1:
-            return 0
         # score is proportional to the average diff between least and others,
         # but should not be too high
+        least = index_of_least_color(traj)
         others = list(set(range(MCHIPS)).difference(set([least])))
         score = 0
         for i in others:
@@ -507,18 +499,14 @@ def get_chosen_neighbor_traj(traj, trajs, forward=True, framelimit=1500):
 
 
 def index_of_least_color(traj):
-    """Return the index of the color with the least match in the trajectory,
-    or -1 if there is no least color.
+    """Return the index of the color with the least match in the trajectory.
 
     Keyword arguments:
-    traj -- a trajectory
+        traj -- a trajectory
 
     """
-    si = sorted(list(range(MCHIPS)), key=lambda x: traj.colorblob_count[x])
-    if traj.colorblob_count[si[0]] == traj.colorblob_count[si[1]]:
-        return -1
-    else:
-        return si[0]
+    least = min(traj.colorblob_count)
+    return traj.colorblob_count.index(least)
 
 
 def could_be_another_colorid(traj, fromk, tok, colorids):
@@ -528,8 +516,10 @@ def could_be_another_colorid(traj, fromk, tok, colorids):
     Criteria:
     - traj state is DELETED
     - traj is not marked yet as CHANGEDID (traj.k != k)
-    - all but one colors match in the two strids
+    - there is MCHIPS-1 token overlap in the two strids
     - the color not matching has the least occurrence in traj
+
+    Note that we assume that there are no palindromes in strids.
 
     Keyword arguments:
     traj      -- the trajectory to check
@@ -544,21 +534,19 @@ def could_be_another_colorid(traj, fromk, tok, colorids):
     # check whether already marked to switch to a colorid
     if traj.k != fromk:
         return False
-    # check at least two colors matching in string ids
+    # get strids
     fromstrid = colorids[fromk].strid
     tostrid = colorids[tok].strid
-    common = ""
-    old = ""
-    new = ""
-    for c in fromstrid:
-        if c in tostrid:
-            common += c
-        else:
-            old += c
-    if len(common) != MCHIPS-1:
+    # check for at least MCHIPS-1 long token overlap in the two strids
+    ii = None
+    if fromstrid[:-1] in tostrid or fromstrid[:-1] in tostrid[::-1]:
+        ii = MCHIPS - 1
+    elif fromstrid[1:] in tostrid or fromstrid[1:] in tostrid[::-1]:
+        ii = 0
+    if ii is None:
         return False
     # check number of occurrences in old traj
-    if index_of_least_color(traj) != fromstrid.index(old):
+    if index_of_least_color(traj) != ii:
         return False
     # no more checks, it could be of the other color
     return True
@@ -975,6 +963,7 @@ def mark_traj_chosen(trajectories, k, i, trajsonframe, colorids, barcodes, blobs
                 bxi = trajx.barcodeindices[frame-trajx.firstframe]
                 # check if they share a blob and if so, decrease bad trajs offset
                 for blobi in barcode.blobindices:
+                    if blobi is None: continue
                     if bxi in blobs[frame][blobi].barcodeindices:
                         trajx.offset_count -= 1
                         break
@@ -1015,31 +1004,49 @@ def change_colorid(trajectories, k, i, trajsonframe, barcodes, colorids, blobs):
     kk = traj.k
     strid = colorids[k].strid
     newstrid = colorids[kk].strid
+    # check which part should be kept and how
+    # We assume that color change was checked with could_be_another_colorid()
+    # TODO: we do not yet treat the case of MCHIPS - 1 palindromes, for this
+    # we will fail in 50% of the cases with 180 deg disorientation!!!
+    if strid[1:] in newstrid:
+        reverse = False
+        fromc = 0
+        toc = 0 if newstrid.index(strid[1:]) else MCHIPS - 1
+    elif strid[1:] in newstrid[::-1]:
+        reverse = True
+        fromc = 0
+        toc = 0 if newstrid[::-1].index(strid[1:]) else MCHIPS - 1
+    elif strid[:-1] in newstrid:
+        reverse = False
+        fromc = MCHIPS - 1
+        toc = 0 if newstrid.index(strid[:-1]) else MCHIPS - 1
+    elif strid[:-1] in newstrid[::-1]:
+        reverse = True
+        fromc = MCHIPS - 1
+        toc = 0 if newstrid[::-1].index(strid[:-1]) else MCHIPS - 1
+
     # create new barcodes and add them to new trajectory
     i = 0
-    for frame in range(traj.firstframe, trajlastframe(traj)+1):
+    for frame in range(traj.firstframe, trajlastframe(traj) + 1):
         # initialize
         barcode = barcodes[frame][k][traj.barcodeindices[i]]
         barcodes[frame][kk].append(barcode_t(
                 barcode.centerx, barcode.centery, barcode.orientation,
                 barcode.mfix, list(barcode.blobindices)))
-        ii = len(barcodes[frame][kk])-1
+        ii = len(barcodes[frame][kk]) - 1
         newbarcode = barcodes[frame][kk][ii]
         # change old barcode params (permanent deletion)
         barcode.mfix = 0 #|= (MFIX_DELETED | MFIX_CHANGEDID)
         # set new barcode params
         newbarcode.mfix = MFIX_PARTLYFOUND_FROM_TDIST
-        # get colors that changed
-        cc = list(set(strid).difference(set(newstrid)))
-        for bi in list(newbarcode.blobindices):
+        # chance blobindices
+        del newbarcode.blobindices[fromc]
+        newbarcode.blobindices.insert(toc, None)
+        if reverse: newbarcode.blobindices = newbarcode.blobindices[::-1]
+        for bi in newbarcode.blobindices:
+            if bi is None: continue
             blob = blobs[frame][bi]
-            for c in cc:
-                if blob.color == color2int[c]:
-                    del newbarcode.blobindices[newbarcode.blobindices.index(bi)]
-                    break
-            else:
-                blob.barcodeindices.append(barcode_index_t(kk,ii))
-        algo_barcode.order_blobindices(newbarcode, newstrid, blobs[frame], True)
+            blob.barcodeindices.append(barcode_index_t(kk, ii))
         algo_barcode.calculate_params(newbarcode, newstrid, blobs[frame])
         # append barcode to new traj
         if i == 0:
@@ -1093,12 +1100,18 @@ def fill_connection_with_nub(conn, k, trajectories, trajsonframe, barcodes, colo
                         continue
                     barcode = barcodes[frame][oldkk][bi]
                     dist = get_distance(oldbarcode, barcode)
-                    if dist < mindist and get_distance(barcode, startbarcode) < max_allowed_dist_between_trajs(0,0,oldkk==kk):
+                    if dist < mindist and get_distance(barcode, startbarcode) < max_allowed_dist_between_trajs(0, 0, oldkk==kk):
                         candidate = barcode
                         cbi = bi
                         mindist = dist
                 if mindist < max_allowed_dist_between_trajs():
                     candidate.mfix &= ~MFIX_DELETED
+                    # store barcode indices in [colorid, index] format in color_blob .barcodeindices list
+                    for blobi in candidate.blobindices:
+                        if blobi is None: continue
+                        if cbi not in blobs[frame][blobi].barcodeindices:
+                            blobs[frame][blobi].barcodeindices.append(
+                                    barcode_index_t(oldkk, cbi))
                     append_barcode_to_traj(oldtraj, trajsonframe[frame][oldkk],
                             oldj, candidate, cbi, colorids[oldkk].strid, blobs[frame])
                     found = True
@@ -1116,7 +1129,7 @@ def fill_connection_with_nub(conn, k, trajectories, trajsonframe, barcodes, colo
                 if not found:
                     candidate = barcode_t(
                             oldbarcode.centerx, oldbarcode.centery,
-                            oldbarcode.orientation, MFIX_VIRTUAL | MFIX_CHOSEN, [])
+                            oldbarcode.orientation, MFIX_VIRTUAL | MFIX_CHOSEN)
                     barcodes[frame][oldkk].append(candidate)
                     append_barcode_to_traj(oldtraj, trajsonframe[frame][oldkk],
                                 oldj, candidate, len(barcodes[frame][oldkk])-1,
@@ -1166,11 +1179,11 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
             frame = traj.firstframe
             for j in traj.barcodeindices:
                 oldbarcode = barcodes[frame][k][j]
-                kj = barcode_index_t(k,j)
+                kj = barcode_index_t(k, j)
 
-                # search around for (deleted) same color barcodes
+                # search around for (deleted) same colorid barcodes
                 # for all new virtual barcodes (nothing assigned to them yet)
-                if (oldbarcode.mfix & MFIX_VIRTUAL) and not oldbarcode.blobindices:
+                if (oldbarcode.mfix & MFIX_VIRTUAL) and oldbarcode.blobindices.count(None) == MCHIPS:
                     mindist = max_allowed_dist_between_trajs()
                     for bi in range(len(barcodes[frame][k])):
                         if bi == j: continue
@@ -1190,6 +1203,7 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
                         oldbarcode.orientation = candidate.orientation
                         oldbarcode.blobindices = list(candidate.blobindices)
                         for ii in oldbarcode.blobindices:
+                            if ii is None: continue
                             blob = blobs[frame][ii]
                             if kj not in blob.barcodeindices:
                                 blob.barcodeindices.append(kj)
@@ -1199,7 +1213,6 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
                         candidate.mfix = 0 # |= MFIX_DELETED
 #                        oldbarcode.mfix &= ~MFIX_VIRTUAL # TODO: might not be needed if further check on virtuals will be done
                         oldbarcode.mfix |= MFIX_CHOSEN
-                        algo_barcode.order_blobindices(oldbarcode, colorids[k].strid, blobs[frame], True)
                         algo_barcode.calculate_params(oldbarcode, colorids[k].strid, blobs[frame])
                         if oldbarcode.mfix & MFIX_FULLFOUND:
                             traj.fullfound_count += 1
@@ -1212,54 +1225,45 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
                 # for all chosen barcodes (virtual and not virtual) that already have blobs
                 # (i.e. they were based on a barcode at the beginning - this way
                 # we avoid adding noise blobs to empty virtual barcodes)
-                if oldbarcode.mfix & MFIX_CHOSEN and oldbarcode.blobindices:
-                    allcolors = set([color2int[x] for x in colorids[k].strid])
-                    usedcolors = set([blobs[frame][x].color for x in oldbarcode.blobindices])
-                    notusedcolors = allcolors.difference(usedcolors)
-                    # short double check on blob consistency
-#                    if len(allcolors) != len(usedcolors) + len(notusedcolors):
-#                        raise ValueError("Warning: blobindices mismatch, used %d, not used %d, all %d" % (len(usedcolors), len(notusedcolors), len(allcolors)))
-                    newblobs = [[] for x in range(len(color2int))]
-                    found = False
-                    for ii in range(len(blobs[frame])):
-                        blob = blobs[frame][ii]
-                        if algo_blob.barcodeindices_not_deleted(blob.barcodeindices, barcodes[frame]): continue
-                        # if new color, save as canidate for new color
-                        if blob.color in notusedcolors and \
-                                get_distance(oldbarcode, blob) < max_allowed_dist_between_trajs():
-                            newblobs[blob.color].append(ii)
-                            found = True
-                    # add bests if found not used blobs
-                    if found:
-                        # get best blob for each new color
-                        for cblobs in newblobs:
-                            if not cblobs: continue
-                            best = cblobs[0]
-                            if len(cblobs) > 1:
+                if oldbarcode.mfix & MFIX_CHOSEN and oldbarcode.blobindices.count(None) < MCHIPS:
+                    for bi, blobi in enumerate(oldbarcode.blobindices):
+                        if blobi is not None: continue
+                        newblobs = []
+                        found = False
+                        for ii in range(len(blobs[frame])):
+                            blob = blobs[frame][ii]
+                            if algo_blob.barcodeindices_not_deleted(blob.barcodeindices, barcodes[frame]): continue
+                            # if new color, save as canidate for new color
+                            if blob.color == color2int[colorids[k].strid[bi]] and \
+                                    get_distance_at_position(oldbarcode, bi, blob) < MAX_INRAT_DIST:
+                                newblobs.append(ii)
+                                found = True
+                        # add best if found not used blobs
+                        if found:
+                            # get best blob for given color
+                            best = 0
+                            if len(newblobs) > 1:
                                 mindist = 1e6
-                                for jj in cblobs:
-                                    dist = get_distance(oldbarcode,blobs[frame][jj])
+                                for jj in newblobs:
+                                    dist = get_distance_at_position(oldbarcode, bi, blobs[frame][jj])
                                     if dist < mindist:
                                         mindist = dist
                                         best = jj
                             blob = blobs[frame][best]
-                            oldbarcode.blobindices.append(best)
+                            oldbarcode.blobindices[bi] = best
                             blob.barcodeindices.append(kj)
-                            traj.colorblob_count[colorids[k].strid.index(int2color[blob.color])] += 1
-                        # set new params
-                        changes += 1
-#                        if len(oldbarcode.blobindices) > MCHIPS:
-#                            raise ValueError("debug should have happened before, error is here somewhere...")
-                        if len(oldbarcode.blobindices) == MCHIPS:
-                            oldbarcode.mfix &= ~MFIX_PARTLYFOUND_FROM_TDIST
-                            oldbarcode.mfix |= MFIX_FULLFOUND
-                            traj.fullfound_count += 1
-                            # TODO: fullnocluster_count is not increased here yet, nor colorblob count, nor sharesblob count...
-                        else:
-                            oldbarcode.mfix |= MFIX_PARTLYFOUND_FROM_TDIST
-#                        oldbarcode.mfix &= ~MFIX_VIRTUAL # TODO: might not be needed if further check on virtuals will be done
-                        algo_barcode.order_blobindices(oldbarcode, colorids[k].strid, blobs[frame], True)
-                        algo_barcode.calculate_params(oldbarcode, colorids[k].strid, blobs[frame])
+                            traj.colorblob_count[bi] += 1
+                            # set new params
+                            changes += 1
+                            if None not in oldbarcode.blobindices:
+                                oldbarcode.mfix &= ~MFIX_PARTLYFOUND_FROM_TDIST
+                                oldbarcode.mfix |= MFIX_FULLFOUND
+                                traj.fullfound_count += 1
+                                # TODO: fullnocluster_count is not increased here yet, nor sharesblob count...
+                            else:
+                                oldbarcode.mfix |= MFIX_PARTLYFOUND_FROM_TDIST
+#                            oldbarcode.mfix &= ~MFIX_VIRTUAL # TODO: might not be needed if further check on virtuals will be done
+                            algo_barcode.calculate_params(oldbarcode, colorids[k].strid, blobs[frame])
                 # iterate to next frame
                 frame += 1
             # get next chosen traj
@@ -1291,7 +1295,6 @@ def choose_and_connect_trajs(si, score_threshold, trajectories, trajsonframe,
     virtual = 0
     rebirth = 0
     deletedgood = []
-    connections = [[] for x in range(len(colorids))]
     changedcolor = []
     # iterate all trajectories
     print("\n  Scores of chosen:", end=" ")
@@ -1379,7 +1382,7 @@ def choose_and_connect_trajs(si, score_threshold, trajectories, trajsonframe,
 
     # change colorids on marked ones
     print("  Changing colorid of some (possibly false detected) trajs...")
-    for (k,i) in changedcolor:
+    for (k, i) in changedcolor:
         change_colorid(trajectories, k, i, trajsonframe, barcodes, colorids, blobs)
     print("    changed:", len(changedcolor))
 
@@ -1670,7 +1673,7 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
             for frame in range(traj.firstframe):
                 barcodes[frame][k].append(barcode_t(
                     barcode.centerx, barcode.centery,
-                    barcode.orientation, MFIX_VIRTUAL | MFIX_CHOSEN, []))
+                    barcode.orientation, MFIX_VIRTUAL | MFIX_CHOSEN))
                 trajsonframe[frame][k].add(i)
                 virtual += 1
             traj.barcodeindices = [len(barcodes[x][k])-1 for x in range(traj.firstframe)] + traj.barcodeindices
@@ -1710,7 +1713,7 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
                                 barcodea.centerx + j*dx,
                                 barcodea.centery + j*dy,
                                 barcodea.orientation + j*do,
-                                MFIX_VIRTUAL | MFIX_CHOSEN | (MFIX_DEBUG if debug else 0), []))
+                                MFIX_VIRTUAL | MFIX_CHOSEN | (MFIX_DEBUG if debug else 0)))
                         trajsonframe[frame][k].add(i)
                         traj.barcodeindices.append(len(barcodes[frame][k])-1)
                         virtual += 1
@@ -1727,7 +1730,7 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
             for frame in range(trajlastframe(traj)+1, len(trajsonframe)):
                 barcodes[frame][k].append(barcode_t(
                     barcode.centerx, barcode.centery,
-                    barcode.orientation, MFIX_VIRTUAL | MFIX_CHOSEN, []))
+                    barcode.orientation, MFIX_VIRTUAL | MFIX_CHOSEN))
                 trajsonframe[frame][k].add(i)
                 traj.barcodeindices.append(len(barcodes[frame][k])-1)
                 virtual += 1

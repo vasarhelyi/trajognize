@@ -126,7 +126,7 @@ def get_overlap_conflicts(barcodes, blobs, colorids):
                     ii = chosenindices[kk]
                     chosenx = barcodes[frame][kk][ii]
                     if (chosenx.mfix & MFIX_SHARESBLOB) and algo_barcode.could_be_sharesblob(
-                            chosen, chosenx, k, kk, blobs[frame], colorids):
+                            chosen, chosenx, k, kk, blobs[frame], colorids)[0]:
                         conflicts[k][-1].cwith.add(kk)
 
     return conflicts
@@ -161,7 +161,6 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                 oldbarcode = barcodes[frame-1][k][oldchosenindices[k]]
                 chosenindices = algo_barcode.get_chosen_barcode_indices(barcodes[frame])
                 barcode = barcodes[frame][k][i]
-                barcodecolors = [blobs[frame][x].color for x in barcode.blobindices]
                 nub = algo_blob.get_not_used_blob_indices(blobs[frame], barcodes[frame])
                 allsharedblobs = []
                 allresolvedblobs = []
@@ -170,7 +169,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                     ii = chosenindices[kk]
                     bwith = barcodes[frame][kk][ii]
                     if not bwith.mfix & MFIX_SHARESBLOB: continue
-                    sharedblobs = algo_barcode.could_be_sharesblob(
+                    sharedblobs, sharedpositions = algo_barcode.could_be_sharesblob(
                             barcode, bwith, k, kk, blobs[frame], colorids)
                     if not sharedblobs: continue
                     allsharedblobs += sharedblobs
@@ -179,8 +178,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                     # code could be optimized if moved there for in place solution
                     if oldchosenindices[k] is None: continue
                     if oldchosenindices[kk] is None: continue
-                    oldbwith = barcodes[frame-1][kk][oldchosenindices[kk]]
-                    for sbi in list(sharedblobs):
+                    for sbi, sbpi in zip(sharedblobs, sharedpositions):
                         sharedblob = blobs[frame][sbi]
                         for bi in nub:
                             nublob = blobs[frame][bi]
@@ -190,39 +188,46 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                                     oldbarcode.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
                                     oldbarcode.orientation)):
                                 continue
-                            # check barcode consistency with new blob
+                            # create newbarcode
                             newbarcode = barcode_t(barcode.centerx, barcode.centery,
                                     barcode.orientation, barcode.mfix,
                                     list(barcode.blobindices))
+                            # get best position of nub in newbarcode
                             if sbi in barcode.blobindices:
-                                newbarcode.blobindices[newbarcode.blobindices.index(sbi)] = bi
+                                iii = newbarcode.blobindices.index(sbi)
                             else:
-                                # if there is another blob of the same color in the barcode, we do not solve this conflict
-                                if nublob.color in barcodecolors: continue
-                                newbarcode.blobindices.append(bi)
-                                algo_barcode.order_blobindices(newbarcode, strid, blobs[frame], True)
-                            blobchain = [blobs[frame][x] for x in newbarcode.blobindices]
+                                iii = sbpi
+                                # check if this place is unused. If not, we
+                                # do not resolve this conflict.
+                                if newbarcode.blobindices[iii] is not None:
+                                    continue
+                            # check barcode consistency with new not used blob
+                            if get_distance_at_position(newbarcode, iii, nublob) > MAX_INRAT_DIST:
+                                continue
+                            # store new blob in barcode
+                            newbarcode.blobindices[iii] = bi
                             # if all blobs are there, check consistency
-                            if len(blobchain) == MCHIPS:
+                            if None not in newbarcode.blobindices:
+                                blobchain = [blobs[frame][x] for x in newbarcode.blobindices]
                                 if not algo_blob.is_blob_chain_appropriate_as_barcode(
                                     blobchain, MAX_INRAT_DIST + 10): continue
-                            # if not, check no motion from last frame, TODO: is there a better method?
+                            # if not all blobs are there, check no motion from last frame,
+                            # TODO: is there a better method?
                             # TODO: might be that multiple shares blobs could be resolved,
                             # in this case algo could fail... getting toooooo complicated...
                             else:
                                 skip = False
                                 for x in barcode.blobindices:
+                                    if x is None: continue
                                     blobx = blobs[frame][x]
                                     if not is_point_inside_ellipse(blobx, rat_blob_t(oldbarcode.centerx,
-                                        oldbarcode.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
-                                        oldbarcode.orientation)):
+                                            oldbarcode.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
+                                            oldbarcode.orientation)):
                                         skip = True
                                         break
                                 if skip: continue
                             # replace shared blob with new not used blob in barcode
                             barcode.blobindices = list(newbarcode.blobindices)
-                            # update barcode colors
-                            barcodecolors = [blobs[frame][x].color for x in barcode.blobindices]
                             ki = barcode_index_t(k,i)
                             if ki in sharedblob.barcodeindices:
                                 del sharedblob.barcodeindices[sharedblob.barcodeindices.index(ki)]

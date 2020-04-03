@@ -4,6 +4,7 @@ All kinds of general algorithms used by trajognize.main().
 
 from math import hypot, cos, sin
 from trajognize.init import int2color
+from trajognize.project import AVG_INRAT_DIST
 
 
 def calculate_running_avg(new, k, prevavg, prevstd):
@@ -33,6 +34,22 @@ def get_distance(a, b):
     anything that has .centerx and .centery parameters."""
     return hypot(a.centerx - b.centerx, a.centery - b.centery)
 
+def get_blob_center_on_barcode(barcode, position):
+    """Calculate the center of a blob on a barcode at a given position."""
+    centerx = barcode.centerx
+    centery = barcode.centery
+    d = position - (len(barcode.blobindices) - 1) / 2
+    centerx += d * AVG_INRAT_DIST * cos(barcode.orientation)
+    centery += d * AVG_INRAT_DIST * cos(barcode.orientation)
+
+    return (centerx, centery)
+
+def get_distance_at_position(barcode, position, blob):
+    """Calculate the distance between a blob at a given position on a barcode
+    and a blob."""
+    centerx, centery = get_blob_center_on_barcode(barcode, position)
+
+    return hypot(centerx - blob.centerx, centery - blob.centery)
 
 def is_point_inside_ellipse(point, ellipse, mul=1.2):
     """Return true if point center is contained by ellipse (e.g. md blob over barcode/blob).

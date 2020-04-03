@@ -133,13 +133,12 @@ class barcode_t:
     # Keep memory requirements low by preventing the creation of instance dictionaries.
     __slots__ = ('centerx', 'centery', 'orientation', 'mfix', 'blobindices')
 
-    def __init__(self, centerx, centery, orientation, mfix, blobindices):
+    def __init__(self, centerx=0, centery=0, orientation=0, mfix=0, blobindices=[]):
         self.centerx = centerx               # [pixel]
         self.centery = centery               # [pixel]
         self.orientation = orientation       # [rad]
         self.mfix = mfix                     # nobody expects the Spanish inquisition!
-        self.blobindices = list(blobindices) # create new list
-
+        self.blobindices = list(blobindices) if blobindices else [None] * MCHIPS # create new list
 
 class trajectory_t:
     """A trajectory, consisting of barcodes of the same ID on consecutive frames.

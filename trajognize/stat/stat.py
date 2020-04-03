@@ -408,7 +408,7 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
     # initialize light
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
-    tempbarcode = trajognize.init.barcode_t(0,0,0,0,[])
+    tempbarcode = trajognize.init.barcode_t()
     # get starting time
     secofday = starttime.hour * 3600 + starttime.minute * 60 + starttime.second
     # iterate for all frames
@@ -504,7 +504,7 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
     # initialize light
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
-    tempbarcode = trajognize.init.barcode_t(0,0,0,0,[])
+    tempbarcode = trajognize.init.barcode_t()
     # iterate for all frames
     for currentframe in range(len(barcodes)):
         # get current time
@@ -996,7 +996,7 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
         for i in range(id_count):
             if not chosens[i]: continue
             a = trajognize.init.barcode_t(chosens[i].centerx, chosens[i].centery,
-                    chosens[i].orientation, 0, [])
+                    chosens[i].orientation)
             if trajognize.project.correctcage:
                 a.centerx += trajognize.project.cage_center.x - cagecenter[0]
                 a.centery += trajognize.project.cage_center.y - cagecenter[1]
@@ -1006,7 +1006,7 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
             for j in range(id_count):
                 if i == j or not chosens[j]: continue
                 b = trajognize.init.barcode_t(chosens[j].centerx, chosens[j].centery,
-                        chosens[j].orientation, 0, [])
+                        chosens[j].orientation)
                 if trajognize.project.correctcage:
                     b.centerx += trajognize.project.cage_center.x - cagecenter[0]
                     b.centery += trajognize.project.cage_center.y - cagecenter[1]

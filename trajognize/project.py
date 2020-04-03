@@ -25,7 +25,7 @@ project_str = {
 }
 
 # define current project
-PROJECT = PROJECT_STORKS # PROJECT_ANTS_2019
+PROJECT = PROJECT_ANTS_2019 # PROJECT_STORKS
 
 ################################################################################
 # image/video parameters
@@ -52,7 +52,7 @@ cage_center = point_t(925, 537)
 # color blob definitions
 
 #: number of chips/bins/colors/decimal places in a colorid
-MCHIPS = 3
+MCHIPS = 4
 
 #: define colors. Take care to have different initials for all colors
 if PROJECT == PROJECT_ANTS:

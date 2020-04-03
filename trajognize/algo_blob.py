@@ -5,7 +5,7 @@ All kinds of algorithms used by trajognize.main() that are related to blobs.
 from trajognize.project import *
 from trajognize.init import *
 from trajognize.algo import *
-from math import degrees
+from math import degrees, acos
 
 # global variables
 chainlists = [] # chains of possible ids with blob indices
@@ -144,7 +144,7 @@ def find_chains_in_sdistlists_recursively(
     # if no more chain elements needed, check good order and store chain
     if i == MCHIPS:
         # bad order: do not store (next one is further than a later one)
-        blobchain = [blobs[lastit[x]] for x in range(0,MCHIPS)]
+        blobchain = [blobs[lastit[x]] for x in range(MCHIPS)]
         if not is_blob_chain_appropriate_as_barcode(blobchain):
             return
         # good order: store
@@ -187,11 +187,13 @@ def is_blob_chain_appropriate_as_barcode(blobchain, check_distance=None):
 
     # bad angle: do not store (too small angle in the middle)
     for j in range(1, MCHIPS-1):
-        d1 = degrees(atan2(blobchain[j-1].centery - blobchain[j].centery,
-                blobchain[j-1].centerx - blobchain[j].centerx))
-        d2 = degrees(atan2(blobchain[j+1].centery - blobchain[j].centery,
-                blobchain[j+1].centerx - blobchain[j].centerx))
-        if abs(d1-d2) < 100: # [deg]
+        v1 = (blobchain[j-1].centerx - blobchain[j].centerx, blobchain[j-1].centery - blobchain[j].centery)
+        v2 = (blobchain[j+1].centerx - blobchain[j].centerx, blobchain[j+1].centery - blobchain[j].centery)
+        av12 = ((v1[0]**2 + v1[1]**2)**0.5) * ((v2[0]**2 + v2[1]**2)**0.5)
+        if not av12:
+            return False
+        angle = acos(min(max((v1[0] * v2[0] + v1[1] * v2[1]) / av12, -1), 1))
+        if degrees(angle) < 100:
             return False
     # no error, chain is appropriate
     return True

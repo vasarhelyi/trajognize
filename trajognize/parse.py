@@ -327,8 +327,8 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
                     float(linesplit[j+1]),          # centerx
                     float(linesplit[j+2]),          # centery
                     radians(float(linesplit[j+5])), # orientation [deg]->[rad]
-                    int(linesplit[j+6]),            # mfix
-                    [])                             # blobindices
+                    int(linesplit[j+6]))            # mfix
+
             k = strid2coloridindex(linesplit[j], colorids)
             barcodes[framenum-firstframe][k].append(barcode)
             j += 7
