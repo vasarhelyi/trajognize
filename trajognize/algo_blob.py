@@ -298,3 +298,17 @@ def get_not_used_blob_indices(blobs, barcodes):
             nub.append(i)
 
     return nub
+
+def update_blob_barcodeindices(barcode, k, i, blobs):
+    """Update blob's barcodeindices from barcode's blobindices."""
+    ki = barcode_index_t(k, i)
+    for blobi in barcode.blobindices:
+        if blobi is None: continue
+        if blobi not in blobs[blobi].barcodeindices:
+            blobs[blobi].barcodeindices.append(ki)
+
+def remove_blob_barcodeindex(blob, k, i):
+    """Remove a given index from the blobs barcodeindices list."""
+    ki = barcode_index_t(k, i)
+    while ki in blob.barcodeindices:
+        del blob.barcodeindices[blob.barcodeindices.index(ki)]

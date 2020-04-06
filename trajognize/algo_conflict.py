@@ -168,7 +168,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                     if chosenindices[kk] is None: continue
                     ii = chosenindices[kk]
                     bwith = barcodes[frame][kk][ii]
-                    if not bwith.mfix & MFIX_SHARESBLOB: continue
+                    if not (bwith.mfix & MFIX_SHARESBLOB): continue
                     sharedblobs, sharedpositions = algo_barcode.could_be_sharesblob(
                             barcode, bwith, k, kk, blobs[frame], colorids)
                     if not sharedblobs: continue
@@ -179,6 +179,15 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                     if oldchosenindices[k] is None: continue
                     if oldchosenindices[kk] is None: continue
                     for sbi, sbpi in zip(sharedblobs, sharedpositions):
+                        # double check if sharesblob is at the right place
+                        # if not, we skip this conflict
+                        if sbi in barcode.blobindices and barcode.blobindices.index(sbi) != sbpi:
+                            continue
+                        # check if sharedblob's place is used already if it is
+                        # not used yet. If so, we do not resolve this conflict.
+                        if sbi not in barcode.blobindices and \
+                                barcode.blobindices[sbpi] is not None:
+                            continue
                         sharedblob = blobs[frame][sbi]
                         for bi in nub:
                             nublob = blobs[frame][bi]
@@ -188,24 +197,15 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                                     oldbarcode.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
                                     oldbarcode.orientation)):
                                 continue
-                            # create newbarcode
+                            # if not used blob is not under current barcode position, skip
+                            if get_distance_at_position(barcode, sbpi, nublob) > MAX_INRAT_DIST:
+                                continue
+                            # create new barcode temporarily
                             newbarcode = barcode_t(barcode.centerx, barcode.centery,
                                     barcode.orientation, barcode.mfix,
                                     list(barcode.blobindices))
-                            # get best position of nub in newbarcode
-                            if sbi in barcode.blobindices:
-                                iii = newbarcode.blobindices.index(sbi)
-                            else:
-                                iii = sbpi
-                                # check if this place is unused. If not, we
-                                # do not resolve this conflict.
-                                if newbarcode.blobindices[iii] is not None:
-                                    continue
-                            # check barcode consistency with new not used blob
-                            if get_distance_at_position(newbarcode, iii, nublob) > MAX_INRAT_DIST:
-                                continue
-                            # store new blob in barcode
-                            newbarcode.blobindices[iii] = bi
+                            # store new blob in barcode at sharesblob's place
+                            newbarcode.blobindices[sbpi] = bi
                             # if all blobs are there, check consistency
                             if None not in newbarcode.blobindices:
                                 blobchain = [blobs[frame][x] for x in newbarcode.blobindices]
@@ -217,7 +217,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                             # in this case algo could fail... getting toooooo complicated...
                             else:
                                 skip = False
-                                for x in barcode.blobindices:
+                                for x in newbarcode.blobindices:
                                     if x is None: continue
                                     blobx = blobs[frame][x]
                                     if not is_point_inside_ellipse(blobx, rat_blob_t(oldbarcode.centerx,
@@ -226,14 +226,15 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                                         skip = True
                                         break
                                 if skip: continue
+                            # all checks passed, nublob is a good replacement of sharesblob('s position)
+                            # remove old correspondence with sharedblob
+                            algo_blob.remove_blob_barcodeindex(sharedblob, k, i)
                             # replace shared blob with new not used blob in barcode
-                            barcode.blobindices = list(newbarcode.blobindices)
-                            ki = barcode_index_t(k,i)
-                            if ki in sharedblob.barcodeindices:
-                                del sharedblob.barcodeindices[sharedblob.barcodeindices.index(ki)]
-                            nublob.barcodeindices.append(ki)
+                            barcode.blobindices[sbpi] = bi
+                            algo_blob.update_blob_barcodeindices(barcode, k, i, blobs[frame])
                             algo_barcode.calculate_params(barcode, strid, blobs[frame])
                             allresolvedblobs.append(sbi)
+                            break
                 # if all conflicts have been solved or there were no conflicts by now, set resolved state
                 if len(allsharedblobs) == len(allresolvedblobs):
                     resolved += 1
@@ -299,7 +300,7 @@ def get_nub_conflicts(trajectories, barcodes, blobs, colorids):
     return (conflicts, conflicted_trajs)
 
 
-def create_conflict_database(trajectories, barcodes, blobs, colorids):
+def create_conflict_database_and_try_resolve(trajectories, barcodes, blobs, colorids):
     """List and store barcodes and trajs that are in conflicted state.
 
     Conflicts are the following:

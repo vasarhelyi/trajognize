@@ -1043,10 +1043,7 @@ def change_colorid(trajectories, k, i, trajsonframe, barcodes, colorids, blobs):
         del newbarcode.blobindices[fromc]
         newbarcode.blobindices.insert(toc, None)
         if reverse: newbarcode.blobindices = newbarcode.blobindices[::-1]
-        for bi in newbarcode.blobindices:
-            if bi is None: continue
-            blob = blobs[frame][bi]
-            blob.barcodeindices.append(barcode_index_t(kk, ii))
+        algo_blob.update_blob_barcodeindices(newbarcode, kk, ii, blobs[frame])
         algo_barcode.calculate_params(newbarcode, newstrid, blobs[frame])
         # append barcode to new traj
         if i == 0:
@@ -1106,12 +1103,7 @@ def fill_connection_with_nub(conn, k, trajectories, trajsonframe, barcodes, colo
                         mindist = dist
                 if mindist < max_allowed_dist_between_trajs():
                     candidate.mfix &= ~MFIX_DELETED
-                    # store barcode indices in [colorid, index] format in color_blob .barcodeindices list
-                    for blobi in candidate.blobindices:
-                        if blobi is None: continue
-                        if cbi not in blobs[frame][blobi].barcodeindices:
-                            blobs[frame][blobi].barcodeindices.append(
-                                    barcode_index_t(oldkk, cbi))
+                    algo_blob.update_blob_barcodeindices(candidate, oldkk, cbi, blobs[frame])
                     append_barcode_to_traj(oldtraj, trajsonframe[frame][oldkk],
                             oldj, candidate, cbi, colorids[oldkk].strid, blobs[frame])
                     found = True
@@ -1179,8 +1171,6 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
             frame = traj.firstframe
             for j in traj.barcodeindices:
                 oldbarcode = barcodes[frame][k][j]
-                kj = barcode_index_t(k, j)
-
                 # search around for (deleted) same colorid barcodes
                 # for all new virtual barcodes (nothing assigned to them yet)
                 if (oldbarcode.mfix & MFIX_VIRTUAL) and oldbarcode.blobindices.count(None) == MCHIPS:
@@ -1201,14 +1191,11 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
                         oldbarcode.centerx = candidate.centerx
                         oldbarcode.centery = candidate.centery
                         oldbarcode.orientation = candidate.orientation
-                        oldbarcode.blobindices = list(candidate.blobindices)
-                        for ii in oldbarcode.blobindices:
-                            if ii is None: continue
-                            blob = blobs[frame][ii]
-                            if kj not in blob.barcodeindices:
-                                blob.barcodeindices.append(kj)
                         oldbarcode.mfix = candidate.mfix
                         oldbarcode.mfix &= ~MFIX_DELETED
+                        # note that we do not need to remove old correspondences as there were none...
+                        oldbarcode.blobindices = list(candidate.blobindices)
+                        algo_blob.update_blob_barcodeindices(oldbarcode, k, j, blobs[frame])
                         # permanently delete old candidate
                         candidate.mfix = 0 # |= MFIX_DELETED
 #                        oldbarcode.mfix &= ~MFIX_VIRTUAL # TODO: might not be needed if further check on virtuals will be done
@@ -1228,30 +1215,21 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
                 if oldbarcode.mfix & MFIX_CHOSEN and oldbarcode.blobindices.count(None) < MCHIPS:
                     for bi, blobi in enumerate(oldbarcode.blobindices):
                         if blobi is not None: continue
-                        newblobs = []
-                        found = False
+                        # find best not used blob as candidate
+                        found = None
+                        mindist = MAX_INRAT_DIST
                         for ii in range(len(blobs[frame])):
                             blob = blobs[frame][ii]
                             if algo_blob.barcodeindices_not_deleted(blob.barcodeindices, barcodes[frame]): continue
-                            # if new color, save as canidate for new color
-                            if blob.color == color2int[colorids[k].strid[bi]] and \
-                                    get_distance_at_position(oldbarcode, bi, blob) < MAX_INRAT_DIST:
-                                newblobs.append(ii)
-                                found = True
-                        # add best if found not used blobs
-                        if found:
-                            # get best blob for given color
-                            best = 0
-                            if len(newblobs) > 1:
-                                mindist = 1e6
-                                for jj in newblobs:
-                                    dist = get_distance_at_position(oldbarcode, bi, blobs[frame][jj])
-                                    if dist < mindist:
-                                        mindist = dist
-                                        best = jj
-                            blob = blobs[frame][best]
-                            oldbarcode.blobindices[bi] = best
-                            blob.barcodeindices.append(kj)
+                            if blob.color != color2int[colorids[k].strid[bi]]: continue
+                            dist = get_distance_at_position(oldbarcode, bi, blob)
+                            if dist < mindist:
+                                found = ii
+                                mindist = dist
+                        # add best found not used blob
+                        if found is not None:
+                            oldbarcode.blobindices[bi] = found
+                            algo_blob.update_blob_barcodeindices(oldbarcode, k, j, blobs[frame])
                             traj.colorblob_count[bi] += 1
                             # set new params
                             changes += 1

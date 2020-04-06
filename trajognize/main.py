@@ -186,7 +186,7 @@ def main(argv=[]):
     if options.debugload < 2:
         ############################################################################
         # initialize calculated variables
-        phase.start_phase("Initialize calculated variables (sdistdists, clusterlists, md blobs over blobs, etc.)...")
+        phase.start_phase("Initialize calculated variables (sdistlists, clusterlists, md blobs over blobs, etc.)...")
         for currentframe in range(framecount):
             # calculate spatial distances between blobs
             v.sdistlists[currentframe] = algo_blob.create_spatial_distlists(v.color_blobs[currentframe])
@@ -228,12 +228,8 @@ def main(argv=[]):
                     barcode = barcode_t(0, 0, 0, MFIX_FULLFOUND, chain)
                     algo_barcode.calculate_params(barcode,  v.colorids[k].strid, v.color_blobs[currentframe])
                     v.barcodes[currentframe][k].append(barcode)
+                    algo_blob.update_blob_barcodeindices(barcode, k, len(v.barcodes[currentframe][k])-1, v.color_blobs[currentframe])
                     count += 1
-                    # store barcode indices in [colorid, index] format in color_blob .barcodeindices list
-                    for blobi in barcode.blobindices: # eq 'in chain:'
-                        if blobi is None: continue # should not happen but anyways...
-                        v.color_blobs[currentframe][blobi].barcodeindices.append(
-                                barcode_index_t(k, len(v.barcodes[currentframe][k])-1))
             # print status
             phase.check_and_print_phase_status('forward', currentframe, framecount)
         phase.end_phase("%d full barcodes found" % count)
@@ -245,6 +241,9 @@ def main(argv=[]):
         phase.start_phase("Saving debug environment at level %d..." % options.debugsave)
         util.save_object(v, util.debug_filename(options.debugsave))
         phase.end_phase()
+
+        # debug quickcheck on barcode and blob database consistency
+        algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)
 
     ############################################################################
     ################################ phase 4 ###################################
@@ -281,6 +280,9 @@ def main(argv=[]):
             util.save_object(v, util.debug_filename(options.debugsave))
             phase.end_phase()
 
+        # debug quickcheck on barcode and blob database consistency
+        algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)
+
     ############################################################################
     ################################ phase 5 ###################################
     ############################################################################
@@ -315,6 +317,9 @@ def main(argv=[]):
             phase.start_phase("Saving debug environment at level %d..." % options.debugsave)
             util.save_object(v, util.debug_filename(options.debugsave))
             phase.end_phase()
+
+        # debug quickcheck on barcode and blob database consistency
+        algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)
 
     ############################################################################
     ################################ phase 6 ###################################
@@ -352,6 +357,9 @@ def main(argv=[]):
             phase.end_phase()
 
         algo_barcode.print_max_barcode_count(v.barcodes, v.colorids)
+
+        # debug quickcheck on barcode and blob database consistency
+        algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)
 
     ############################################################################
     ################################ phase 7 ###################################
@@ -492,13 +500,18 @@ def main(argv=[]):
                 #phase.check_and_print_phase_status('backward', currentframe, framecount)
             phase.end_phase()
 
+            # debug quickcheck on barcode and blob database consistency
+            algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)
 
             ########################################################################
             # get conflicts
             phase.start_phase("Check, list and (solve) remaining conflicts...")
-            algo_conflict.create_conflict_database(v.trajectories, v.barcodes,
+            algo_conflict.create_conflict_database_and_try_resolve(v.trajectories, v.barcodes,
                     v.color_blobs, v.colorids)
             phase.end_phase()
+
+            # debug quickcheck on barcode and blob database consistency
+            algo_barcode.check_barcode_blob_consistency(v.barcodes, v.color_blobs, v.colorids)
 
     ############################################################################
     # write results to output text file
