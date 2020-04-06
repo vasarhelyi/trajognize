@@ -2,7 +2,7 @@
 All kinds of general algorithms used by trajognize.main().
 """
 
-from math import hypot, cos, sin
+from math import hypot, cos, sin, degrees
 from trajognize.init import int2color
 from trajognize.project import AVG_INRAT_DIST
 
@@ -28,6 +28,16 @@ def calculate_running_avg(new, k, prevavg, prevstd):
 
     return (avg, std)
 
+
+def get_angle_deg(a, b):
+    """Calculate the angle between two blobs or barcodes -
+    anything that has .orientation parameters and return it in [deg]."""
+    angle = degrees(a.orientation) - degrees(b.orientation)
+    while angle < 0:
+        angle += 360
+    while angle >= 360:
+        angle -= 360
+    return angle if angle < 180 else 360 - angle
 
 def get_distance(a, b):
     """Calculate the distance between two blobs or barcodes -

@@ -140,14 +140,19 @@ if PROJECT == PROJECT_MAZE:
 elif PROJECT == PROJECT_FISH:
     MAX_PERFRAME_DIST_MD = 60
 elif PROJECT == PROJECT_ANTS:
-    MAX_PERFRAME_DIST_MD = 10 # closeup1, 2, dueling, 001.MTS, does not count
+    MAX_PERFRAME_DIST_MD = 15 # closeup1, 2, dueling, 001.MTS, does not count
 elif PROJECT == PROJECT_ANTS_2019:
-    MAX_PERFRAME_DIST_MD = 10
+    MAX_PERFRAME_DIST_MD = 15
 elif PROJECT == PROJECT_STORKS:
     MAX_PERFRAME_DIST_MD = 10
 else:
     MAX_PERFRAME_DIST_MD = 40 # 35 #30 - lets try 40, it occurs sometimes, some false positives but they can be filtered out later...
 
+#: [deg] - max angle a barcode rotates on a frame in degrees
+if PROJECT == PROJECT_ANTS_2019:
+    MAX_PERFRAME_ANGLE = 20
+else:
+    MAX_PERFRAME_ANGLE = 30
 
 ################################################################################
 # stat parameters

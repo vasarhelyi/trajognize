@@ -94,8 +94,8 @@ def print_max_barcode_count(barcodes, colorids):
 
 
 def add_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
-    """Try to find missing and unused blobs
-    to include them into partly found barcodes.
+    """Try to find missing and unused blobs to include them into
+    partly found barcodes.
 
     Warning: function adds to barcode.blobindices, so call
     update_blob_barcodeindices() afterwards!
@@ -173,11 +173,17 @@ def add_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
                 if dist < mindist:
                     best = i
                     mindist = dist
-        # store best candidate
+        # check orientation of best candidate
+        temp = barcode_t(0, 0, 0, 0, list(blobchains[best]))
+        calculate_params(temp, strid, blobs)
+        if get_angle_deg(barcode, temp) > MAX_PERFRAME_ANGLE:
+            return 0
+        # store best candidate as all tests have passed
         barcode.blobindices = list(blobchains[best])
         return 1
 
-    # for partlyfounds we simply get best candidate for all missing positions
+    # for partlyfounds we simply get good enough candidate for all missing positions
+    temp = barcode_t(0, 0, 0, 0, list(barcode.blobindices))
     for i in range(len(strid)):
         candidatelist = list(candidates[i])
         if not candidatelist or barcode.blobindices[i] is not None:
@@ -193,8 +199,13 @@ def add_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
             if dist < mindist:
                 best = blobi
                 mindist = dist
-        barcode.blobindices[i] = best
-
+        temp.blobindices[i] = best
+        calculate_params(temp, strid, blobs)
+        if get_distance(temp, barcode) > MAX_PERFRAME_DIST_MD or \
+                get_angle_deg(temp, barcode) > MAX_PERFRAME_ANGLE:
+            temp.blobindices[i] = None
+    # everything is still good, we store new blobs
+    barcode.blobindices = list(temp.blobindices)
     return 1
 
 
@@ -436,11 +447,11 @@ def find_partlyfound_from_tdist(
         b) Blobs on current frame are not yet assigned to a barcode.
     3. Group blobs that possibly belong to the same new barcode. If more blobs
        of the same color are close enough to be part of the new barcode,
-       choose the one closest to the barcode center on the previous frame.
+       choose the one at best position based on last frame.
     4. Store new barcodes with mfix value of MFIX_PARTLYFOUND_FROM_TDIST
     5. Check all remaining not used blobs, cluster them and try to assign
        a barcode to them which is not present on the current frame yet
-       but was present closeby sometime in the last/next few seconds.
+       but was present closeby sometimes in the last/next few seconds.
 
     Function returns number of barcodes (found, adjusted, new) and
     and modifies list-type keyword parameters 'tdistlists' and 'barcodes'.
@@ -452,7 +463,6 @@ def find_partlyfound_from_tdist(
         inc = -1
     else:
         0/0
-    maxskip = 50 # max number of frames around not used blob pairs
     tempbarcodes = [[] for x in range(len(colorids))] # temporarily found new barcodes
     # calculate temporal distances between blobs
     tdistlists[currentframe] = create_temporal_distlists(
@@ -489,7 +499,7 @@ def find_partlyfound_from_tdist(
                 k = prevbarcodei.k
                 ii = prevbarcodei.i
                 oldbarcode = barcodes[currentframe-inc][k][ii]
-                # copy prev barcode, change parameters and store in temporary list
+                # copy prev barcode parameters and store in temporary list
                 barcode = barcode_t(
                         oldbarcode.centerx, oldbarcode.centery, oldbarcode.orientation,
                         MFIX_PARTLYFOUND_FROM_TDIST)
@@ -502,8 +512,8 @@ def find_partlyfound_from_tdist(
                 # or one very close
                 else:
                     for i in range(len(tempbarcodes[k])):
-                        # new barcode comes from the same as one in already tempbarcodes (or close)
-                        if get_distance(barcode, tempbarcodes[k][i]) < 10:
+                        # new barcode comes from the same as one in already tempbarcodes
+                        if get_distance(barcode, tempbarcodes[k][i]) == 0:
                             # if this is a not yet used color index, we simply merge
                             if tempbarcodes[k][i].blobindices[jj] is None:
                                 tempbarcodes[k][i].blobindices[jj] = blobi
@@ -520,12 +530,20 @@ def find_partlyfound_from_tdist(
                     else:
                         tempbarcodes[k].append(barcode)
 
-    # store temporary barcodes in global barcode database
+    # store good temporary barcodes in global barcode database
     count = 0
     count_adjusted = 0
     count_notused = 0
     for k in range(len(colorids)):
         for barcode in tempbarcodes[k]:
+            # so far tempbarcodes contains old barcode position and orientation,
+            # we calculate new one now based on actual blob data
+            temp = barcode_t(0, 0, 0, 0, list(barcode.blobindices))
+            calculate_params(temp, colorids[k].strid, color_blobs[currentframe])
+            # check if barcode position orientation is consistent, skip if not
+            if get_distance(temp, barcode) > MAX_PERFRAME_DIST_MD or \
+                    get_angle_deg(temp, barcode) > MAX_PERFRAME_ANGLE:
+                continue
             # skip ones that are already present in barcodes and undelete them
             # instead of this one to avoid increasing barcode list size
             for i, oldbarcode in enumerate(barcodes[currentframe][k]):
@@ -535,10 +553,9 @@ def find_partlyfound_from_tdist(
                     for blobj in oldbarcode.blobindices:
                         if blobj is None: continue
                         remove_blob_barcodeindex(color_blobs[currentframe][blobj], k, i)
-                    # add new blobindices and recalculate
+                    # add new blobindices
                     oldbarcode.blobindices = list(barcode.blobindices)
                     update_blob_barcodeindices(oldbarcode, k, i, color_blobs[currentframe])
-                    calculate_params(oldbarcode, colorids[k].strid, color_blobs[currentframe])
                     # we store oldbarcode (and i as well as it stays what it is currently)
                     barcode = oldbarcode
                     break
@@ -556,6 +573,7 @@ def find_partlyfound_from_tdist(
 
 #     # try to assign new barcodes to still not used and not-close-to-anything blobs
 #     # remove not used blobs that were added to barcodes lately
+#     maxskip = 50 # max number of frames around not used blob pairs
 #     for blobi in list(notusedblobs):
 #         if color_blobs[currentframe][blobi].barcodeindices:
 #             notusedblobs.remove(blobi)
@@ -833,7 +851,7 @@ def remove_close_sharesid(barcodes, blobs, colorids, mfix=None):
                 # skip ones that are far away
                 if get_distance(barcode, candidate) > MAX_INRAT_DIST: continue
                 # skip ones that have too different orientation
-                if cos(barcode.orientation - candidate.orientation) < 0: continue # max 90 deg difference
+                if get_angle_deg(barcode, candidate) > 90: continue
                 # keep the one containing bigger blobs
                 count += 1
                 # TODO: better algorithm, average and treat blobs correspondingly
