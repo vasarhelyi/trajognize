@@ -17,6 +17,7 @@ Main script returns name of outputfile and corresponding param dictionary.
 """
 
 import os, sys, glob, datetime, collections
+
 try:
     import hierarchy
     import trajognize.plot.plot

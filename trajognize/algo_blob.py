@@ -2,10 +2,11 @@
 All kinds of algorithms used by trajognize.main() that are related to blobs.
 """
 
-from trajognize.project import *
-from trajognize.init import *
-from trajognize.algo import *
 from math import degrees, acos
+
+from .project import *
+from .init import *
+from .algo import *
 
 # global variables
 chainlists = [] # chains of possible ids with blob indices

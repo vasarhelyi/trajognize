@@ -14,11 +14,14 @@ Script calls another scripts for the network type output:
 """
 
 import os, subprocess, sys, glob, numpy
-from plot import *
-import plot_matrixmap
+
 import trajognize.parse
-import spgm
 import trajognize.corr.util
+
+from .plot import *
+
+from . import plot_matrixmap
+from . import spgm
 
 
 GNUPLOT_TEMPLATE = """#!/usr/bin/gnuplot

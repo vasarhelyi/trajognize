@@ -5,18 +5,18 @@ Trajognize main code.
 import os,sys,argparse
 
 # import definitions as they appear in file
-from trajognize.init import *
-from trajognize.project import *
-# import functions organized according to files
-import trajognize.util as util
-import trajognize.parse as parse
-import trajognize.output as output
-import trajognize.algo_blob as algo_blob
-import trajognize.algo_barcode as algo_barcode
-import trajognize.algo_trajectory as algo_trajectory
-import trajognize.algo_conflict as algo_conflict
-import trajognize.algo as algo
+from .init import *
+from .project import *
 
+# import functions organized according to files
+from . import algo
+from . import algo_blob
+from . import algo_barcode
+from . import algo_conflict
+from . import algo_trajectory
+from . import output
+from . import parse
+from . import util
 
 def main(argv=[]):
     """Main code. Execute as 'bin/trajognize [options]' or as 'trajognize.main(["option1", "value1", ...])'.

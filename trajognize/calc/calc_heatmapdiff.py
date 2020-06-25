@@ -16,6 +16,7 @@ Output is written in a subdirectory of input dir.
 """
 
 import os, subprocess, sys, glob, re
+
 try:
     import trajognize.project
     import trajognize.parse

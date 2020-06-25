@@ -8,13 +8,14 @@ TODOs:
 
 """
 
-from trajognize.project import *
-from trajognize.init import *
-from trajognize.algo import *
-from trajognize.util import *
-import trajognize.algo_barcode as algo_barcode
-import trajognize.algo_blob as algo_blob
-import trajognize.algo_trajectory as algo_trajectory
+from .project import *
+from .init import *
+from .algo import *
+from .util import *
+
+from . import algo_barcode
+from . import algo_blob
+from . import algo_trajectory
 
 
 def list_conflicts(conflicts, colorids):

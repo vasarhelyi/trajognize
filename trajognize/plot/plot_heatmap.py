@@ -16,8 +16,11 @@ selected for a given output directory in one run.
 """
 
 import os, subprocess, sys, glob, re
-from plot import *
-import spgm
+
+from .plot import *
+
+from . import spgm
+
 try:
     import trajognize.stat.init
     import trajognize.stat.experiments

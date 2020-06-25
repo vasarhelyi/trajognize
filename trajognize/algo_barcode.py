@@ -4,11 +4,11 @@ All kinds of algorithms used by trajognize.main() that are related to barcodes.
 
 import itertools
 
-from trajognize.project import *
-from trajognize.init import *
-from trajognize.algo import *
-from trajognize.algo_blob import *
-from trajognize.util import mfix2str, is_isogram
+from .project import *
+from .init import *
+from .algo import *
+from .algo_blob import *
+from .util import mfix2str, is_isogram
 
 
 def get_chosen_barcode_indices(barcodes):

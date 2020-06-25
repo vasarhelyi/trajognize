@@ -9,7 +9,7 @@ See project_2011.py as the default example.
 from trajognize.project import *
 
 if PROJECT == PROJECT_2011:
-    import trajognize.stat.project_2011 as project_2011
+    from . import project_2011
     weekly_feeding_times = project_2011.weekly_feeding_times
     object_types = project_2011.object_types
     object_areas = project_2011.object_areas
@@ -20,7 +20,7 @@ if PROJECT == PROJECT_2011:
     get_wall_polygons = project_2011.get_wall_polygons
 
 elif PROJECT == PROJECT_MAZE:
-    import trajognize.stat.project_maze as project_maze
+    from . import project_maze
     weekly_feeding_times = {}
     object_types = project_maze.object_types
     object_areas = project_maze.object_areas
@@ -31,7 +31,7 @@ elif PROJECT == PROJECT_MAZE:
     get_wall_polygons = project_maze.get_wall_polygons
 
 elif PROJECT == PROJECT_ANTS:
-    import trajognize.stat.project_ants as project_ants
+    from . import project_ants
     weekly_feeding_times = {}
     object_types = project_ants.object_types
     object_areas = project_ants.object_areas
@@ -42,7 +42,7 @@ elif PROJECT == PROJECT_ANTS:
     get_wall_polygons = project_ants.get_wall_polygons
 
 elif PROJECT == PROJECT_ANTS_2019:
-    import trajognize.stat.project_ants_2019 as project_ants_2019
+    from . import project_ants_2019
     weekly_feeding_times = {}
     object_types = project_ants_2019.object_types
     object_areas = project_ants_2019.object_areas
@@ -53,7 +53,7 @@ elif PROJECT == PROJECT_ANTS_2019:
     get_wall_polygons = project_ants_2019.get_wall_polygons
 
 elif PROJECT == PROJECT_STORKS:
-    import trajognize.stat.project_storks as project_storks
+    from . import project_storks
     weekly_feeding_times = {}
     object_types = project_storks.object_types
     object_areas = project_storks.object_areas

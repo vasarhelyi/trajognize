@@ -20,11 +20,13 @@ All things needed when a new stat is created:
 import sys
 import numpy
 from math import sqrt
+
 # imports from base class
 import trajognize.init
 import trajognize.project
-import trajognize.stat.experiments as experiments
-import trajognize.stat.project as project
+
+from . import experiments
+from . import project
 
 #: generally used mfix values to differentiate in the stat outputs
 #: for more info see trajognize.stat.util.get_mfi()

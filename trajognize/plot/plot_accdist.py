@@ -10,8 +10,10 @@ experiments.
 """
 
 import os, subprocess, sys, glob
-from plot import *
-import spgm
+
+from .plot import *
+
+from . import spgm
 
 GNUPLOT_TEMPLATE = """#!/usr/bin/gnuplot
 reset

@@ -7,11 +7,13 @@ import inspect
 from math import hypot
 import re
 import sys
+
 # imports from base class
 import trajognize.init
+
 # imports from self subclass
-import trajognize.stat.init as init
-import trajognize.stat.stat as stat # this is only needed to have functions in the namespace, nothing is used directly...
+from . import init
+from . import stat # this is only needed to have functions in the namespace, nothing is used directly...
 
 def get_chosen_barcodes(barcodes, mfix=None):
     """Return list of chosen barcodes from list of barcodes on current frame.

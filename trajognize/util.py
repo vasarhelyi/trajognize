@@ -2,10 +2,6 @@
 Miscellaneous utility functions.
 """
 
-from trajognize.project import FPS, get_datetime_from_filename
-from trajognize.init import MFIX_STR, MFIX_DUMMY_LAST
-from trajognize.version import __version__
-
 # external imports
 import time
 import sys
@@ -16,6 +12,12 @@ import gzip
 import gc
 import subprocess
 import psutil
+
+# internal imports
+from .project import FPS, get_datetime_from_filename
+from .init import MFIX_STR, MFIX_DUMMY_LAST
+from .version import __version__
+
 
 def get_version_info():
     """Get version info string."""

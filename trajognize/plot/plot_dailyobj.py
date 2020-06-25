@@ -13,8 +13,11 @@ experiment, group, light and object type.
 """
 
 import os, subprocess, sys, glob
-from plot import *
-import spgm
+
+from .plot import *
+
+from . import spgm
+
 try:
     import trajognize.stat.experiments
     import trajognize.corr.util

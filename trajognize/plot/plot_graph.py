@@ -3,8 +3,11 @@
 based layout of Enys."""
 
 import os, sys, glob, argparse, igraph, numpy
-from plot import *
-import spgm
+
+from .plot import *
+
+from . import spgm
+
 try:
     import trajognize.parse
 except ImportError:

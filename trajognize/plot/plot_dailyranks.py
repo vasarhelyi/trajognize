@@ -15,8 +15,11 @@ experiment, group, light and object.
 """
 
 import os, subprocess, sys, glob, numpy
-from plot import *
-import spgm
+
+from .plot import *
+
+from . import spgm
+
 try:
     import trajognize.parse
     import trajognize.calc.hierarchy

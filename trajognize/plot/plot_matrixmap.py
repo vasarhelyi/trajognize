@@ -1,8 +1,11 @@
 """Heatmap-type plot for squared pairwise interaction matrices."""
 
 import os, subprocess, sys, glob, argparse
-from plot import *
-import spgm
+
+from .plot import *
+
+from . import spgm
+
 try:
     import trajognize.parse
 except ImportError:

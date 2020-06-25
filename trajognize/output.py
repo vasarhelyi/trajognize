@@ -2,11 +2,12 @@
 Output file generation functions for trajognize.
 """
 
-from trajognize.init import *
-from trajognize.util import mfix2str_allascomment
-from trajognize.algo_blob import barcodeindices_not_deleted
 from math import degrees
 import os, datetime
+
+from .init import *
+from .util import mfix2str_allascomment
+from .algo_blob import barcodeindices_not_deleted
 
 # global output file handlers - we do not want to open them on every frame separately
 oft = []       # barcode text file

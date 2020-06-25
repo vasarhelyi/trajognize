@@ -5,9 +5,11 @@ This script collects good params for main correlation analysis.
 # external imports
 import os, sys, re, glob
 from collections import defaultdict
+
 # imports from this module
-import trajognize.corr.util as util
-from good_params import good_params, all_params
+from . import util
+from .good_params import good_params, all_params
+
 #inport from other modules
 try:
     import trajognize.stat.experiments

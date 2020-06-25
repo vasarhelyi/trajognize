@@ -10,8 +10,11 @@ and groups.
 """
 
 import os, subprocess, sys, glob, re, numpy
-from plot import *
-import spgm
+
+from .plot import *
+
+from . import spgm
+
 try:
     import trajognize.stat.init
     import trajognize.stat.experiments

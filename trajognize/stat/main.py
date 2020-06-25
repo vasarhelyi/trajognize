@@ -10,10 +10,12 @@ import datetime
 # imports from base class
 import trajognize
 from trajognize.project import *
+
 # imports from self subclass
-import trajognize.stat.util as util
-import trajognize.stat.experiments as experiments
-from trajognize.stat.project import stat_aa_settings
+from .project import stat_aa_settings
+
+from . import util
+from . import experiments
 
 def main(argv=[]):
     """Main code. Execute as 'bin/stat [options]' or as 'trajognize.stat.main(["option1", "value1", ...])'.

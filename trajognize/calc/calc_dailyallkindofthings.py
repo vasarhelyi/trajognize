@@ -4,6 +4,7 @@ This script outputs weekdays for all days for all experiments.
 
 # external imports
 import os, sys, datetime
+
 #inport from other modules
 try:
     import trajognize.stat.experiments

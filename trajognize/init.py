@@ -2,10 +2,11 @@
 Constants and main classes are defined here, like blob, barcode, trajectory.
 """
 
-from .project import *
-
 from collections import namedtuple
 from math import atan2, sin, cos, pi
+
+from .project import *
+
 
 ################################################################################
 #: mFIX values of barcodes (all can be bitwise OR-ed, some are mutually exclusive)

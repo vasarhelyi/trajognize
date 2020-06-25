@@ -15,14 +15,15 @@ Script calls three other scripts:
 """
 
 import os, subprocess, sys, glob
-from plot import *
-import plot_matrixmap
-import plot_graph
+
 import trajognize.parse
 import trajognize.calc.reorder_matrixfile_eades
-import spgm
 import trajognize.corr.util
 
+from .plot import *
+from . import plot_matrixmap
+from . import plot_graph
+from . import spgm
 
 def get_categories_from_name(name):
     """Get light and group from paragraph header (name), e.g.:

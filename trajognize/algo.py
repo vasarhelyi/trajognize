@@ -3,8 +3,9 @@ All kinds of general algorithms used by trajognize.main().
 """
 
 from math import hypot, cos, sin, degrees
-from trajognize.init import int2color
-from trajognize.project import AVG_INRAT_DIST
+
+from .project import AVG_INRAT_DIST
+from .init import int2color
 
 
 def calculate_running_avg(new, k, prevavg, prevstd):

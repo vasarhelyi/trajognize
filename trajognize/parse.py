@@ -2,13 +2,14 @@
 Input file parsers for trajognize.
 """
 
-from trajognize.init import *
-from trajognize.util import exit, strid2coloridindex
-
 from collections import deque
 import datetime
 import xml.dom.minidom
 from math import radians, sqrt
+
+from .init import *
+from .util import exit, strid2coloridindex
+
 
 
 def parse_paintdates(inputfile='misc/paintdates.dat'):

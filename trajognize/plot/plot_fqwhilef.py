@@ -12,12 +12,15 @@ experiment, group, light and object.
 """
 
 import os, subprocess, sys, glob
-from plot import *
-import plot_matrixmap
+
 import trajognize.parse
 import trajognize.calc.reorder_matrixfile_eades
-import spgm
 import trajognize.corr.util
+
+from .plot import *
+
+from . import plot_matrixmap
+from . import spgm
 
 
 def get_categories_from_name(name):
