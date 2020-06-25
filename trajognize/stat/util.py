@@ -10,8 +10,8 @@ import sys
 # imports from base class
 import trajognize.init
 # imports from self subclass
-import init
-import stat # this is only needed to have functions in the namespace, nothing is used directly...
+import trajognize.stat.init as init
+import trajognize.stat.stat as stat # this is only needed to have functions in the namespace, nothing is used directly...
 
 def get_chosen_barcodes(barcodes, mfix=None):
     """Return list of chosen barcodes from list of barcodes on current frame.

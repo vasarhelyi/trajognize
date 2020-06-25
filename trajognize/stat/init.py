@@ -23,8 +23,8 @@ from math import sqrt
 # imports from base class
 import trajognize.init
 import trajognize.project
-import experiments
-import project
+import trajognize.stat.experiments as experiments
+import trajognize.stat.project as project
 
 #: generally used mfix values to differentiate in the stat outputs
 #: for more info see trajognize.stat.util.get_mfi()

@@ -12,8 +12,10 @@ import glob
 import trajognize
 from trajognize.project import *
 # imports from self subclass
-import init, util, experiments
-from project import stat_aa_settings
+import trajognize.stat.init as init
+import trajognize.stat.util as util
+import trajognize.stat.experiments as experiments
+from trajognize.stat.project import stat_aa_settings
 
 def write_results(outputfilename, stats, stat, substat, statobject, exps, exp,
         day, dailyoutput, colorids):

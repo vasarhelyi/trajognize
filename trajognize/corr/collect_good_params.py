@@ -6,7 +6,7 @@ This script collects good params for main correlation analysis.
 import os, sys, re, glob
 from collections import defaultdict
 # imports from this module
-import util
+import trajognize.corr.util as util
 from good_params import good_params, all_params
 #inport from other modules
 try:

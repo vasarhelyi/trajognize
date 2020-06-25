@@ -32,10 +32,10 @@ import trajognize.init
 import trajognize.util
 import trajognize.algo
 # imports from self subclass
-import init
-import util
-import experiments
-import project
+import trajognize.stat.init as init
+import trajognize.stat.util as util
+import trajognize.stat.experiments as experiments
+import trajognize.stat.project as project
 
 
 def subclasses_heatmap(colorids):

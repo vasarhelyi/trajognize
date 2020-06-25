@@ -8,7 +8,7 @@ import datetime
 import math
 from trajognize.init import point_t, circle_t, ellipse_t, rectangle_t
 from trajognize.project import *
-from project import *
+from trajognize.stat.project import *
 
 #: index for weekdays starting from saturday
 ordered_weekdays = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']
