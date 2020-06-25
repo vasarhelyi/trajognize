@@ -118,16 +118,16 @@ class phase_t(object):
         # if too slow (>5s for one iteration)
         now = time.clock()
         if now-self.lasttime >= 1:
-            print("%d:%.1fs" % (current, now-self.lasttime), end =" ")
+            print("%d:%.1fs" % (current, now-self.lasttime), end=" ")
         self.lasttime = now
         # print percentage
         if direction == 'forward':
             if current * 100 >= self.phase_status * all:
-                print("%d%%" % self.phase_status, end =" ")
+                print("%d%%" % self.phase_status, end=" ")
                 self.phase_status += 1
         elif direction == 'backward':
             if current * 100 <= (100-self.phase_status) * all:
-                print("%d%%" % (100-self.phase_status), end =" ")
+                print("%d%%" % (100-self.phase_status), end=" ")
                 self.phase_status += 1
         else:
             0/0
