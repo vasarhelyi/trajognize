@@ -22,7 +22,7 @@ def write_results(outputfilename, stats, stat, substat, statobject, exps, exp,
     """Helper function to write results to file."""
     outputfile = open(outputfilename, 'w')
     # print other parameters to file
-    outputfile.write("trajognize version = %s\n" % util.get_version_info())
+    outputfile.write("trajognize version = %s\n" % trajognize.util.get_version_info())
     outputfile.write("%s_t object version = %d\n" % (stat, statobject.version))
     outputfile.write("results written on %s\n\n" % str(datetime.datetime.now()))
     # print stat help to file

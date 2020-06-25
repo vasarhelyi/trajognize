@@ -42,7 +42,7 @@ def main(argv=[]):
     init.py or call util.print_stats_help()
 
     """
-    print("This is trajognize stat. Version:", util.get_version_info())
+    print("This is trajognize stat. Version:", trajognize.util.get_version_info())
     print("Current project is: %s" % project_str[PROJECT])
     phase = trajognize.util.phase_t()
     # create stat dictionary from implemented stat functions and classes
@@ -151,7 +151,7 @@ def main(argv=[]):
     # parse colorid file
     phase.start_phase("Reading colorid file...")
     colorids = trajognize.parse.parse_colorid_file(options.coloridfile)
-    if colorids is None: return
+    if not colorids: return
     print("  %d colorids read, e.g. first is (%s,%s)" % (len(colorids), colorids[0].strid, colorids[0].symbol))
     phase.end_phase()
 
@@ -159,7 +159,10 @@ def main(argv=[]):
     phase.start_phase("Reading entrytimes file...")
     entrytimes = trajognize.parse.parse_entry_times(options.entrytimesfile)
     if entrytimes is None: return
-    print("  %d entrytime dates read, e.g. first is (%s)" % (len(entrytimes), next(entrytimes.itervalues())))
+    if entrytimes:
+        print("  %d entrytime dates read, e.g. first is (%s)" % (len(entrytimes), next(iter(entrytimes.values()))))
+    else:
+        print("  entrytimes are empty")
     phase.end_phase()
 
     # parse calibration file
