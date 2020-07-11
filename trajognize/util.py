@@ -230,7 +230,7 @@ def print_underlined(string, emptylines=0, fileobj=None):
     print(string, file=fileobj)
     if indent:
         print(' '*(indent-1), file=fileobj, end=" ")
-    print >> fileobj, '-' * (len(string)-indent)
+    print('-' * (len(string)-indent), file=fileobj)
     if emptylines:
         print('\n'*(emptylines-1), file=fileobj)
 
