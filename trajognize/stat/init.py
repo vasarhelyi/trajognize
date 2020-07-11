@@ -179,7 +179,7 @@ class heatmap_t(stat_t):
     states.
 
     heatmap.data[light][real/virtual][x][y] is the number of times a patek
-    barcode center was at the coordinates (x,y) in the given light condition.
+    barcode center was at the coordinates (x, y) in the given light condition.
 
     This class has one virtual subclass for each barcode and one for 'all' sum
     to avoid long execution times of stat and statsum (large memory needed for
@@ -264,7 +264,7 @@ class heatmap_t(stat_t):
                 for y in range(trajognize.project.image_size.y):
                     outputfile.write("%d" % y)
                     for x in range(trajognize.project.image_size.x):
-                        outputfile.write("\t%d" % data[x,y])
+                        outputfile.write("\t%d" % data[x, y])
                     outputfile.write("\n")
                 outputfile.write("\n\n")
                 outputfile.flush()
@@ -370,7 +370,7 @@ class motionmap_t(stat_t):
     """Storage class for motion heatmaps of barcodes for all light types.
 
     motionmap.data[light][x][y] is the number of times a patek
-    barcode center was at the coordinates (x,y) in the given light condition,
+    barcode center was at the coordinates (x, y) in the given light condition,
     with velocity over velocity threshold. Interpolated positions between
     two frames are stamped, too, so that number of interpolated points equals
     the velocity expressed in px/frame.
@@ -439,7 +439,7 @@ class motionmap_t(stat_t):
             for y in range(trajognize.project.image_size.y):
                 outputfile.write("%d" % y)
                 for x in range(trajognize.project.image_size.x):
-                    outputfile.write("\t%d" % self.data[light][x,y])
+                    outputfile.write("\t%d" % self.data[light][x, y])
                 outputfile.write("\n")
             outputfile.write("\n\n")
             outputfile.flush()
@@ -449,7 +449,7 @@ class aamap_t(stat_t):
     """Storage class for AA heatmaps of barcodes for all light types.
 
     aamap.data[light][x][y] is the number of times a patek
-    barcode center was at the coordinates (x,y) in the given light condition,
+    barcode center was at the coordinates (x, y) in the given light condition,
     when it was assumed to be in an AA type event (see aa_t).
     Interpolated positions between two frames are stamped, too,
     so that number of interpolated points equals the velocity expressed in px/frame.
@@ -512,7 +512,7 @@ class aamap_t(stat_t):
             for y in range(trajognize.project.image_size.y):
                 outputfile.write("%d" % y)
                 for x in range(trajognize.project.image_size.x):
-                    outputfile.write("\t%d" % self.data[light][x,y])
+                    outputfile.write("\t%d" % self.data[light][x, y])
                 outputfile.write("\n")
             outputfile.write("\n\n")
             outputfile.flush()
@@ -1224,8 +1224,7 @@ class nearestneighbor_t(stat_t):
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
                     names = [colorids[k].strid for k in range(len(colorids))]
-                    si = range(len(names))
-                    si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                    si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     outputfile.write("nearestneighbor_%s_%s" % (light.lower(), realvirtany[rva]))
                     for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
@@ -1251,8 +1250,7 @@ class nearestneighbor_t(stat_t):
                         outputfile.write("# this is group %s\n\n" % group)
                         # write header
                         names = exps[exp]['groups'][group]
-                        si = range(len(names))
-                        si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                        si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                         allnames = [colorids[k].strid for k in range(len(colorids))]
                         outputfile.write("nearestneighbor_%s_%s_group_%s" % (light.lower(), realvirtany[rva], group))
                         for i in range(len(si)):
@@ -1341,8 +1339,7 @@ class neighbor_t(stat_t):
                 for nn, networknumber in enumerate(['network', 'number']):
                     # write header
                     names = exps[exp]['groups'][group]
-                    si = range(len(names))
-                    si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                    si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     allnames = [colorids[k].strid for k in range(len(colorids))]
                     outputfile.write("neighbor_%s_%s_group_%s" % (networknumber, light.lower(), group))
                     for i in range(len(si)):
@@ -1467,8 +1464,7 @@ class fqobj_t(stat_t):
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
                     names = [colorids[k].strid for k in range(len(colorids))]
-                    si = range(len(names))
-                    si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                    si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     outputfile.write("fqobj_%s_%s" % (light.lower(), obj))
                     for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
@@ -1497,8 +1493,7 @@ class fqobj_t(stat_t):
                         outputfile.write("# this is group %s\n\n" % group)
                         # write header
                         names = exps[exp]['groups'][group]
-                        si = range(len(names))
-                        si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                        si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                         allnames = [colorids[k].strid for k in range(len(colorids))]
                         outputfile.write("fqobj_%s_%s_group_%s" % (light.lower(), obj, group))
                         for i in range(len(si)):
@@ -1662,8 +1657,7 @@ class dailyfqobj_t(stat_t):
                     outputfile.write("# %d-day moving average results are also written as movavgfqobj_*\n\n" % self.dayavg)
                     # prepare IDs and header
                     names = exps[exp]['groups'][group]
-                    si = range(len(names))
-                    si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                    si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     allnames = [colorids[k].strid for k in range(len(colorids))]
                     for day in range(maxday + 1):
                         # daily results
@@ -1769,8 +1763,7 @@ class fqfood_t(stat_t):
                 outputfile.write("# IDs are ordered alphabetically.\n\n")
                 # write header
                 names = [colorids[k].strid for k in range(len(colorids))]
-                si = range(len(names))
-                si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                 outputfile.write("fqfood_%s" % light.lower())
                 for i in range(len(si)):
                     outputfile.write("\t%s" % names[si[i]])
@@ -1794,8 +1787,7 @@ class fqfood_t(stat_t):
                     outputfile.write("# this is group %s\n\n" % group)
                     # write header
                     names = exps[exp]['groups'][group]
-                    si = range(len(names))
-                    si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                    si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     allnames = [colorids[k].strid for k in range(len(colorids))]
                     outputfile.write("fqfood_%s_group_%s" % (light.lower(), group))
                     for i in range(len(si)):
@@ -1899,8 +1891,7 @@ class fqwhilef_t(stat_t):
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
                     names = [colorids[k].strid for k in range(len(colorids))]
-                    si = range(len(names))
-                    si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                    si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     outputfile.write("fqwhilef_%s_%s" % (light.lower(), obj))
                     for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
@@ -1946,8 +1937,7 @@ class fqwhilef_t(stat_t):
                         outputfile.write("# this is group %s\n\n" % group)
                         # write header
                         names = exps[exp]['groups'][group]
-                        si = range(len(names))
-                        si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                        si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                         allnames = [colorids[k].strid for k in range(len(colorids))]
                         outputfile.write("fqwhilef_%s_%s_group_%s" % (light.lower(), obj, group))
                         for i in range(len(si)):
@@ -2076,8 +2066,7 @@ class aa_t(stat_t):
                 outputfile.write("# IDs are ordered alphabetically.\n\n")
                 # write header
                 names = [colorids[k].strid for k in range(len(colorids))]
-                si = range(len(names))
-                si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                 outputfile.write("aa_%s" % light.lower())
                 for i in range(len(si)):
                     outputfile.write("\t%s" % names[si[i]])
@@ -2101,8 +2090,7 @@ class aa_t(stat_t):
                     outputfile.write("# this is group %s\n\n" % group)
                     # write header
                     names = exps[exp]['groups'][group]
-                    si = range(len(names))
-                    si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                    si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     allnames = [colorids[k].strid for k in range(len(colorids))]
                     outputfile.write("aa_%s_group_%s" % (light.lower(), group))
                     for i in range(len(si)):
@@ -2187,8 +2175,7 @@ class butthead_t(stat_t):
                 outputfile.write("# cos_approacher_threshold = %g\n\n" % self.cos_approacher_threshold)
                 # write header
                 names = [colorids[k].strid for k in range(len(colorids))]
-                si = range(len(names))
-                si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                 outputfile.write("butthead_%s" % light.lower())
                 for i in range(len(si)):
                     outputfile.write("\t%s" % names[si[i]])
@@ -2214,8 +2201,7 @@ class butthead_t(stat_t):
                     outputfile.write("# this is group %s\n\n" % group)
                     # write header
                     names = exps[exp]['groups'][group]
-                    si = range(len(names))
-                    si.sort(lambda x,y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
+                    si = sorted(list(range(len(names))), key=lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0)
                     allnames = [colorids[k].strid for k in range(len(colorids))]
                     outputfile.write("butthead_%s_group_%s" % (light.lower(), group))
                     for i in range(len(si)):
