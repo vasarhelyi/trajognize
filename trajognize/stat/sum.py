@@ -61,7 +61,7 @@ def main(argv=[]):
     and summarizes them to get global statistics.
 
     """
-    print("This is trajognize statsum. Version:", util.get_version_info())
+    print("This is trajognize statsum. Version:", trajognize.util.get_version_info())
     print("Current project is: %s" % project_str[PROJECT])
     phase = trajognize.util.phase_t()
     # create stat dictionary from implemented stat functions and classes
