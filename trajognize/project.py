@@ -68,11 +68,9 @@ else:
 MBASE = len(colornames)
 
 #: color lookup table - this should be constant in all projects
-#: use string keys so that we don't have to turn into int just for this lookup:
-dec2color = dict([(str(i), colornames[i].upper()[0]) for i in range(MBASE)])
-color2dec = dict([(colornames[i].upper()[0], str(i)) for i in range(MBASE)])
-#: define int keys as well, they might be needed
+#: use string keys so that we don't have to turn into int just for this lookup
 int2color = "".join([colornames[i].upper()[0] for i in range(MBASE)])
+#: define int keys as well, they might be needed
 color2int = dict([(colornames[i].upper()[0], i) for i in range(MBASE)])
 
 

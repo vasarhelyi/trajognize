@@ -1220,10 +1220,11 @@ def enhance_virtual_barcodes(trajectories, trajsonframe, colorids, barcodes, blo
                         # find best not used blob as candidate
                         found = None
                         mindist = MAX_INRAT_DIST
+                        color = color2int[colorids[k].strid[bi]]
                         for ii in range(len(blobs[frame])):
                             blob = blobs[frame][ii]
                             if algo_blob.barcodeindices_not_deleted(blob.barcodeindices, barcodes[frame]): continue
-                            if blob.color != color2int[colorids[k].strid[bi]]: continue
+                            if blob.color != color: continue
                             dist = get_distance_at_position(oldbarcode, bi, blob)
                             if dist < mindist:
                                 found = ii

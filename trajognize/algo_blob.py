@@ -109,17 +109,19 @@ def find_chains_in_sdistlists(blobs, sdistlists, colorids):
     lastit = [-1 for x in range(MCHIPS)]
     # iterate all colorids
     for k in range(len(colorids)):
+        color0 = color2int[colorids[k].strid[0]]
         # iterate all from given color (from) to find all good chains for that colorid
         fr = -1
         while fr < len(blobs) - 1:
             fr += 1
-            if int2color[blobs[fr].color] != colorids[k].strid[0]: continue
+            if blobs[fr].color != color0: continue
             # store blob index (last iteration of current level)
             lastit[0] = fr
             # iterate all that are chained to the first element and find the rest recursively
+            color1 = color2int[colorids[k].strid[1]]
             for distto in sdistlists[fr][0]:
                 # if the colors match
-                if int2color[blobs[distto].color] == colorids[k].strid[1]:
+                if blobs[distto].color == color1:
                     # store blob index (last iteration of current level)
                     lastit[1] = distto
                     # iterate through all possibilities and save chains
@@ -153,9 +155,10 @@ def find_chains_in_sdistlists_recursively(
         return
 
     # if more chain elements needed, call self recursively
+    color = color2int[colorids[k].strid[i]]
     for distto in sdistlists[fr][0]:
         # if the colors match
-        if int2color[blobs[distto].color] == colorids[k].strid[i]:
+        if blobs[distto].color == color:
             # store blob index (last iteration of current level)
             lastit[i] = distto
             # increase common counter and go to next level
