@@ -12,14 +12,17 @@ def calculate_running_avg(new, k, prevavg, prevstd):
     """Running average and standard deviation calculation.
 
     Source:
-    http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
+        http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
 
-    new   -- new element to take into account
-    k     -- index of element (starting from 1)
-    prevavg -- previous average
-    prevstd -- previous "standard deviation"
+    Parameters:
+        new   -- new element to take into account
+        k     -- index of element (starting from 1)
+        prevavg -- previous average
+        prevstd -- previous "standard deviation"
 
-    Return value is new running avg and std.
+    Return:
+        new running avg and std
+
     Note: real standard deviation at all times is sqrt(std/n)
 
     """
@@ -46,7 +49,6 @@ def distance_matrix(X, Y=None):
     else:
         # method 2: between two set of points, a bit slower
         return numpy.sqrt(numpy.sum((Y[None, :] - X[:, None]) ** 2, -1))
-
 
 
 def get_angle_deg(a, b):
