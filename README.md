@@ -34,6 +34,9 @@ or
 pip install -r requirements.txt
 ```
 
+There are not too many non-trivil package dependencies, but it is still
+recommended to install into a virtual environment with e.g. `pipenv`.
+
 # usage
 
 The final workflow of trajognize should be something like this below in order:
@@ -53,7 +56,7 @@ Detailed help on usage is available for all python commands with '-h' or '--help
 
 **Note**: In case of ELTE-specific usage, 'queue_jobs' scripts at
 [hal.elte.hu/flocking](https://hal.elte.hu/flocking) are
-available to run everything parallely on
+available for those with access right to run everything parallely on
 [atlasz](https://hpc.iig.elte.hu/dokuwiki/doku.php).
 
 ## List of statistics implemented
@@ -96,7 +99,7 @@ summary for each experiment:
 | plot_neighbor.py        | neighbor matrix                                     |
 
 **Note**: These plots generate a lot of output, see corr/good_params.py
- for more details on what is the suggested usable part of it.
+for more details on what is the suggested usable part of it.
 
 
 ## static params
