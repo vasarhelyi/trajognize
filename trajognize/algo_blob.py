@@ -3,6 +3,7 @@ All kinds of algorithms used by trajognize.main() that are related to blobs.
 """
 
 from math import degrees, acos
+import numpy
 
 from .project import *
 from .init import *
@@ -21,16 +22,12 @@ def create_spatial_distlists(blobs):
 
     """
     n = len(blobs)
-    sdistlists = [[[],[]] for x in range(n)]
-    for i in range(n):
-        for j in range(i):
-            d = get_distance(blobs[i], blobs[j])
-            if d <= MAX_INRAT_DIST:
-                sdistlists[i][0].append(j)
-                sdistlists[j][0].append(i)
-            elif d <= 2 * MAX_INRAT_DIST:
-                sdistlists[i][1].append(j)
-                sdistlists[j][1].append(i)
+
+    distmatrix = distance_matrix(numpy.array([[b.centerx, b.centery] for b in blobs]))
+    a = [numpy.where(distmatrix[i] <= MAX_INRAT_DIST)[0] for i in range(n)]
+    b = [numpy.where((distmatrix[i] <= 2 * MAX_INRAT_DIST) & (distmatrix[i] > MAX_INRAT_DIST))[0] for i in range(n)]
+    sdistlists = [[numpy.ndarray.tolist(a[i]), numpy.ndarray.tolist(b[i])] for i in range(n)]
+
     return sdistlists
 
 
@@ -58,33 +55,36 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdin
     """
     n = len(blobs)
     m = len(prevblobs)
-    tdistlists = [[] for x in range(n)]
+    # include color in third coordinate to be 0 if match and too large if not
+    pn = numpy.array([[b.centerx, b.centery, MAX_PERFRAME_DIST_MD * b.color] for b in blobs])
+    pm = numpy.array([[b.centerx, b.centery, MAX_PERFRAME_DIST_MD * b.color] for b in prevblobs])
+    distmatrix = distance_matrix(pn, pm)
+    a = [numpy.where(distmatrix[i] <= MAX_PERFRAME_DIST)[0] for i in range(n)]
+    b = [numpy.where((distmatrix[i] <= 2 * MAX_PERFRAME_DIST_MD) & (distmatrix[i] > MAX_PERFRAME_DIST))[0] for i in range(n)]
+    # tdistlist is initialized with closeby prevblobs with lower threshold
+    tdistlists = [numpy.ndarray.tolist(a[i]) for i in range(n)]
+    # higher threshold closeby prevblobs are added if other conditions are met
     for i in range(n):
-        for j in range(m):
-            if blobs[i].color != prevblobs[j].color: continue
-            d = get_distance(blobs[i], prevblobs[j])
-            # static case, lower threshold is met
-            if d <= MAX_PERFRAME_DIST:
+        for j in b[i]:
+            # full dynamic case, both frames contain moving blobs - we correct with motion blob motion:
+            # both frames contain motion blob, higher threshold is satisfactory,
+            # there are rarely any motion blobs closer than MAX_PERFRAME_DIST_MD
+            if mdindices[i] > -1 and prevmdindices[j] > -1:
+                # dx = md_blobs[mdindices[i]].centerx - prevmd_blobs[prevmdindices[j]].centerx
+                # dy = md_blobs[mdindices[i]].centery - prevmd_blobs[prevmdindices[j]].centery
+                # corrected_prevblob = color_blob_t(0, prevblobs[j].centerx+dx, prevblobs[j].centery+dy, 0, [])
+                # d = get_distance(corrected_prevblob, blobs[i])
                 tdistlists[i].append(j)
-            # dynamic case, check md blobs with higher threshold
-            elif d <= MAX_PERFRAME_DIST_MD:
-                # full dynamic case, both frames contain moving blobs - we correct with motion blob motion:
-                # both frames contain motion blob, higher threshold is satisfactory,
-                # there are rarely any motion blobs closer than MAX_PERFRAME_DIST_MD
-                if mdindices[i] > -1 and prevmdindices[j] > -1:
-#                    dx = md_blobs[mdindices[i]].centerx - prevmd_blobs[prevmdindices[j]].centerx
-#                    dy = md_blobs[mdindices[i]].centery - prevmd_blobs[prevmdindices[j]].centery
-#                    corrected_prevblob = color_blob_t(0, prevblobs[j].centerx+dx, prevblobs[j].centery+dy, 0, [])
-#                    d = get_distance(corrected_prevblob, blobs[i])
-                    tdistlists[i].append(j)
-                # start of motion: prevframe is static, frame is dynamic:
-                # if prev is under current motion blob, keep it
-                elif mdindices[i] > -1 and prevmdindices[j] == -1 and is_point_inside_ellipse(prevblobs[j], md_blobs[mdindices[i]]):
-                    tdistlists[i].append(j)
-                # end of motion: prevframe is dynamic, frame is static
-                # if current is under prev motion blob, keep it
-                elif mdindices[i] == -1 and prevmdindices[j] > -1 and is_point_inside_ellipse(blobs[i], prevmd_blobs[prevmdindices[j]]):
-                    tdistlists[i].append(j)
+            # start of motion: prevframe is static, frame is dynamic:
+            # if prev is under current motion blob, keep it
+            elif mdindices[i] > -1 and prevmdindices[j] == -1 and \
+                    is_point_inside_ellipse(prevblobs[j], md_blobs[mdindices[i]]):
+                tdistlists[i].append(j)
+            # end of motion: prevframe is dynamic, frame is static
+            # if current is under prev motion blob, keep it
+            elif mdindices[i] == -1 and prevmdindices[j] > -1 and \
+                    is_point_inside_ellipse(blobs[i], prevmd_blobs[prevmdindices[j]]):
+                tdistlists[i].append(j)
 
     return tdistlists
 
@@ -300,6 +300,7 @@ def get_not_used_blob_indices(blobs, barcodes):
 
     return nub
 
+
 def update_blob_barcodeindices(barcode, k, i, blobs):
     """Update blob's barcodeindices from barcode's blobindices."""
     ki = barcode_index_t(k, i)
@@ -307,6 +308,7 @@ def update_blob_barcodeindices(barcode, k, i, blobs):
         if blobi is None: continue
         if blobi not in blobs[blobi].barcodeindices:
             blobs[blobi].barcodeindices.append(ki)
+
 
 def remove_blob_barcodeindex(blob, k, i):
     """Remove a given index from the blobs barcodeindices list."""

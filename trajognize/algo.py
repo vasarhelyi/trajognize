@@ -3,7 +3,7 @@ All kinds of general algorithms used by trajognize.main().
 """
 
 from math import hypot, cos, sin, degrees
-
+import numpy
 from .project import AVG_INRAT_DIST
 from .init import int2color
 
@@ -14,7 +14,6 @@ def calculate_running_avg(new, k, prevavg, prevstd):
     Source:
     http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
 
-    Keyword arguments:
     new   -- new element to take into account
     k     -- index of element (starting from 1)
     prevavg -- previous average
@@ -24,10 +23,30 @@ def calculate_running_avg(new, k, prevavg, prevstd):
     Note: real standard deviation at all times is sqrt(std/n)
 
     """
-    avg = prevavg + (new - prevavg)/k
-    std = prevstd + (new - prevavg)*(new-avg)
+    avg = prevavg + (new - prevavg) / k
+    std = prevstd + (new - prevavg) * (new-avg)
 
     return (avg, std)
+
+
+def distance_matrix(X, Y=None):
+    """Pairwise distances between rows of X or between rows of X and Y
+    if Y is not None."""
+    # method 0: too much scipy overhead, memory usage, and not even fast enough
+    # if Y is None:
+    #     return scipy.spatial.distance.pdist(X)
+    # else:
+    #     return scipy.spatial.distance.cdist(X, Y)
+
+    if Y is None:
+        # method 1: on self, fast and simple
+        B = numpy.dot(X, X.T)
+        q = numpy.diag(B)[:, None]
+        return numpy.sqrt(q + q.T - 2 * B)
+    else:
+        # method 2: between two set of points, a bit slower
+        return numpy.sqrt(numpy.sum((Y[None, :] - X[:, None]) ** 2, -1))
+
 
 
 def get_angle_deg(a, b):
