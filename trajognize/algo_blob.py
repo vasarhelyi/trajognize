@@ -7,7 +7,7 @@ import numpy
 
 from .project import *
 from .init import *
-from .algo import *
+from .algo import distance_matrix, get_distance, is_point_inside_ellipse
 
 # global variables
 chainlists = [] # chains of possible ids with blob indices

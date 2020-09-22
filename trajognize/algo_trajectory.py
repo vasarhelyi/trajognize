@@ -56,8 +56,8 @@ from operator import attrgetter
 
 from .project import *
 from .init import *
-from .algo import *
-from .util import *
+from .algo import get_distance, get_distance_at_position, is_point_inside_ellipse
+from .util import mfix2str
 
 from . import algo_barcode
 from . import algo_blob

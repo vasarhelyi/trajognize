@@ -1,6 +1,7 @@
 import visual
 import visual.graph
-from trajognize.stat.experiments import *
+
+from trajognize.stat.experiments import get_initialized_experiments
 
 exps = get_initialized_experiments()
 for exp in exps:

@@ -6,9 +6,10 @@ import itertools
 
 from .project import *
 from .init import *
-from .algo import *
-from .algo_blob import *
-from .util import mfix2str, is_isogram
+from .algo import get_angle_deg, get_distance, get_distance_at_position
+from .util import mfix2str
+
+from . import algo_blob
 
 
 def get_chosen_barcode_indices(barcodes):
@@ -43,7 +44,7 @@ def barcode_is_free(barcodes, k, j, blobs):
     for i in barcode.blobindices:
         if i is None: continue
         blob = blobs[i]
-        if barcodeindices_not_deleted(blob.barcodeindices, barcodes):
+        if algo_blob.barcodeindices_not_deleted(blob.barcodeindices, barcodes):
             return False
     return True
 
@@ -153,7 +154,7 @@ def add_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
         blobchains = list(itertools.product(*candidates))
         candidate_blobchain_indices = []
         for i, blobchain in enumerate(blobchains):
-            if is_blob_chain_appropriate_as_barcode([blobs[j] for j in blobchain]):
+            if algo_blob.is_blob_chain_appropriate_as_barcode([blobs[j] for j in blobchain]):
                 candidate_blobchain_indices.append(i)
         # if there are no candidates, we return without changing anything
         if not candidate_blobchain_indices:
@@ -361,7 +362,7 @@ def remove_overlapping_fullfound(barcodes, blobs, cluster):
     # find barcodes that belong to the current blob cluster
     barcodecluster = set()
     for i in cluster:
-        for j in barcodeindices_not_deleted(
+        for j in algo_blob.barcodeindices_not_deleted(
                 blobs[i].barcodeindices, barcodes, MFIX_FULLFOUND):
             barcodecluster.add(j)
     # iterate all barcodes and find ones that are fully overlapping others,
@@ -371,7 +372,7 @@ def remove_overlapping_fullfound(barcodes, blobs, cluster):
         overlapped = True
         for i in barcodes[ki.k][ki.i].blobindices:
             if i is None: continue
-            if len(barcodeindices_not_deleted(blobs[i].barcodeindices, barcodes)) < 2:
+            if len(algo_blob.barcodeindices_not_deleted(blobs[i].barcodeindices, barcodes)) < 2:
                 overlapped = False
                 break
         if (overlapped):
@@ -402,7 +403,7 @@ def set_nocluster_property(barcodes, blobs, cluster):
         return
     barcodeindex = -1
     for i in cluster:
-        barcodeindices = barcodeindices_not_deleted(
+        barcodeindices = algo_blob.barcodeindices_not_deleted(
                 blobs[i].barcodeindices, barcodes, MFIX_FULLFOUND)
         # return if more barcodes are present around
         if len(barcodeindices) != 1:
@@ -465,7 +466,7 @@ def find_partlyfound_from_tdist(
         raise ValueError("unknown direction: {}".format(direction))
     tempbarcodes = [[] for x in range(len(colorids))] # temporarily found new barcodes
     # calculate temporal distances between blobs
-    tdistlists[currentframe] = create_temporal_distlists(
+    tdistlists[currentframe] = algo_blob.create_temporal_distlists(
             color_blobs[currentframe-inc], color_blobs[currentframe],
             md_blobs[currentframe-inc], md_blobs[currentframe],
             mdindices[currentframe-inc], mdindices[currentframe])
@@ -475,7 +476,7 @@ def find_partlyfound_from_tdist(
     # iterate for all blobs on current frame
     for blobi in range(len(color_blobs[currentframe])):
         # skip blobs that ARE already assigned to something not deleted:
-        if barcodeindices_not_deleted(
+        if algo_blob.barcodeindices_not_deleted(
                 color_blobs[currentframe][blobi].barcodeindices, barcodes[currentframe]):
             continue
         # skip blobs not close to anything on the previous frame
@@ -486,7 +487,7 @@ def find_partlyfound_from_tdist(
         # iterate all close previous
         for prevblobi in tdistlists[currentframe][blobi]:
             # if prev is NOT assigned to a non-deleted barcode, skip
-            goodprevbarcodes = barcodeindices_not_deleted(
+            goodprevbarcodes = algo_blob.barcodeindices_not_deleted(
                     color_blobs[currentframe-inc][prevblobi].barcodeindices,
                     barcodes[currentframe-inc])
             if not goodprevbarcodes:
@@ -552,10 +553,10 @@ def find_partlyfound_from_tdist(
                     # remove old blob correspondences
                     for blobj in oldbarcode.blobindices:
                         if blobj is None: continue
-                        remove_blob_barcodeindex(color_blobs[currentframe][blobj], k, i)
+                        algo_blob.remove_blob_barcodeindex(color_blobs[currentframe][blobj], k, i)
                     # add new blobindices
                     oldbarcode.blobindices = list(barcode.blobindices)
-                    update_blob_barcodeindices(oldbarcode, k, i, color_blobs[currentframe])
+                    algo_blob.update_blob_barcodeindices(oldbarcode, k, i, color_blobs[currentframe])
                     # we store oldbarcode (and i as well as it stays what it is currently)
                     barcode = oldbarcode
                     break
@@ -565,7 +566,7 @@ def find_partlyfound_from_tdist(
             if barcode != oldbarcode:
                 barcodes[currentframe][k].append(barcode)
                 i = len(barcodes[currentframe][k]) - 1
-            update_blob_barcodeindices(barcode, k, i, color_blobs[currentframe])
+            algo_blob.update_blob_barcodeindices(barcode, k, i, color_blobs[currentframe])
             count += 1
 
 # TODO: code below here is not functional yet, it does not change anything as
@@ -581,8 +582,8 @@ def find_partlyfound_from_tdist(
 #     notusedblobs = list(notusedblobs)
 #     # create cluster list of not used blobs with temporarily defined blob and sdist lists
 #     notusedblobsx = [color_blobs[currentframe][blobi] for blobi in notusedblobs]
-#     sdistlistsx = create_spatial_distlists(notusedblobsx)
-#     clusterlists, _ = find_clusters_in_sdistlists(notusedblobsx, sdistlistsx, 1)
+#     sdistlistsx = algo_blob.create_spatial_distlists(notusedblobsx)
+#     clusterlists, _ = algo_blob.find_clusters_in_sdistlists(notusedblobsx, sdistlistsx, 1)
 #     # check all clusters
 #     for cluster in clusterlists:
 #         # skip large clusters
@@ -652,7 +653,7 @@ def find_partlyfound_from_tdist(
 # #                order_blobindices(newbarcode, colorids[bestk].strid, color_blobs[currentframe])
 # #                calculate_params(newbarcode, colorids[bestk].strid, color_blobs[currentframe])
 # #                barcodes[currentframe][bestk].append(newbarcode)
-# #                update_blob_barcodeindices(newbarcode, bestk, len(barcodes[currentframe][bestk]) - 1, color_blobs[currentframe])
+# #                algo_blob.update_blob_barcodeindices(newbarcode, bestk, len(barcodes[currentframe][bestk]) - 1, color_blobs[currentframe])
 # #                count += 1
 # #                count_notused += 1
 #                 break
@@ -761,7 +762,7 @@ def set_shared_mfix_flags(barcodes, blobs, colorids):
 
     # set SHARESBLOB property (on non deleted ones)
     for blob in blobs:
-        notdeleted = barcodeindices_not_deleted(blob.barcodeindices, barcodes)
+        notdeleted = algo_blob.barcodeindices_not_deleted(blob.barcodeindices, barcodes)
         if len(notdeleted) > 1:
             for x in notdeleted:
                 barcodes[x.k][x.i].mfix |= MFIX_SHARESBLOB
@@ -771,7 +772,7 @@ def set_shared_mfix_flags(barcodes, blobs, colorids):
     allindices = []
     for k in range(len(barcodes)):
         for i in range(len(barcodes[k])):
-            allindices += barcodeindices_not_deleted(
+            allindices += algo_blob.barcodeindices_not_deleted(
                     [barcode_index_t(k, i)], barcodes)
     # iterate over all pairs
     for i in range(1, len(allindices)):

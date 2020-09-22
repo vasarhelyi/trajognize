@@ -10,8 +10,7 @@ TODOs:
 
 from .project import *
 from .init import *
-from .algo import *
-from .util import *
+from .algo import get_distance_at_position, is_point_inside_ellipse
 
 from . import algo_barcode
 from . import algo_blob
