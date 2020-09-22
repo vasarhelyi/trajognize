@@ -173,9 +173,11 @@ class avgdist24hobj_t():
             outputfile.write("\n\n")
             outputfile.flush()
 
-    def write_corroutput(self, colorids, exps, exp, corrfiles, substat):
+    def write_corroutput(self, statsum_basedir, colorids, exps, exp, corrfiles, substat):
         """Saves the contents of self to a correlation file.
 
+        :param statsum_basedir: base directory where statsum results are written
+                according to different statistics
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
         :param exps: experiment database created by
@@ -192,7 +194,7 @@ class avgdist24hobj_t():
             klist = [allnames.index(name) for name in names]
             # initialize corr file
             headerline = trajognize.corr.util.strids2headerline(names, False)
-            corrfile = trajognize.corr.util.get_corr_filename("exp_%s" % exp, group, False)
+            corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, "exp_%s" % exp, group, False)
             if corrfile not in corrfiles:
                 if os.path.isfile(corrfile):
                     os.remove(corrfile)
@@ -224,6 +226,7 @@ def main(argv=[]):
         print(__doc__)
         return
     inputdir = argv[0]
+    statsum_basedir = os.path.split(inputdir)[0]
     if len(argv) == 2:
         experiment = argv[1]
     else:
@@ -293,7 +296,7 @@ def main(argv=[]):
         outputfile = open(os.path.join(outputdir,
                 "calc_avgfooddist24hobj.alldays__exp_%s.txt" % exp), 'w')
         alltemp.write_results(outputfile, colorids, exps, exp, substat)
-        alltemp.write_corroutput(colorids, exps, exp, corrfiles, substat.replace('.', '_'))
+        alltemp.write_corroutput(statsum_basedir, colorids, exps, exp, corrfiles, substat.replace('.', '_'))
 
 
 if __name__ == "__main__":

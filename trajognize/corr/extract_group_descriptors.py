@@ -21,8 +21,11 @@ except ImportError:
 
 def main(argv=[]):
     """Main entry point of the script."""
+
+    basedir = input("Get base directory of statsum correlation outputs: ")
+
     # initialize some variables
-    corrfile = os.path.join(util.get_corr_basedir(), 'collected_good_params.txt')
+    corrfile = os.path.join(basedir, 'collected_good_params.txt')
     outfile = os.path.splitext(corrfile)[0] + '__groupified.txt'
     exps = trajognize.stat.experiments.get_initialized_experiments()
     expnames = sorted(exps.keys(), lambda a,b: exps[a]['number'] - exps[b]['number'])
@@ -32,7 +35,6 @@ def main(argv=[]):
         print("Correlation file does not exist:", corrfile)
         return
     print("Parsing corr file to collect data...")
-    basedir = util.get_corr_basedir()
     headers, data = util.parse_corr_file(corrfile)
 
     # open output file

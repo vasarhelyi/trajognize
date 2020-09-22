@@ -123,6 +123,7 @@ def main(argv=[]):
 
             # define output directory
             (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+            statsum_basedir = os.path.split(head)[0]
             outdir = os.path.join(head, plotdir, exp, group, light, object)
             if not os.path.isdir(outdir): os.makedirs(outdir)
             # if this is a new output directory, clear SPGM descriptions
@@ -168,7 +169,7 @@ def main(argv=[]):
             # write it out
             headerline = trajognize.corr.util.strids2headerline(names, False)
             corrline = "\t".join(corrdata)
-            corrfile = trajognize.corr.util.get_corr_filename(exp, group, False)
+            corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, False)
             if corrfile not in corrfiles:
                 if os.path.isfile(corrfile):
                     os.remove(corrfile)

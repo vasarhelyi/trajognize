@@ -51,6 +51,7 @@ def main(argv=[]):
         print(__doc__)
         return
     inputdir = argv[0]
+    statsum_basedir = os.path.split(inputdir)[0]
     if len(argv) == 2:
         experiment = argv[1]
     else:
@@ -98,7 +99,7 @@ def main(argv=[]):
                 names = sorted(exps[exp]['groups'][group])
                 allnames += names
             headerline = trajognize.corr.util.strids2headerline(names, False)
-            corrfile = trajognize.corr.util.get_corr_filename("exp_%s" % exp, group, False)
+            corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, "exp_%s" % exp, group, False)
             if corrfile not in corrfiles:
                 if os.path.isfile(corrfile):
                     os.remove(corrfile)

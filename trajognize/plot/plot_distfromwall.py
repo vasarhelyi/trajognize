@@ -139,6 +139,7 @@ def main(argv=[]):
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
         headers = grep_headers_from_file(inputfile, "distfromwall_")
         (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+        statsum_basedir = os.path.split(head)[0]
         exp = get_exp_from_filename(inputfile)
         # plot all indices
         for index in range(len(headers)):
@@ -210,7 +211,7 @@ def main(argv=[]):
             # write it out
             headerline = trajognize.corr.util.strids2headerline(names, False)
             corrline = "\t".join(corrdata)
-            corrfile = trajognize.corr.util.get_corr_filename(exp, group, False)
+            corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, False)
             if corrfile not in corrfiles:
                 if os.path.isfile(corrfile):
                     os.remove(corrfile)

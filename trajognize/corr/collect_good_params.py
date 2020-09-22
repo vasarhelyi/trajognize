@@ -18,13 +18,15 @@ except ImportError:
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
     import trajognize.stat.experiments
 
-
-corrfile = os.path.join(util.get_corr_basedir(), 'collected_good_params.txt')
-corrfileall = os.path.join(util.get_corr_basedir(), 'collected_all_params.txt')
-exps = trajognize.stat.experiments.get_initialized_experiments()
-
 def main(argv=[]):
     """Main entry point of the script."""
+
+    basedir = input("Get base directory of statsum correlation outputs: ")
+
+    corrfile = os.path.join(basedir, 'collected_good_params.txt')
+    corrfileall = os.path.join(basedir, 'collected_all_params.txt')
+    exps = trajognize.stat.experiments.get_initialized_experiments()
+
     if os.path.isfile(corrfile):
         print("Correlation file already exists, remove it first:", corrfile)
         os.remove(corrfile)
@@ -35,7 +37,6 @@ def main(argv=[]):
     print("\nParsing all corr files to collect data...\n")
     alldata = defaultdict(lambda: defaultdict(dict)) # [exp][paramname][strid] = value
     alldataall = defaultdict(lambda: defaultdict(dict)) # [exp][paramname][strid] = value
-    basedir = util.get_corr_basedir()
     # get all experiment dirs
     expdirs = os.listdir(basedir)
     for expdir in expdirs:

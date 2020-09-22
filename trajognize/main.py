@@ -59,8 +59,8 @@ def main(argv=[]):
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__)
     argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output file")
-    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", help="define blob input file name (.blobs)")
-    argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
+    argparser.add_argument("-i", "--inputfile", metavar="FILE", required=True, dest="inputfile", help="define blob input file name (.blobs)")
+    argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=True, dest="coloridfile", help="define colorid input file name (.xml)")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for .barcodes output file")
     argparser.add_argument("-n", "--framenum", metavar="NUM", dest="framenum", type=int, help="define max frames to read (used for debug reasons)")
@@ -81,24 +81,9 @@ def main(argv=[]):
     # check arguments
     phase.start_phase("Checking command line arguments...")
     # inputfile
-    if options.inputfile is None:
-        # default on windows (gabor's laptop)
-        if sys.platform.startswith('win'):
-            #options.inputfile = 'd:\\ubi\\ELTE\\patekok\\video\\random_sample_trial_run\\random_sample_trial_run_2011-06-10_13-15-29.335159.ts\\OUT\\2011-06-10_13-15-29.335159.ts.blobs'
-            #options.inputfile = 'd:\\ubi\\Visual Studio 2010\\Projects\\ratognize_svn\\OUT\\2011-07-15_03-04-10.382536.ts.blobs'
-            options.inputfile = 'd:\\ubi\\Visual Studio 2010\\Projects\\ratognize_svn\\OUT\\2011-08-30_12-42-09.588960.ts.blobs'
-        # default on non windows (linux, atlasz)
-        else:
-            options.inputfile = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/done/random_sample_trial_run_2011-06-10_13-15-29.335159.ts/OUT/2011-06-10_13-15-29.335159.ts.blobs'
-        print("  WARNING! No input file is specified! Default for %s is: '%s'" % (sys.platform, options.inputfile))
-    else:
-        print("  Using inputfile: '%s'" % options.inputfile)
+    print("  Using inputfile: '%s'" % options.inputfile)
     # colorid file
-    if options.coloridfile is None:
-        options.coloridfile = 'misc/5-3_28patek.xml'
-        print("  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile)
-    else:
-        print("  Using colorid file: '%s'" % options.coloridfile)
+    print("  Using colorid file: '%s'" % options.coloridfile)
     # output path
     if options.outputpath is None:
         (options.outputpath, tail) = os.path.split(options.inputfile)

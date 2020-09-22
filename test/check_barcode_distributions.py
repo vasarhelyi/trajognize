@@ -9,8 +9,8 @@ This is a small script that calculates the following distributions:
 
   - heatmap of barcodes, separated for day/night light conditions.
 
-Input is taken from all barcode files from [inputpath]*/OUT/*ts.blobs.barcodes
-and [param1]*/OUT/*ts.log, where inputpath is an optional path where
+Input is taken from all barcode files from [inputpath]*/OUT/*.blobs.barcodes
+and [param1]*/OUT/*.log, where inputpath is an optional path where
 subdirectories with ratognize/trajognize output data can be found.
 default value is defined in util.py
 
@@ -35,7 +35,7 @@ argparser.add_argument("-ns", "--nosameiddist", dest="nosameiddist", action="sto
 argparser.add_argument("-nh", "--noheatmap", dest="noheatmap", action="store_true", default=False, help="do not calculate heatmaps")
 argparser.add_argument("-nt", "--notimedist", dest="notimedist", action="store_true", default=False, help="do not calculate 24h time distribution")
 argparser.add_argument("-cc", "--correctcage", dest="correctcage", action="store_true", default=False, help="correct for cage center dislocations")
-argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define barcode input path to have barcode files at [PATH]*/OUT/*ts.blobs.barcodes", metavar="PATH")
+argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define barcode input path to have barcode files at [PATH]*/OUT/*.blobs.barcodes", metavar="PATH")
 argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
 args = argparser.parse_args()
 

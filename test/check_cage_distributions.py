@@ -3,7 +3,7 @@
 """
 This is a small script that calculates cage center distributions and time curves.
 
-Input is taken from all log files from [inputpath]*/OUT/*ts.log, where inputpath
+Input is taken from all log files from [inputpath]*/OUT/*.log, where inputpath
 is an optional path where subdirectories with ratognize output data can be found.
 Default value is defined in util.py
 
@@ -23,12 +23,12 @@ except ImportError:
 
 # parse command line arguments
 argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
-argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define blob input path to have blob files at [PATH]*/OUT/*ts.blobs", metavar="PATH")
+argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define blob input path to have blob files at [PATH]*/OUT/*.blobs", metavar="PATH")
 args = argparser.parse_args()
 
 # get input path
 path = trajognize.util.get_path_as_first_arg((None, args.inputpath))
-path += '*/OUT/*ts.log'
+path += '*/OUT/*.log'
 print("# Using data: %s" % path)
 
 # list files and check for error

@@ -50,7 +50,7 @@ def get_categories_from_name(name):
 def main(argv=[]):
     """Main entry point of the script."""
     if not argv:
-        print __doc__
+        print(__doc__)
         return
     if sys.platform.startswith('win'):
         inputfiles = glob.glob(argv[0])
@@ -62,6 +62,7 @@ def main(argv=[]):
         # create reordered file
         (orderedfile, params) = trajognize.calc.reorder_matrixfile_eades.main([inputfile])
         (head, tail, plotdir) = get_headtailplot_from_filename(orderedfile)
+        statsum_basedir = os.path.split(os.path.split(head)[0])[0]
         exp = get_exp_from_filename(orderedfile)
         # parse data file
         alldata = trajognize.parse.parse_stat_output_file(orderedfile)
@@ -100,7 +101,7 @@ def main(argv=[]):
             # save output for correlation analysis
             headerline = trajognize.corr.util.strids2headerline(alldata[index][0][1:], True)
             corrline = trajognize.corr.util.matrix2corrline(alldata[index])
-            corrfile = trajognize.corr.util.get_corr_filename(exp, group, True)
+            corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, True)
             if corrfile not in corrfiles:
                 if os.path.isfile(corrfile):
                     os.remove(corrfile)
@@ -110,7 +111,7 @@ def main(argv=[]):
             # convert pairparams to params (through calculating dominance indices) and save that as well
             if name.endswith("_F"):
                 headerline, corrline = trajognize.corr.util.pairparams2params(headerline, corrline)
-                corrfile = trajognize.corr.util.get_corr_filename(exp, group, False)
+                corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, False)
                 if corrfile not in corrfiles:
                     if os.path.isfile(corrfile):
                         os.remove(corrfile)

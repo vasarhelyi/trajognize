@@ -86,6 +86,7 @@ def main(argv=[]):
     corrfiles = []
     for inputfile in inputfiles:
         (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+        statsum_basedir = os.path.split(head)[0]
         exp = get_exp_from_filename(inputfile)
         # parse data file
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
@@ -124,7 +125,7 @@ def main(argv=[]):
             if networknumber == "network":
                 headerline = trajognize.corr.util.strids2headerline(alldata[index][0][1:], True)
                 corrline = trajognize.corr.util.matrix2corrline(alldata[index])
-                corrfile = trajognize.corr.util.get_corr_filename(exp, group, True)
+                corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, True)
                 if corrfile not in corrfiles:
                     if os.path.isfile(corrfile):
                         os.remove(corrfile)
@@ -132,7 +133,7 @@ def main(argv=[]):
                 trajognize.corr.util.add_corr_line(corrfile, headerline, corrline)
                 # convert pairparams to params (through calculating dominance indices) and save that as well
                 headerline, corrline = trajognize.corr.util.pairparams2params(headerline, corrline)
-                corrfile = trajognize.corr.util.get_corr_filename(exp, group, False)
+                corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, False)
                 if corrfile not in corrfiles:
                     if os.path.isfile(corrfile):
                         os.remove(corrfile)
@@ -149,7 +150,7 @@ def main(argv=[]):
                     except ZeroDivisionError:
                         corrdata.append("nan") # TODO: or 0 ?
                 corrline = "\t".join(corrdata)
-                corrfile = trajognize.corr.util.get_corr_filename(exp, group, False)
+                corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, False)
                 if corrfile not in corrfiles:
                     if os.path.isfile(corrfile):
                         os.remove(corrfile)

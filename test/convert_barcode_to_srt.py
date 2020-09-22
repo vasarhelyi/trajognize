@@ -107,7 +107,7 @@ if not args.notimedist:
 
 # get input path
 path = trajognize.util.get_path_as_first_arg((None, args.inputpath))
-path += '*/OUT/*ts.blobs.barcodes'
+path += '*/OUT/*.blobs.barcodes'
 print("Using data: %s" % path)
 
 # check for corrected cage position

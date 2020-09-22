@@ -59,6 +59,7 @@ def main(argv=[]):
         print("parsing", os.path.split(inputfile)[1])
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
         (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+        statsum_basedir = os.path.split(head)[0]
         exp = get_exp_from_filename(inputfile)
         for index in range(len(alldata)):
             # get categories
@@ -78,7 +79,7 @@ def main(argv=[]):
             indices = [1, -3, -2, -1]
             # save avg output for correlation analysis
             headerline = trajognize.corr.util.strids2headerline(alldata[index][0][1:], False)
-            corrfile = trajognize.corr.util.get_corr_filename(exp, group, False)
+            corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, False)
             if corrfile not in corrfiles:
                 if os.path.isfile(corrfile):
                     os.remove(corrfile)

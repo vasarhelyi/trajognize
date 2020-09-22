@@ -56,18 +56,10 @@ def is_entry_time(entrytimes, sometime):
 
 
 def get_path_as_first_arg(argv):
-    """Return argv[1] as path or default path if argv[1] not defined."""
+    """Return argv[1] as path or get as input if argv[1] not defined."""
     if len(argv) < 2 or not argv[1]:
-        # default on windows (gabor's laptop)
-        if sys.platform.startswith('win'):
-            #path = 'd:\\ubi\\ELTE\\patekok\\video\\random_sample_trial_run\\'
-            path = 'd:\\ubi\\ELTE\\patekok\\video\\random_sample_trial_run__trajognize\\done\\'
-        # default on non windows (linux, atlasz)
-        else:
-            # default path on atlasz
-            path = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/done/'
-            #path = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/first_trial/done/'
-            #path = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/second_trial__opencv2.3/done/'
+        # user defined path from input
+        path = input("Please enter path to use: ")
     else:
         # user defined path from first command line argument
         path = argv[1]

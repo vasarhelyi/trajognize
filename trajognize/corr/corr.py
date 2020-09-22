@@ -9,7 +9,7 @@ def calculate_all_pearsonr(data):
     """
     pearsonr = defaultdict(defaultdict)
     pvalue = defaultdict(defaultdict)
-    keys = data.keys()
+    keys = list(data.keys())
     for i in range(0,len(keys)):
         a = keys[i]
         for j in range(0, i+1):

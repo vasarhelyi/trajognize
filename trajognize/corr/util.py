@@ -13,8 +13,7 @@ except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
 
-
-def get_corr_filename(exp, group, pairwise=True, f_back=1):
+def get_corr_filename(statsum_basedir, exp, group, pairwise=True, f_back=1):
     """Return name of the correlation file based on the calling plot dir,
     experiment and group."""
 
@@ -23,26 +22,15 @@ def get_corr_filename(exp, group, pairwise=True, f_back=1):
         corrfile = inspect.getmodule(caller_namespace).__file__
     finally:
         del caller_namespace
+
+    corrdir = os.path.join(statsum_basedir, "corr", exp, group)
+
     corrfile = ("pairparams_" if pairwise else "params_") + \
             os.path.splitext(os.path.split(corrfile)[1])[0] + ".txt"
 
-    corrdir = os.path.join(get_corr_basedir(), exp, group)
     if not os.path.isdir(corrdir): os.makedirs(corrdir)
 
     return os.path.join(corrdir, corrfile)
-
-
-def get_corr_basedir():
-    """Get global path for storing correlation results.
-
-    TODO: make it dynamic/automatic/optional/manual/hipster
-
-    """
-    if sys.platform.startswith('win'):
-        return r'd:\ubi\ELTE\patekok\video\random_sample_trial_run__trajognize\done\corr'
-#        return r'd:\ubi\ELTE\patekok\statsum\corr'
-    else:
-        return r'/project/flocking/abeld/ratlab/results/full_run__statsum/done/corr'
 
 
 def strids2headerline(strids, pairwise=True, ID=["ID"]):
