@@ -38,14 +38,14 @@ def main(argv=[]):
                 datetimeatsec = datetime.datetime(date.year, date.month, date.day) + datetime.timedelta(0,i)
                 if datetimeatsec >= start and datetimeatsec <= stop and not trajognize.util.is_entry_time(entrytimes, datetimeatsec):
                     t += 1
-            print exps[exp]['number'], exp, date, t
-            print >>f, exps[exp]['number'], exp, date, t
+            print(exps[exp]['number'], exp, date, t)
+            print(exps[exp]['number'], exp, date, t, file=f)
 
 if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

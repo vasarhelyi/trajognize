@@ -16,7 +16,7 @@ from glob import glob
 def main(argv=[]):
     """Main entry point."""
     if len(argv) != 1 or "-h" in argv or "--help" in argv:
-        print __doc__
+        print(__doc__)
         return
     print("\t".join(["#inputdir", "number_of_rats", "blob_frames", "full_barcodes",
             "full_barcodes/blob_frames/number_of_rats"]))
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

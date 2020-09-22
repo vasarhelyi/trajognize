@@ -47,7 +47,7 @@ def main(argv=[]):
     dayrange = [firstday + datetime.timedelta(n) for n in range(int((lastday - firstday).days) + 1)]
     # go through all days
     for allday, day in enumerate(dayrange):
-        print allday,
+        print(allday, sep=", ")
 
         # exp params
         date = datetime.datetime(day.year, day.month, day.day)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)

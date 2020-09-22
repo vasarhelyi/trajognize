@@ -89,8 +89,8 @@ def add_corr_line(corrfile, headerline, corrline):
         writeheader = False
     f = open(corrfile, 'a')
     if writeheader:
-        print >> f, headerline.strip()
-    print >> f, corrline.strip()
+        print(headerline.strip(), file=f)
+    print(corrline.strip(), file=f)
     f.close()
 
 

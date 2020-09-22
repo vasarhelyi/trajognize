@@ -133,7 +133,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)
