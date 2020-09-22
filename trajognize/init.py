@@ -3,13 +3,13 @@ Constants and main classes are defined here, like blob, barcode, trajectory.
 """
 
 from collections import namedtuple
-from enum import IntEnum, IntFlag
+from enum import IntEnum
 from math import atan2, sin, cos, pi
 
 from .project import *
 
 ################################################################################
-class MFix(IntFlag):
+class MFix(IntEnum):
     """mFIX values of barcodes.
     All can be bitwise OR-ed, some are mutually exclusive.
     """
