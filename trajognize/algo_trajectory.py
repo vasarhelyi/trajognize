@@ -52,6 +52,7 @@ finalize_trajectories()
 """
 
 import sys
+from math import pi
 from operator import attrgetter
 
 from .project import *
