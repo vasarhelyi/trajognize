@@ -292,7 +292,4 @@ def add_subdir_to_filename(filename, subdir):
 
 def is_isogram(string):
     """Return True if string is an isogram (all letters appear only once)."""
-    for i in string:
-        if string.count(i) > 1:
-            return False
-    return True
+    return len(set(string)) == len(string)
