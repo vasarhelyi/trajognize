@@ -56,27 +56,27 @@ class TrajState(IntEnum):
 # named tuples for shapes
 # (0,0)=(top, left) >0, v90, <180, ^270
 
-point_t = namedtuple('point_t','x y')
-circle_t = namedtuple('circle_t','x y r a1 a2') # arc1 and arc2 should be in CW [deg] from -->
-ellipse_t = namedtuple('ellipse_t','x y a b o')
-rectangle_t = namedtuple('rectangle_t','x y w h')
+Point = namedtuple('Point','x y')
+Circle = namedtuple('Circle','x y r a1 a2') # arc1 and arc2 should be in CW [deg] from -->
+Ellipse = namedtuple('Ellipse','x y a b o')
+Rectangle = namedtuple('Rectangle','x y w h')
 
 
 ################################################################################
 # named tuples for blob file input
-color_blob_t = namedtuple('color_blob_t','color centerx centery radius barcodeindices')
-color_blobe_t = namedtuple('color_blob_t','color centerx centery radius axisA axisB orientation barcodeindices') # extended type introduced for PROJECT_FISH
+ColorBlob = namedtuple('ColorBlob','color centerx centery radius barcodeindices')
+ColorBlobE = namedtuple('ColorBlobE','color centerx centery radius axisA axisB orientation barcodeindices') # extended type introduced for PROJECT_FISH
 
-md_blob_t = namedtuple('md_blob_t','centerx centery axisA axisB orientation')
-rat_blob_t = namedtuple('rat_blob_t','centerx centery axisA axisB orientation')
+MDBlob = namedtuple('MDBlob','centerx centery axisA axisB orientation')
+RatBlob = namedtuple('RatBlob','centerx centery axisA axisB orientation')
 
 # named tuples for color codes and other useful things
-colorid_t = namedtuple('colorid_t','strid symbol')
-barcode_index_t = namedtuple('barcode_index_t','k i') # k = coloridindex, i = second (final) index
+ColorID = namedtuple('ColorID','strid symbol')
+BarcodeIndex = namedtuple('BarcodeIndex','k i') # k = coloridindex, i = second (final) index
 
 
 ################################################################################
-class variables_t:
+class Variables:
     """A class for all dynamic variables as a common placeholder for quick
     load and save operations at the middle of execution.
     """
@@ -87,19 +87,19 @@ class variables_t:
     def __init__(self):
         """Empty initialization."""
         #: global colorid database created by parse_colorid_file()
-        #: colorids[coloridindex] is a 'colorid_t' object
+        #: colorids[coloridindex] is a 'ColorID' object
         self.colorids = 0
         #: global list of all color blobs
-        #: color_blobs[framenum][index] is a 'color_blob_t' object
+        #: color_blobs[framenum][index] is a 'ColorBlob' object
         self.color_blobs = 0
         #: global list of all motion blobs
-        #:md_blobs[framenum][index] is a 'md_blob_t' object
+        #:md_blobs[framenum][index] is a 'MDBlob' object
         self.md_blobs = 0
         #: global list of all rat blobs
-        #: rat_blobs[framenum][index] is a 'rat_blob_t' object
+        #: rat_blobs[framenum][index] is a 'RatBlob' object
         self.rat_blobs = 0
         #: global list of all barcodes
-        #: barcodes[framenum][coloridindex][index] is a 'barcode_t' object
+        #: barcodes[framenum][coloridindex][index] is a 'Barcode' object
         self.barcodes = 0
         #: spatial distance list for all blobs containing blob indices
         #: that are close enough to be on the same rat on a given frame.
@@ -119,7 +119,7 @@ class variables_t:
         #: mdindices[framenum][blobindex] = md blob index
         self.mdindices = 0
         #: global list of all candidate trajectories
-        #: trajectories[coloridindex][index] is a 'trajectory_t' object
+        #: trajectories[coloridindex][index] is a 'Trajectory' object
         self.trajectories = 0
         #: trajectory indices on each frame to allow quicker search, easier access
         #: trajsonframe[framenum][coloridindex] = [set of trajs present]
@@ -127,7 +127,7 @@ class variables_t:
         self.trajsonframe = 0
 
 
-class barcode_t:
+class Barcode:
     """A colored barcode, consisting of (three) blobs.
 
     Note that the ID of the barcode is not contained in the object, it should be
@@ -144,7 +144,7 @@ class barcode_t:
         self.mfix = mfix                     # nobody expects the Spanish inquisition!
         self.blobindices = list(blobindices) if blobindices else [None] * MCHIPS # create new list
 
-class trajectory_t:
+class Trajectory:
     """A trajectory, consisting of barcodes of the same ID on consecutive frames.
 
     Note that the ID of the trajectory should be the index (coloridindex) in the
@@ -171,7 +171,7 @@ class trajectory_t:
         self.state = TrajState.INITIALIZED
 
 
-class connections_t:
+class Connections:
     """Object used by connect_chosen_trajs(), containing all info about possible
     good connections between two chosen trajs."""
     def __init__(self, fromframelimit):
@@ -180,7 +180,7 @@ class connections_t:
         self.recursionlimitreached = False
 
 
-class conflict_t:
+class Conflict:
     """A conflict object."""
     __slots__ = ('ctype', 'cwith', 'firstframe', 'barcodeindices', 'state')
 
@@ -192,7 +192,7 @@ class conflict_t:
         self.state = TrajState.INITIALIZED # state is defined for trajs but could be used here as well
 
 
-class metatraj_t:
+class MetaTraj:
     """A meta-trajectory, consisting of consecutive trajectories."""
     __slots__ = ('trajs', 'score')
 

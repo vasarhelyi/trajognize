@@ -3,10 +3,10 @@ experiments, groups, light conditions and real/virt states.
 
 Usage: calc_heatmapdiff.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat heatmap_t or motionmap_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat HeatMap or MotionMap object (.txt)
 
 Note that *.zip is also needed in the same directory for
-quick python object reload of heatmap_t or motionmap_t output.
+quick python object reload of HeatMap or MotionMap output.
 
 Use plot_heatmap.py before with autorun.sh to create symbolic links to a common
 directory before running this script in the common directory.
@@ -84,9 +84,9 @@ def main(argv=[]):
         experiment = exps[exp[4:]]
         # caculate average
         if stat == "heatmap":
-            avgobj = trajognize.stat.init.heatmap_t()
+            avgobj = trajognize.stat.init.HeatMap()
         elif stat == "motionmap":
-            avgobj = trajognize.stat.init.motionmap_t()
+            avgobj = trajognize.stat.init.MotionMap()
         else:
             raise NotImplementedError("unhandled stat: {}".format(stat))
         for inputfile in filedict[key]:

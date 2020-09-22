@@ -40,13 +40,13 @@ else:
     FPS = 25
 
 # TODO: this is redundant with init.py but otherwise we have circular imports
-point_t = namedtuple('point_t','x y')
+Point = namedtuple('Point','x y')
 
 #: width/height of the video image
-image_size = point_t(1920, 1080)
+image_size = Point(1920, 1080)
 
 #: average center x coordinate of the cage, determined from 84 sample video averages
-cage_center = point_t(925, 537)
+cage_center = Point(925, 537)
 
 ################################################################################
 # color blob definitions
@@ -174,7 +174,7 @@ filter_for_valid_cage = True
 ################################################################################
 # settings for find_best_trajectories() in algo_trajectory.py
 
-class find_best_trajectories_settings_t():
+class FindBestTrajectoriesSettings():
     def __init__(self,
             might_be_bad_score_threshold=100,
             might_be_bad_sum_good_score_threshold=200,
@@ -188,19 +188,19 @@ class find_best_trajectories_settings_t():
         self.framelimit = framelimit
 
 if PROJECT == PROJECT_MAZE:
-    find_best_trajectories_settings = find_best_trajectories_settings_t(
+    find_best_trajectories_settings = FindBestTrajectoriesSettings(
             0, 0, 10, 10, 50)
 elif PROJECT == PROJECT_ANTS:
-    find_best_trajectories_settings = find_best_trajectories_settings_t(
+    find_best_trajectories_settings = FindBestTrajectoriesSettings(
             100, 200, 500, 100, 100)
 elif PROJECT == PROJECT_ANTS_2019:
-    find_best_trajectories_settings = find_best_trajectories_settings_t(
+    find_best_trajectories_settings = FindBestTrajectoriesSettings(
             100, 200, 500, 100, 100)
 elif PROJECT == PROJECT_STORKS:
-    find_best_trajectories_settings = find_best_trajectories_settings_t(
+    find_best_trajectories_settings = FindBestTrajectoriesSettings(
             100, 200, 500, 100, 100)
 else:
-    find_best_trajectories_settings = find_best_trajectories_settings_t(
+    find_best_trajectories_settings = FindBestTrajectoriesSettings(
             100, 200, 500, 100, 1500)
 
 

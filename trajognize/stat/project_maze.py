@@ -5,7 +5,7 @@ experiments from 2015 summer, at ELTE Department of Biological Physics.
 
 import datetime, math
 
-from trajognize.init import point_t, circle_t, ellipse_t, rectangle_t
+from trajognize.init import Point, Circle, Ellipse, Rectangle
 from trajognize.project import *
 
 #: possible interesting objects
@@ -31,7 +31,7 @@ object_queuing_areas = {}
 max_day = 35
 
 #: The main experiment dictionary between 2011.05.25 and 2012.02.27.
-#: point_t object coordinates are defined in a top-left = 0,0 coordinate system
+#: Point object coordinates are defined in a top-left = 0,0 coordinate system
 #: angles are defined in the --> CW [deg] coordinate system, i.e. >0, v90, <180, ^270
 experiments = dict()
 
@@ -104,16 +104,16 @@ def get_wall_polygons(experiment, group):
 
     # TODO: define better, this is only full frame
 
-    polys[i].append(point_t(0,0))
-    polysall[i].append(point_t(0,0))
+    polys[i].append(Point(0,0))
+    polysall[i].append(Point(0,0))
 
-    polys[i].append(point_t(image_size.x,0))
-    polysall[i].append(point_t(image_size.x,0))
+    polys[i].append(Point(image_size.x,0))
+    polysall[i].append(Point(image_size.x,0))
 
-    polys[i].append(point_t(image_size.x,image_size.y))
-    polysall[i].append(point_t(image_size.x,image_size.y))
+    polys[i].append(Point(image_size.x,image_size.y))
+    polysall[i].append(Point(image_size.x,image_size.y))
 
-    polys[i].append(point_t(0,image_size.y))
-    polysall[i].append(point_t(0,image_size.y))
+    polys[i].append(Point(0,image_size.y))
+    polysall[i].append(Point(0,image_size.y))
 
     return (polys, polysall)

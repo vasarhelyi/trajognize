@@ -5,7 +5,7 @@ back in 2011-2012, at ELTE Department of Biological Physics.
 
 import datetime, math
 
-from trajognize.init import point_t, circle_t, ellipse_t, rectangle_t
+from trajognize.init import Point, Circle, Ellipse, Rectangle
 from trajognize.project import *
 
 #: possible interesting objects
@@ -14,14 +14,14 @@ object_types = ['home', 'entrance', 'food', 'water', 'watertop', 'wheel', 'femal
 #: areas of objects. Center (and arc) is defined in the experiment, these objects
 #: should be placed on those centers concentrically.
 object_areas = { \
-    'home':        rectangle_t(0,0,90,120),
-    'entrance':    rectangle_t(0,0,70,60),
-    'food':        circle_t(0,0,90,0,0),
-    'water':       circle_t(0,0,90,0,0),
-    'watertop':    circle_t(0,0,90,0,0),
-    'wheel':       rectangle_t(0,0,90,60),
-    'femaleshigh': rectangle_t(0,0,100,150),
-    'femaleslow':  rectangle_t(0,0,125,150),
+    'home':        Rectangle(0,0,90,120),
+    'entrance':    Rectangle(0,0,70,60),
+    'food':        Circle(0,0,90,0,0),
+    'water':       Circle(0,0,90,0,0),
+    'watertop':    Circle(0,0,90,0,0),
+    'wheel':       Rectangle(0,0,90,60),
+    'femaleshigh': Rectangle(0,0,100,150),
+    'femaleslow':  Rectangle(0,0,125,150),
 }
 
 
@@ -35,28 +35,28 @@ object_queuing_range = 80 # +80 px ~= +4/5 patek
 #: if queuing is not used, all params are zero
 object_queuing_areas = { \
     # not used
-    'home':        rectangle_t(0,0,0,0),
+    'home':        Rectangle(0,0,0,0),
     # not used
-    'entrance':    rectangle_t(0,0,0,0),
+    'entrance':    Rectangle(0,0,0,0),
     # extend concentrically
-    'food':        circle_t(0,0, object_areas['food'].r + object_queuing_range, 0,0),
+    'food':        Circle(0,0, object_areas['food'].r + object_queuing_range, 0,0),
     # extend concentrically
-    'water':       circle_t(0,0, object_areas['water'].r + object_queuing_range, 0,0),
+    'water':       Circle(0,0, object_areas['water'].r + object_queuing_range, 0,0),
     # not used
-    'watertop':    circle_t(0,0,0,0,0),
+    'watertop':    Circle(0,0,0,0,0),
     # extend width on both sides, extend height on only one side (wall is on other side)
-    'wheel':       rectangle_t(0, object_queuing_range/2, object_areas['wheel'].w + 2*object_queuing_range, object_areas['wheel'].h + object_queuing_range),
+    'wheel':       Rectangle(0, object_queuing_range/2, object_areas['wheel'].w + 2*object_queuing_range, object_areas['wheel'].h + object_queuing_range),
     # no extention on width (between wall and femaleslow), extend height on one side (wall is on other side)
-    'femaleshigh': rectangle_t(0, object_queuing_range/2, object_areas['femaleshigh'].w, object_areas['femaleshigh'].h + object_queuing_range),
+    'femaleshigh': Rectangle(0, object_queuing_range/2, object_areas['femaleshigh'].w, object_areas['femaleshigh'].h + object_queuing_range),
     # extend width on one side (femaleshigh on other side), extend height on one side (wall is on other side)
-    'femaleslow':  rectangle_t(object_queuing_range/2, object_queuing_range/2, object_areas['femaleslow'].w + object_queuing_range, object_areas['femaleslow'].h + object_queuing_range),
+    'femaleslow':  Rectangle(object_queuing_range/2, object_queuing_range/2, object_areas['femaleslow'].w + object_queuing_range, object_areas['femaleslow'].h + object_queuing_range),
 }
 
 #: maximum number of days in an experiment (exp_first is 146, 150 will do)
 max_day = 150
 
 #: The main experiment dictionary between 2011.05.25 and 2012.02.27.
-#: point_t object coordinates are defined in a top-left = 0,0 coordinate system
+#: Point object coordinates are defined in a top-left = 0,0 coordinate system
 #: angles are defined in the --> CW [deg] coordinate system, i.e. >0, v90, <180, ^270
 experiments = dict()
 
@@ -84,35 +84,35 @@ experiments['first_A1_A2_B1_B2']={ \
         'B1': "RGB GPB OGB ROB RPB GRB ORB".split(),
         'B2': "GRP OGP BGP BOP GBP RBO RGP".split()},
     'home': { \
-        'A1': [point_t(841,973)],
-        'A2': [point_t(830,104)],
-        'B1': [point_t(1006,965)],
-        'B2': [point_t(1002,100)]},
+        'A1': [Point(841,973)],
+        'A2': [Point(830,104)],
+        'B1': [Point(1006,965)],
+        'B2': [Point(1002,100)]},
     'entrance': { \
-        'A1': [point_t(848,867)],
-        'A2': [point_t(823,205)],
-        'B1': [point_t(1013,870)],
-        'B2': [point_t(992,198)]},
+        'A1': [Point(848,867)],
+        'A2': [Point(823,205)],
+        'B1': [Point(1013,870)],
+        'B2': [Point(992,198)]},
     'food': { \
-        'A1': [circle_t(314,553,0,0,90)], # [point_t(351,591)],
-        'A2': [circle_t(317,511,0,270,360)], # [point_t(344,485)],
-        'B1': [circle_t(1520,549,0,90,180)], # [point_t(1487,592)],
-        'B2': [circle_t(1526,519,0,180,270)]}, # [point_t(1492,499)]},
+        'A1': [Circle(314,553,0,0,90)], # [Point(351,591)],
+        'A2': [Circle(317,511,0,270,360)], # [Point(344,485)],
+        'B1': [Circle(1520,549,0,90,180)], # [Point(1487,592)],
+        'B2': [Circle(1526,519,0,180,270)]}, # [Point(1492,499)]},
     'water': { \
-        'A1': [circle_t(317,1015,0,270,360)], #[point_t(349,979)],
-        'A2': [circle_t(321,43,0,0,90)], #[point_t(356,85)],
-        'B1': [circle_t(1513,1006,0,180,270)], # [point_t(1480,986)],
-        'B2': [circle_t(1522,54,0,90,180)]}, # [point_t(1489,95)]},
+        'A1': [Circle(317,1015,0,270,360)], #[Point(349,979)],
+        'A2': [Circle(321,43,0,0,90)], #[Point(356,85)],
+        'B1': [Circle(1513,1006,0,180,270)], # [Point(1480,986)],
+        'B2': [Circle(1522,54,0,90,180)]}, # [Point(1489,95)]},
     'watertop': { \
-        'A1': [circle_t(317,1015,0,10,260)], #[point_t(349,979)],
-        'A2': [circle_t(321,43,0,100,350)], #[point_t(356,85)],
-        'B1': [circle_t(1513,1006,0,280,170)], # [point_t(1480,986)],
-        'B2': [circle_t(1522,54,0,190,80)]}, # [point_t(1489,95)]},
+        'A1': [Circle(317,1015,0,10,260)], #[Point(349,979)],
+        'A2': [Circle(321,43,0,100,350)], #[Point(356,85)],
+        'B1': [Circle(1513,1006,0,280,170)], # [Point(1480,986)],
+        'B2': [Circle(1522,54,0,190,80)]}, # [Point(1489,95)]},
     'wheel': { \
-        'A1': [point_t(693,591)],
-        'A2': [point_t(690,483)],
-        'B1': [point_t(1116,592)],
-        'B2': [point_t(1111,483)]},
+        'A1': [Point(693,591)],
+        'A2': [Point(690,483)],
+        'B1': [Point(1116,592)],
+        'B2': [Point(1111,483)]},
 }
 
 
@@ -251,23 +251,23 @@ experiments['second_merge_A1A2_B1B2']={ \
         'A1A2': "OPG ROG RPG ORG OBG GOB RBG OBP RBP OPB ORP ROP RPO GOP".split(),
         'B1B2': "RGB GPB OGB ROB RPB GRB ORB GRP OGP BGP BOP GBP RBO RGP".split()},
     'home': { \
-        'A1A2': [point_t(841,973), point_t(830,104)],
-        'B1B2': [point_t(1006,965), point_t(1002,100)]},
+        'A1A2': [Point(841,973), Point(830,104)],
+        'B1B2': [Point(1006,965), Point(1002,100)]},
     'entrance': { \
-        'A1A2': [point_t(848,861), point_t(823,205)],
-        'B1B2': [point_t(1023,861), point_t(995,204)]},
+        'A1A2': [Point(848,861), Point(823,205)],
+        'B1B2': [Point(1023,861), Point(995,204)]},
     'food': { \
-        'A1A2': [circle_t(314,553,0,0,90), circle_t(317,511,0,270,360)], # [point_t(351,591), point_t(344,485)],
-        'B1B2': [circle_t(1520,549,0,90,180), circle_t(1526,519,0,180,270)]}, #[point_t(1487,592), point_t(1492,499)]},
+        'A1A2': [Circle(314,553,0,0,90), Circle(317,511,0,270,360)], # [Point(351,591), Point(344,485)],
+        'B1B2': [Circle(1520,549,0,90,180), Circle(1526,519,0,180,270)]}, #[Point(1487,592), Point(1492,499)]},
     'water': { \
-        'A1A2': [circle_t(317,1015,0,270,360), circle_t(321,43,0,0,90)], # [point_t(349,979), point_t(356,85)],
-        'B1B2': [circle_t(1513,1006,0,180,270), circle_t(1522,54,0,90,180)]}, # [point_t(1480,986), point_t(1489,95)]},
+        'A1A2': [Circle(317,1015,0,270,360), Circle(321,43,0,0,90)], # [Point(349,979), Point(356,85)],
+        'B1B2': [Circle(1513,1006,0,180,270), Circle(1522,54,0,90,180)]}, # [Point(1480,986), Point(1489,95)]},
     'watertop': { \
-        'A1A2': [circle_t(317,1015,0,10,260), circle_t(321,43,0,100,350)], # [point_t(349,979), point_t(356,85)],
-        'B1B2': [circle_t(1513,1006,0,280,170), circle_t(1522,54,0,190,80)]}, # [point_t(1480,986), point_t(1489,95)]},
+        'A1A2': [Circle(317,1015,0,10,260), Circle(321,43,0,100,350)], # [Point(349,979), Point(356,85)],
+        'B1B2': [Circle(1513,1006,0,280,170), Circle(1522,54,0,190,80)]}, # [Point(1480,986), Point(1489,95)]},
     'wheel': { \
-        'A1A2': [point_t(693,591), point_t(690,483)],
-        'B1B2': [point_t(1116,592), point_t(1111,483)]},
+        'A1A2': [Point(693,591), Point(690,483)],
+        'B1B2': [Point(1116,592), Point(1111,483)]},
 }
 
 
@@ -289,17 +289,17 @@ experiments['third_merge_A1A2B1B2']={ \
     'groups': { \
         'A1A2B1B2': "OPG ROG RPG ORG OBG GOB RBG OBP RBP OPB ORP ROP RPO GOP RGB GPB OGB ROB RPB GRB ORB GRP OGP BGP BOP GBP RBO RGP".split()},
     'home': { \
-        'A1A2B1B2': [point_t(841,973), point_t(830,104), point_t(1006,965), point_t(1002,100)]},
+        'A1A2B1B2': [Point(841,973), Point(830,104), Point(1006,965), Point(1002,100)]},
     'entrance': { \
-        'A1A2B1B2': [point_t(848,861), point_t(823,205), point_t(1032,854), point_t(997,213)]},
+        'A1A2B1B2': [Point(848,861), Point(823,205), Point(1032,854), Point(997,213)]},
     'food': { \
-        'A1A2B1B2': [circle_t(314,553,0,0,90), circle_t(317,511,0,270,360), circle_t(1520,549,0,90,180), circle_t(1526,519,0,180,270)]}, # [point_t(351,591), point_t(344,485), point_t(1487,592), point_t(1492,499)]},
+        'A1A2B1B2': [Circle(314,553,0,0,90), Circle(317,511,0,270,360), Circle(1520,549,0,90,180), Circle(1526,519,0,180,270)]}, # [Point(351,591), Point(344,485), Point(1487,592), Point(1492,499)]},
     'water': { \
-        'A1A2B1B2': [circle_t(317,1015,0,270,360), circle_t(321,43,0,0,90), circle_t(1513,1006,0,180,270), circle_t(1522,54,0,90,180)]}, # [point_t(349,979), point_t(356,85), point_t(1480,986), point_t(1489,95)]},
+        'A1A2B1B2': [Circle(317,1015,0,270,360), Circle(321,43,0,0,90), Circle(1513,1006,0,180,270), Circle(1522,54,0,90,180)]}, # [Point(349,979), Point(356,85), Point(1480,986), Point(1489,95)]},
     'watertop': { \
-        'A1A2B1B2': [circle_t(317,1015,0,10,260), circle_t(321,43,0,100,350), circle_t(1513,1006,0,280,170), circle_t(1522,54,0,190,80)]}, # [point_t(349,979), point_t(356,85), point_t(1480,986), point_t(1489,95)]},
+        'A1A2B1B2': [Circle(317,1015,0,10,260), Circle(321,43,0,100,350), Circle(1513,1006,0,280,170), Circle(1522,54,0,190,80)]}, # [Point(349,979), Point(356,85), Point(1480,986), Point(1489,95)]},
     'wheel': { \
-        'A1A2B1B2': [point_t(693,591), point_t(690,483), point_t(1116,592), point_t(1111,483)]},
+        'A1A2B1B2': [Point(693,591), Point(690,483), Point(1116,592), Point(1111,483)]},
 }
 
 
@@ -328,35 +328,35 @@ experiments['fourth_split_into_G1_G2_G3_G4']={ \
         'G3': "OBG GOB ORP ROP ROB RPB GBP".split(),
         'G4': "RBG RPO GOP GRB ORB RBO RGP".split()},
     'home': { \
-        'G1': [point_t(828,113)],
-        'G2': [point_t(1000,111)],
-        'G3': [point_t(842, 968)],
-        'G4': [point_t(1022,960)]},
+        'G1': [Point(828,113)],
+        'G2': [Point(1000,111)],
+        'G3': [Point(842, 968)],
+        'G4': [Point(1022,960)]},
     'entrance': { \
-        'G1': [point_t(823,208)],
-        'G2': [point_t(997,212)],
-        'G3': [point_t(844,856)],
-        'G4': [point_t(1023,860)]},
+        'G1': [Point(823,208)],
+        'G2': [Point(997,212)],
+        'G3': [Point(844,856)],
+        'G4': [Point(1023,860)]},
     'food': { \
-        'G1': [circle_t(321,526,0,270,360)], # [point_t(345,489)],
-        'G2': [circle_t(1513,523,0,180,270)], # [point_t(1494,485)],
-        'G3': [circle_t(323,558,0,0,90)], # [point_t(338,601)],
-        'G4': [circle_t(1515,560,0,90,180)]}, # [point_t(1490,596)]},
+        'G1': [Circle(321,526,0,270,360)], # [Point(345,489)],
+        'G2': [Circle(1513,523,0,180,270)], # [Point(1494,485)],
+        'G3': [Circle(323,558,0,0,90)], # [Point(338,601)],
+        'G4': [Circle(1515,560,0,90,180)]}, # [Point(1490,596)]},
     'water': { \
-        'G1': [circle_t(324,40,0,0,90)], # [point_t(356,94)],
-        'G2': [circle_t(1526,59,0,90,180)], # [point_t(1492,102)],
-        'G3': [circle_t(310,1029,0,270,360)], # [point_t(352,989)],
-        'G4': [circle_t(1513,1016,0,180,270)]}, # [point_t(1476,989)]},
+        'G1': [Circle(324,40,0,0,90)], # [Point(356,94)],
+        'G2': [Circle(1526,59,0,90,180)], # [Point(1492,102)],
+        'G3': [Circle(310,1029,0,270,360)], # [Point(352,989)],
+        'G4': [Circle(1513,1016,0,180,270)]}, # [Point(1476,989)]},
     'watertop': { \
-        'G1': [circle_t(324,40,0,100,350)], # [point_t(356,94)],
-        'G2': [circle_t(1526,59,0,190,80)], # [point_t(1492,102)],
-        'G3': [circle_t(310,1029,0,10,260)], # [point_t(352,989)],
-        'G4': [circle_t(1513,1016,0,280,170)]}, # [point_t(1476,989)]},
+        'G1': [Circle(324,40,0,100,350)], # [Point(356,94)],
+        'G2': [Circle(1526,59,0,190,80)], # [Point(1492,102)],
+        'G3': [Circle(310,1029,0,10,260)], # [Point(352,989)],
+        'G4': [Circle(1513,1016,0,280,170)]}, # [Point(1476,989)]},
     'wheel': { \
-        'G1': [point_t(679,477)],
-        'G2': [point_t(1120,485)],
-        'G3': [point_t(704,596)],
-        'G4': [point_t(1129,605)]},
+        'G1': [Point(679,477)],
+        'G2': [Point(1120,485)],
+        'G3': [Point(704,596)],
+        'G4': [Point(1129,605)]},
 }
 
 
@@ -390,35 +390,35 @@ experiments['fifth_G1_G4_large_G2_G3_small']={ \
         'G3S': "OBG GOB ORP ROP ROB RPB GBP".split(),
         'G4L': "RBG RPO GOP GRB ORB RBO RGP".split()},
     'home': { \
-        'G1L': [point_t(1072,113)],
-        'G2S': [point_t(1335,117)],
-        'G3S': [point_t(502,957)],
-        'G4L': [point_t(791,958)]},
+        'G1L': [Point(1072,113)],
+        'G2S': [Point(1335,117)],
+        'G3S': [Point(502,957)],
+        'G4L': [Point(791,958)]},
     'entrance': { \
-        'G1L': [point_t(1045,204)],
-        'G2S': [point_t(1317,218)],
-        'G3S': [point_t(518,848)],
-        'G4L': [point_t(809,851)]},
+        'G1L': [Point(1045,204)],
+        'G2S': [Point(1317,218)],
+        'G3S': [Point(518,848)],
+        'G4L': [Point(809,851)]},
     'food': { \
-        'G1L': [circle_t(333,511,0,270,360)], # [point_t(341,492)],
-        'G2S': [circle_t(1515,516,0,180,270)], # [point_t(1506,484)],
-        'G3S': [circle_t(330,553,0,0,90)], # [point_t(338,584)],
-        'G4L': [circle_t(1517,558,0,90,180)]}, # [point_t(1499,584)]},
+        'G1L': [Circle(333,511,0,270,360)], # [Point(341,492)],
+        'G2S': [Circle(1515,516,0,180,270)], # [Point(1506,484)],
+        'G3S': [Circle(330,553,0,0,90)], # [Point(338,584)],
+        'G4L': [Circle(1517,558,0,90,180)]}, # [Point(1499,584)]},
     'water': { \
-        'G1L': [circle_t(333,50,0,0,90)], # [point_t(359,76)],
-        'G2S': [circle_t(1533,52,0,90,180)], # [point_t(1505,90)],
-        'G3S': [circle_t(330,1011,0,270,360)], # [point_t(354,987)],
-        'G4L': [circle_t(1510,1006,0,180,270)]}, # [point_t(1486,989)]},
+        'G1L': [Circle(333,50,0,0,90)], # [Point(359,76)],
+        'G2S': [Circle(1533,52,0,90,180)], # [Point(1505,90)],
+        'G3S': [Circle(330,1011,0,270,360)], # [Point(354,987)],
+        'G4L': [Circle(1510,1006,0,180,270)]}, # [Point(1486,989)]},
     'watertop': { \
-        'G1L': [circle_t(333,50,0,100,350)], # [point_t(359,76)],
-        'G2S': [circle_t(1533,52,0,190,80)], # [point_t(1505,90)],
-        'G3S': [circle_t(330,1011,0,10,260)], # [point_t(354,987)],
-        'G4L': [circle_t(1510,1006,0,280,170)]}, # [point_t(1486,989)]},
+        'G1L': [Circle(333,50,0,100,350)], # [Point(359,76)],
+        'G2S': [Circle(1533,52,0,190,80)], # [Point(1505,90)],
+        'G3S': [Circle(330,1011,0,10,260)], # [Point(354,987)],
+        'G4L': [Circle(1510,1006,0,280,170)]}, # [Point(1486,989)]},
     'wheel': { \
-        'G1L': [point_t(695,474)],
-        'G2S': [point_t(1125,485)],
-        'G3S': [point_t(706,592)],
-        'G4L': [point_t(1126,600)]},
+        'G1L': [Point(695,474)],
+        'G2S': [Point(1125,485)],
+        'G3S': [Point(706,592)],
+        'G4L': [Point(1126,600)]},
 }
 
 
@@ -448,35 +448,35 @@ experiments['sixth_G1_G4_small_G2_G3_large']={ \
         'G3L': "OBG GOB ORP ROP ROB RPB GBP".split(),
         'G4S': "RBG RPO GOP GRB ORB RBO RGP".split()},
     'home': { \
-        'G1S': [point_t(493,103)],
-        'G2L': [point_t(784,111)],
-        'G3L': [point_t(1069,958)],
-        'G4S': [point_t(1334,966)]},
+        'G1S': [Point(493,103)],
+        'G2L': [Point(784,111)],
+        'G3L': [Point(1069,958)],
+        'G4S': [Point(1334,966)]},
     'entrance': { \
-        'G1S': [point_t(502,202)],
-        'G2L': [point_t(784,207)],
-        'G3L': [point_t(1062,863)],
-        'G4S': [point_t(1331,855)]},
+        'G1S': [Point(502,202)],
+        'G2L': [Point(784,207)],
+        'G3L': [Point(1062,863)],
+        'G4S': [Point(1331,855)]},
     'food': { \
-        'G1S': [circle_t(323,511,0,270,360)], # [point_t(344,487)],
-        'G2L': [circle_t(1513,526,0,180,270)], # [point_t(1492,490)],
-        'G3L': [circle_t(323,544,0,0,90)], # [point_t(342,564)],
-        'G4S': [circle_t(1515,565,0,90,180)]}, # [point_t(1492,599)]},
+        'G1S': [Circle(323,511,0,270,360)], # [Point(344,487)],
+        'G2L': [Circle(1513,526,0,180,270)], # [Point(1492,490)],
+        'G3L': [Circle(323,544,0,0,90)], # [Point(342,564)],
+        'G4S': [Circle(1515,565,0,90,180)]}, # [Point(1492,599)]},
     'water': { \
-        'G1S': [circle_t(330,40,0,0,90)], # [point_t(356,81)],
-        'G2L': [circle_t(1529,57,0,90,180)], # [point_t(1496,94)],
-        'G3L': [circle_t(319,1013,0,270,360)], # [point_t(347,972)],
-        'G4S': [circle_t(1517,1020,0,180,270)]}, # [point_t(1485,993)]},
+        'G1S': [Circle(330,40,0,0,90)], # [Point(356,81)],
+        'G2L': [Circle(1529,57,0,90,180)], # [Point(1496,94)],
+        'G3L': [Circle(319,1013,0,270,360)], # [Point(347,972)],
+        'G4S': [Circle(1517,1020,0,180,270)]}, # [Point(1485,993)]},
     'watertop': { \
-        'G1S': [circle_t(330,40,0,100,350)], # [point_t(356,81)],
-        'G2L': [circle_t(1529,57,0,190,80)], # [point_t(1496,94)],
-        'G3L': [circle_t(319,1013,0,10,260)], # [point_t(347,972)],
-        'G4S': [circle_t(1517,1020,0,280,170)]}, # [point_t(1485,993)]},
+        'G1S': [Circle(330,40,0,100,350)], # [Point(356,81)],
+        'G2L': [Circle(1529,57,0,190,80)], # [Point(1496,94)],
+        'G3L': [Circle(319,1013,0,10,260)], # [Point(347,972)],
+        'G4S': [Circle(1517,1020,0,280,170)]}, # [Point(1485,993)]},
     'wheel': { \
-        'G1S': [point_t(690,477)],
-        'G2L': [point_t(1118,485)],
-        'G3L': [point_t(695,594)],
-        'G4S': [point_t(1118,605)]},
+        'G1S': [Point(690,477)],
+        'G2L': [Point(1118,485)],
+        'G3L': [Point(695,594)],
+        'G4S': [Point(1118,605)]},
 }
 
 
@@ -516,45 +516,45 @@ experiments['seventh_G1_G2_G3_G4_females']={ \
         'G3': "OBG GOB ORP ROP ROB RPB GBP".split(),
         'G4': "RBG RPO GOP GRB ORB RBO RGP".split()},
     'home': { \
-        'G1': [point_t(823,112)],
-        'G2': [point_t(1015,115)],
-        'G3': [point_t(830,968)],
-        'G4': [point_t(1008,975)]},
+        'G1': [Point(823,112)],
+        'G2': [Point(1015,115)],
+        'G3': [Point(830,968)],
+        'G4': [Point(1008,975)]},
     'entrance': { \
-        'G1': [point_t(818,209)],
-        'G2': [point_t(1002,211)],
-        'G3': [point_t(839,862)],
-        'G4': [point_t(1025,868)]},
+        'G1': [Point(818,209)],
+        'G2': [Point(1002,211)],
+        'G3': [Point(839,862)],
+        'G4': [Point(1025,868)]},
     'food': { \
-        'G1': [circle_t(326,516,0,270,360)], # [point_t(340,501)],
-        'G2': [circle_t(1515,537,0,180,270)], # [point_t(1494,503)],
-        'G3': [circle_t(325,556,0,0,90)], # [point_t(338,591)],
-        'G4': [circle_t(1510,576,0,90,180)]}, # [point_t(1497,608)]},
+        'G1': [Circle(326,516,0,270,360)], # [Point(340,501)],
+        'G2': [Circle(1515,537,0,180,270)], # [Point(1494,503)],
+        'G3': [Circle(325,556,0,0,90)], # [Point(338,591)],
+        'G4': [Circle(1510,576,0,90,180)]}, # [Point(1497,608)]},
     'water': { \
-        'G1': [circle_t(328,52,0,0,90)], # [point_t(361,92)],
-        'G2': [circle_t(1529,64,0,90,180)], # [point_t(1503,95)],
-        'G3': [circle_t(321,1015,0,270,360)], # [point_t(351,987)],
-        'G4': [circle_t(1504,1025,0,180,270)]}, # [point_t(1475,1005)]},
+        'G1': [Circle(328,52,0,0,90)], # [Point(361,92)],
+        'G2': [Circle(1529,64,0,90,180)], # [Point(1503,95)],
+        'G3': [Circle(321,1015,0,270,360)], # [Point(351,987)],
+        'G4': [Circle(1504,1025,0,180,270)]}, # [Point(1475,1005)]},
     'watertop': { \
-        'G1': [circle_t(328,52,0,100,350)], # [point_t(361,92)],
-        'G2': [circle_t(1529,64,0,190,80)], # [point_t(1503,95)],
-        'G3': [circle_t(321,1025,0,10,260)], # [point_t(351,987)],
-        'G4': [circle_t(1504,1032,0,280,170)]}, # [point_t(1475,1005)]},
+        'G1': [Circle(328,52,0,100,350)], # [Point(361,92)],
+        'G2': [Circle(1529,64,0,190,80)], # [Point(1503,95)],
+        'G3': [Circle(321,1025,0,10,260)], # [Point(351,987)],
+        'G4': [Circle(1504,1032,0,280,170)]}, # [Point(1475,1005)]},
     'wheel': { \
-        'G1': [point_t(514,490)],
-        'G2': [point_t(1317,492)],
-        'G3': [point_t(523,591)],
-        'G4': [point_t(1327,613)]},
+        'G1': [Point(514,490)],
+        'G2': [Point(1317,492)],
+        'G3': [Point(523,591)],
+        'G4': [Point(1327,613)]},
     'femaleshigh': { \
-        'G1': [point_t(856,449)],
-        'G2': [point_t(992,454)],
-        'G3': [point_t(855,620)],
-        'G4': [point_t(985,630)]},
+        'G1': [Point(856,449)],
+        'G2': [Point(992,454)],
+        'G3': [Point(855,620)],
+        'G4': [Point(985,630)]},
     'femaleslow': { \
-        'G1': [point_t(743,449)],
-        'G2': [point_t(1105,454)],
-        'G3': [point_t(742,620)],
-        'G4': [point_t(1098,630)]},
+        'G1': [Point(743,449)],
+        'G2': [Point(1105,454)],
+        'G3': [Point(742,620)],
+        'G4': [Point(1098,630)]},
 }
 
 #: weekly feeding times. each daily list contains list of tuples of (start, duration)
@@ -591,23 +591,23 @@ def get_wall_polygons(experiment, group):
         polys.append([])
         polysall.append([])
         # 1: food center
-        polys[i].append(point_t(
+        polys[i].append(Point(
                 experiment['food'][group][i].x,
                 experiment['food'][group][i].y))
-        polysall[i].append(point_t(
+        polysall[i].append(Point(
                 experiment['food'][group][i].x,
                 experiment['food'][group][i].y))
         # 2: water center
-        polys[i].append(point_t(
+        polys[i].append(Point(
                 experiment['water'][group][i].x,
                 experiment['water'][group][i].y))
-        polysall[i].append(point_t(
+        polysall[i].append(Point(
                 experiment['water'][group][i].x,
                 experiment['water'][group][i].y))
         # 3: home corner 1 - closest corner to water
         ix = [1,1,-1,-1] # 30  |-> x
         iy = [1,-1,1,-1] # 21  v   y
-        homecorners = [point_t(
+        homecorners = [Point(
                 experiment['home'][group][i].x + ix[j] * object_areas['home'].w/2,
                 experiment['home'][group][i].y + iy[j] * object_areas['home'].h/2) \
                 for j in range(4)]
@@ -629,28 +629,28 @@ def get_wall_polygons(experiment, group):
             # add fourth corner to these walls, too
             polys[i].append(homecorners[index4])
             # 7: angled wall end --> TODO: do it manually
-            polys[i].append(point_t(
+            polys[i].append(Point(
                     2*homecorners[index4].x - homecorners[index2].x,
                     homecorners[index4].y))
-            polysall[i].append(point_t(
+            polysall[i].append(Point(
                     2*homecorners[index4].x - homecorners[index2].x,
                     homecorners[index4].y))
 
         # TODO: for the seventh experiment we need the females...
         # 6/8: center
         d = 15
-        polys[i].append(point_t(
+        polys[i].append(Point(
                 cage_center.x + math.copysign(d, polys[i][1].x - cage_center.x),
                 cage_center.y + math.copysign(d, polys[i][1].y - cage_center.y)))
-        polysall[i].append(point_t(
+        polysall[i].append(Point(
                 cage_center.x + math.copysign(d, polys[i][1].x - cage_center.x),
                 cage_center.y + math.copysign(d, polys[i][1].y - cage_center.y)))
         # correct for previous one if not 5th or 6th exp:
         if len(polys[i]) == 6:
-            polys[i][-2] = point_t(polys[i][-1].x, polys[i][-2].y)
-            polysall[i][-2] = point_t(polysall[i][-1].x, polysall[i][-2].y)
+            polys[i][-2] = Point(polys[i][-1].x, polys[i][-2].y)
+            polysall[i][-2] = Point(polysall[i][-1].x, polysall[i][-2].y)
         # 7/9: wheel corner 1 - closest corner to center
-        wheelcorners = [point_t(
+        wheelcorners = [Point(
                 experiment['wheel'][group][i].x + ix[j] * object_areas['wheel'].w/2,
                 experiment['wheel'][group][i].y + iy[j] * object_areas['wheel'].h/2) \
                 for j in range(4)]

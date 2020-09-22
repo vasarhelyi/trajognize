@@ -6,7 +6,7 @@ from math import degrees, acos
 import numpy
 
 from .project import *
-from .init import MFix, barcode_index_t
+from .init import MFix, BarcodeIndex
 from .algo import distance_matrix, get_distance, is_point_inside_ellipse
 
 # global variables
@@ -18,7 +18,7 @@ def create_spatial_distlists(blobs):
     that are close enough to be on the same rat on a given frame.
 
     Keyword arguments:
-    blobs -- list of all blobs (color_blob_t) from a given frame
+    blobs -- list of all blobs (ColorBlob) from a given frame
 
     """
     n = len(blobs)
@@ -43,8 +43,8 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdin
     TODO: better algo would be nice, checking orientation of md blobs, etc.
 
     Keyword arguments:
-    prevblobs     -- list of all blobs (color_blob_t) from the previous frame
-    blobs         -- list of all blobs (color_blob_t) from the current frame
+    prevblobs     -- list of all blobs (ColorBlob) from the previous frame
+    blobs         -- list of all blobs (ColorBlob) from the current frame
     prevmd_blobs  -- list of all motion blobs (motion_blob_t) from the previous frame
     md_blobs      -- list of all motion blobs (motion_blob_t) from the current frame
     prevmdindices -- motion blob index for blobs of the previous frame
@@ -72,7 +72,7 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdin
             if mdindices[i] > -1 and prevmdindices[j] > -1:
                 # dx = md_blobs[mdindices[i]].centerx - prevmd_blobs[prevmdindices[j]].centerx
                 # dy = md_blobs[mdindices[i]].centery - prevmd_blobs[prevmdindices[j]].centery
-                # corrected_prevblob = color_blob_t(0, prevblobs[j].centerx+dx, prevblobs[j].centery+dy, 0, [])
+                # corrected_prevblob = ColorBlob(0, prevblobs[j].centerx+dx, prevblobs[j].centery+dy, 0, [])
                 # d = get_distance(corrected_prevblob, blobs[i])
                 tdistlists[i].append(j)
             # start of motion: prevframe is static, frame is dynamic:
@@ -97,7 +97,7 @@ def find_chains_in_sdistlists(blobs, sdistlists, colorids):
     Constraint #2: chain must be straigh enough (>120deg) to count.
 
     Keyword arguments:
-    blobs      -- list of all blobs (color_blob_t) from the current frame
+    blobs      -- list of all blobs (ColorBlob) from the current frame
     sdistlists -- possible chain connections, created in advance by
                   create_spatial_distlists()
     colorids   -- global colorid database created by parse_colorid_file()
@@ -210,7 +210,7 @@ def find_clusters_in_sdistlists(blobs, sdistlists, level=0):
     Algo also modifies the clusterindex variable of all blobs
 
     Keyword arguments:
-    blobs      -- list of all blobs (color_blob_t) from the current frame
+    blobs      -- list of all blobs (ColorBlob) from the current frame
     sdistlists -- possible cluster connections, created in advance by
                   create_spatial_distlists()
     level      -- optional parameter to check only closest neighbors or
@@ -273,8 +273,8 @@ def barcodeindices_not_deleted(barcodeindices, barcodes, mfix=None):
     """Return subset of barcodeindices (as list) that contains non-deleted barcodes.
 
     Keyword arguments:
-    barcodeindices -- list of barcode indices (e.g. of a blob) of barcode_index_t
-    barcodes       -- list of all barcodes (barcode_t) for current frame
+    barcodeindices -- list of barcode indices (e.g. of a blob) of BarcodeIndex
+    barcodes       -- list of all barcodes (Barcode) for current frame
     mfix           -- an mfix value for and operation if needed
 
     """
@@ -291,7 +291,7 @@ def get_not_used_blob_indices(blobs, barcodes):
     """Return subset of blobs that are not used yet.
 
     Keyword arguments:
-    barcodes -- list of all barcodes (barcode_t) for current frame
+    barcodes -- list of all barcodes (Barcode) for current frame
     blobs    -- list of all blobs on current frame
 
     """
@@ -306,7 +306,7 @@ def get_not_used_blob_indices(blobs, barcodes):
 
 def update_blob_barcodeindices(barcode, k, i, blobs):
     """Update blob's barcodeindices from barcode's blobindices."""
-    ki = barcode_index_t(k, i)
+    ki = BarcodeIndex(k, i)
     for blobi in barcode.blobindices:
         if blobi is None: continue
         if blobi not in blobs[blobi].barcodeindices:
@@ -315,6 +315,6 @@ def update_blob_barcodeindices(barcode, k, i, blobs):
 
 def remove_blob_barcodeindex(blob, k, i):
     """Remove a given index from the blobs barcodeindices list."""
-    ki = barcode_index_t(k, i)
+    ki = BarcodeIndex(k, i)
     while ki in blob.barcodeindices:
         del blob.barcodeindices[blob.barcodeindices.index(ki)]

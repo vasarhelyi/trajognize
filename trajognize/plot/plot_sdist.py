@@ -2,7 +2,7 @@
 
 Usage: plot_sdist.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat sdist_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat SDist object (.txt)
 
 Output is written in subdirectories of input dir categorized according to
 experiments.

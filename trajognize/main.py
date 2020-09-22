@@ -5,7 +5,7 @@ Trajognize main code.
 import os,sys,argparse
 
 # import definitions as they appear in file
-from .init import MFix, variables_t, barcode_t
+from .init import MFix, Variables, Barcode
 from .project import *
 
 # import functions organized according to files
@@ -49,13 +49,13 @@ def main(argv=[]):
          superfluous barcodes, trajectories, resolve all shared and conflicting
          states and not connecting chosen trajectories.
 
-    Main variable descriptions can be found in init.variable_t() class.
+    Main variable descriptions can be found in init.Variables class.
 
     """
     print("This is trajognize. Version:", util.get_version_info())
     print("Current project is: %s\n" % project_str[PROJECT])
-    v = variables_t()
-    phase = util.phase_t()
+    v = Variables()
+    phase = util.Phase()
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__)
     argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output file")
@@ -210,7 +210,7 @@ def main(argv=[]):
                 if not chainlists[k]: continue
                 for chain in chainlists[k]:
                     # append to blob list
-                    barcode = barcode_t(0, 0, 0, MFix.FULLFOUND, chain)
+                    barcode = Barcode(0, 0, 0, MFix.FULLFOUND, chain)
                     algo_barcode.calculate_params(barcode,  v.colorids[k].strid, v.color_blobs[currentframe])
                     v.barcodes[currentframe][k].append(barcode)
                     algo_blob.update_blob_barcodeindices(barcode, k, len(v.barcodes[currentframe][k])-1, v.color_blobs[currentframe])

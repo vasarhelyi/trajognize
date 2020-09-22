@@ -2,7 +2,7 @@
 
 Usage: plot_fqobj.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat fqobj_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat FQObj object (.txt)
 
 Output is written in subdirectories of input dir, organized according to
 experiment, group, light and object.

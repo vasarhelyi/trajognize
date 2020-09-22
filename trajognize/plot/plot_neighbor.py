@@ -2,7 +2,7 @@
 
 Usage: plot_neighbor.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat neighbor_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat Neighbor object (.txt)
 
 Output is written in subdirectories of input dir, according to experiment, group
 and light.

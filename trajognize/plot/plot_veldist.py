@@ -2,7 +2,7 @@
 
 Usage: plot_veldist.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat veldist_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat VelDist object (.txt)
 
 Output is written in subdirectories of input dir categorized according to
 experiments.

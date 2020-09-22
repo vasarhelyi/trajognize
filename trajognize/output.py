@@ -5,7 +5,7 @@ Output file generation functions for trajognize.
 from math import degrees
 import os, datetime
 
-from .init import barcode_index_t
+from .init import BarcodeIndex
 from .util import mfix2str_allascomment
 from .algo_blob import barcodeindices_not_deleted
 
@@ -19,7 +19,7 @@ def barcode_textfile_init(filename, barcodes):
 
     Keyword arguments:
     filename -- output file name
-    barcodes -- global list of all barcodes (barcode_t)
+    barcodes -- global list of all barcodes (Barcode)
                 structured like this: [framenum][coloridindex][index]
 
     Uses the global variable 'oft' as the file handler.
@@ -40,7 +40,7 @@ def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
     """Write all barcodes of current frame to text file.
 
     Keyword arguments:
-    barcodes -- barcodes (barcode_t) of the current frame
+    barcodes -- barcodes (Barcode) of the current frame
                 structured like this: [coloridindex][index]
     framenum -- current frame number
     colorids -- global colorid database created by parse_colorid_file()
@@ -52,7 +52,7 @@ def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
 
     global oft
     # get list of barcodes to be written
-    barcodeindices = [[barcode_index_t(k,x) for x in range(len(barcodes[k]))] for k in range(len(barcodes))]
+    barcodeindices = [[BarcodeIndex(k,x) for x in range(len(barcodes[k]))] for k in range(len(barcodes))]
     if not deleted:
         for k in range(len(barcodes)):
             barcodeindices[k] = barcodeindices_not_deleted(barcodeindices[k], barcodes)
@@ -74,7 +74,7 @@ def barcode_textfile_writeall(barcodes, colorids, deleted=True):
     """Write all barcodes from all frames to textfile.
 
     Keyword arguments:
-    barcodes -- global list of all barcodes (barcode_t)
+    barcodes -- global list of all barcodes (Barcode)
                 structured like this: [framenum][coloridindex][index]
     colorids -- global colorid database created by parse_colorid_file()
     deleted  -- should we write deleted barcodes as well?
@@ -119,8 +119,8 @@ def logfile_writeframe(blobs, barcodes, framenum):
     """Write logfile entry for current frame.
 
     Keyword arguments:
-    blobs    -- list of all blobs (color_blob_t) from a given frame
-    barcodes -- barcodes (barcode_t) of the current frame
+    blobs    -- list of all blobs (ColorBlob) from a given frame
+    barcodes -- barcodes (Barcode) of the current frame
                 structured like this: [coloridindex][index]
     framenum -- current frame number
 
@@ -145,9 +145,9 @@ def logfile_writeall(blobs, barcodes):
     """Write log data from all frames to log file
 
     Keyword arguments:
-    blobs    -- global list of all blobs (color_blob_t)
+    blobs    -- global list of all blobs (ColorBlob)
                 structured like this: [framenum][index]
-    barcodes -- global list of all barcodes (barcode_t)
+    barcodes -- global list of all barcodes (Barcode)
                 structured like this: [framenum][coloridindex][index]
 
     """

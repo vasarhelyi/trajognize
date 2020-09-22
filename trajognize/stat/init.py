@@ -2,7 +2,7 @@
 Main classes for statistics are defined here, like heatmap, 24h distribution, etc.
 
 To allow for automatic execution of all statistics, it is important to have all
-stat_t derived objects synhcronized with statistical functions implemented in
+Stat derived objects synhcronized with statistical functions implemented in
 trajognize.stat.stat. For more info check out the description there.
 
 All things needed when a new stat is created:
@@ -33,7 +33,7 @@ from . import project
 #: for more info see trajognize.stat.util.get_mfi()
 mfix_types = ['REAL', 'VIRTUAL']
 
-class stat_t(object):
+class Stat(object):
     """Base storage class for trajognize statistic storage classes.
 
     All subclasses should have all methods and variables implemented
@@ -175,7 +175,7 @@ class stat_t(object):
 # storage classes for a statistic on barcodes
 
 
-class heatmap_t(stat_t):
+class HeatMap(Stat):
     """Storage class for heatmaps of barcodes for all light types and real/virt
     states.
 
@@ -367,7 +367,7 @@ class heatmap_t(stat_t):
                 outputfile.flush()
 
 
-class motionmap_t(stat_t):
+class MotionMap(Stat):
     """Storage class for motion heatmaps of barcodes for all light types.
 
     motionmap.data[light][x][y] is the number of times a patek
@@ -392,7 +392,7 @@ class motionmap_t(stat_t):
         #: version of the current structure. Change it every time something
         #: changes in the definition of the statistics, to see whether some
         #: already calculated data is old or not.
-        #: version 0: first attempt, inherited from heatmap_t version 2
+        #: version 0: first attempt, inherited from HeatMap version 2
         #: version 1: filter_for_valid_cage introduced (2015.04.20.)
         self.version = 1
         #: threshold below which we do not take barcodes into account
@@ -446,12 +446,12 @@ class motionmap_t(stat_t):
             outputfile.flush()
 
 
-class aamap_t(stat_t):
+class AAMap(Stat):
     """Storage class for AA heatmaps of barcodes for all light types.
 
     aamap.data[light][x][y] is the number of times a patek
     barcode center was at the coordinates (x, y) in the given light condition,
-    when it was assumed to be in an AA type event (see aa_t).
+    when it was assumed to be in an AA type event (see AA).
     Interpolated positions between two frames are stamped, too,
     so that number of interpolated points equals the velocity expressed in px/frame.
 
@@ -467,7 +467,7 @@ class aamap_t(stat_t):
         #: version of the current structure. Change it every time something
         #: changes in the definition of the statistics, to see whether some
         #: already calculated data is old or not.
-        #: version 0: first attempt, inherited from motionmap_t version 0
+        #: version 0: first attempt, inherited from MotionMap version 0
         #: version 1: angle thresholds introduced to aa
         #: version 2: minimum event length introduced to aa
         self.version = 2
@@ -519,7 +519,7 @@ class aamap_t(stat_t):
             outputfile.flush()
 
 
-class dist24h_t(stat_t):
+class Dist24h(Stat):
     """Storage class for 24h time distribution of barcodes.
 
     dist24h.avg[virtual/real][patek/all][minute] is a number between 0 and 1, indicating at what
@@ -701,7 +701,7 @@ class dist24h_t(stat_t):
                     outputfile.flush()
 
 
-class dist24hobj_t(stat_t):
+class Dist24hObj(Stat):
     """Storage class for 24h time distribution of barcodes around specific objects.
 
     dist24h.avg[patek/all][object][minute] is a number between 0 and 1, indicating at what
@@ -881,7 +881,7 @@ class dist24hobj_t(stat_t):
                     outputfile.flush()
 
 
-class dailyobj_t(stat_t):
+class DailyObj(Stat):
     """Storage class for the amount of time spent around specific objects on a daily basis.
 
     dist24h.avg[light][patek/all][object][day] is a number between 0 and 1, indicating at what
@@ -1057,7 +1057,7 @@ class dailyobj_t(stat_t):
             outputfile.flush()
 
 
-class sameiddist_t(stat_t):
+class SameIDDist(Stat):
     """Storage class for sameid number distributions.
 
     This stat is a debug stat. Final output contains 1 chosen only...
@@ -1155,7 +1155,7 @@ class sameiddist_t(stat_t):
         outputfile.flush()
 
 
-class nearestneighbor_t(stat_t):
+class NearestNeighbor(Stat):
     """Storage class for nearest neighbor occurrence matrix.
 
     X.data[light][real/virtual/any][i][j] is the number of frames
@@ -1267,7 +1267,7 @@ class nearestneighbor_t(stat_t):
             outputfile.flush()
 
 
-class neighbor_t(stat_t):
+class Neighbor(Stat):
     """Storage class for neighbor distribution matrices and number of neighbours
     on a daily basis.
 
@@ -1287,7 +1287,7 @@ class neighbor_t(stat_t):
         #: version of the current structure. Change it every time something
         #: changes in the definition of the statistics, to see whether some
         #: already calculated data is old or not.
-        #: version 0: first attempt, inherited from nearestneighbor_t
+        #: version 0: first attempt, inherited from NearestNeighbor
         #: version 1: filter_for_valid_cage introduced (2015.04.30.)
         self.version = 1
         #:
@@ -1365,7 +1365,7 @@ class neighbor_t(stat_t):
         outputfile.flush()
 
 
-class fqobj_t(stat_t):
+class FQObj(Stat):
     """Storage class for generalized FQ matrix, i.e. pairwise OR norm
     over/queuing object relations.
 
@@ -1510,7 +1510,7 @@ class fqobj_t(stat_t):
                 outputfile.flush()
 
 
-class dailyfqobj_t(stat_t):
+class DailyFQObj(Stat):
     """Storage class for generalized FQ matrix, i.e. pairwise OR norm
     over/queuing object relations on a daily basis.
 
@@ -1670,7 +1670,7 @@ class dailyfqobj_t(stat_t):
             outputfile.flush()
 
 
-class fqfood_t(stat_t):
+class FQFood(Stat):
     """Storage class for the real FQ matrix, i.e. pairwise OR norm
     over/queuing relations, restricted to the time of feeding.
 
@@ -1803,7 +1803,7 @@ class fqfood_t(stat_t):
                     outputfile.write("\n\n")
 
 
-class fqwhilef_t(stat_t):
+class FQWhileF(Stat):
     """Storage class for counting how many are feeding or queuing while one
     is feeding, restricted to the time of feeding, relative to any type of
     object (food, water, wheel, etc.)
@@ -1970,7 +1970,7 @@ class fqwhilef_t(stat_t):
                             outputfile.write("\t%g" % numpy.sum(self.data[light][obi,allnames.index(names[si[i]])]))
                         outputfile.write("\n\n")
 
-class aa_t(stat_t):
+class AA(Stat):
     """Storage class for AA (approach-aviodance) matrix.
 
     AA is defined for each pair of rats (i!=j) as the time-averaged dot product
@@ -1987,7 +1987,7 @@ class aa_t(stat_t):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
-        :param aa_settings: aa_settings_t settings used for aa detection
+        :param aa_settings: AASettings settings used for aa detection
 
         """
         #: version of the current structure. Change it every time something
@@ -2002,7 +2002,7 @@ class aa_t(stat_t):
         #             disable with min_event_length 1 (equal to version 2)
         #: version 4: minimum event count introduced to get e.g. 5/10 frames (2015.02.26.)
         #: version 5: filter_for_valid_cage introduced (2015.04.30.)
-        #: version 6: settings moved to aa_settings_t class (2018.07.26.)
+        #: version 6: settings moved to AASettings class (2018.07.26.)
         #: version 7: differentiate between appr. and avoider vel threshold
         #             and check approacher's forward motion
         self.version = 7
@@ -2107,7 +2107,7 @@ class aa_t(stat_t):
                     outputfile.flush()
 
 
-class butthead_t(stat_t):
+class ButtHead(Stat):
     """Storage class for butthead occurrence matrix.
 
     X.data[light][i][j] is the number of frames
@@ -2218,7 +2218,7 @@ class butthead_t(stat_t):
             outputfile.flush()
 
 
-class sdist_t(stat_t):
+class SDist(Stat):
     """Storage class for (spatial) distance distribution of barcodes of different id
     on the same frame.
 
@@ -2274,7 +2274,7 @@ class sdist_t(stat_t):
         outputfile.flush()
 
 
-class veldist_t(stat_t):
+class VelDist(Stat):
     """Storage class for the velocity distribution of barcodes (calculated as the
     position change from consecutive frames).
 
@@ -2344,7 +2344,7 @@ class veldist_t(stat_t):
         outputfile.flush()
 
 
-class accdist_t(stat_t):
+class AccDist(Stat):
     """Storage class for the acceleration distribution of barcodes
     (calculated from the position of 3 consecutive frames).
 
@@ -2413,7 +2413,7 @@ class accdist_t(stat_t):
         outputfile.flush()
 
 
-class basic_t(stat_t):
+class Basic(Stat):
     """Store class for basic statistics, like frame num on different lights,
     frame nums in different experiments, number of different errors, etc.
 
@@ -2543,7 +2543,7 @@ class basic_t(stat_t):
         outputfile.flush()
 
 
-class distfromwall_t(stat_t):
+class DistFromWall(Stat):
     """Storage class for the distance-from-wall distribution of barcodes
     for all light types and real/virt states, for all days separately.
 
@@ -2552,7 +2552,7 @@ class distfromwall_t(stat_t):
     closest wall of territory, home or wheel, not over these objects.
 
     This class has no virtual subclasses, all data fit in approximately the
-    same amount of memory than one subclass of a heatmap_t object.
+    same amount of memory than one subclass of a HeatMap object.
 
     """
     def __init__(self, id_count):

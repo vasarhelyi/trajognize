@@ -76,7 +76,7 @@ else:
 ################################################################################
 # stat settings
 
-class aa_settings_t():
+class AASettings():
     def __init__(self,
             distance_threshold=400, #200 # [px]
             approacher_velocity_threshold=3, # [px/frame]
@@ -94,7 +94,7 @@ class aa_settings_t():
         self.min_event_length = min_event_length
 
 if PROJECT == PROJECT_ANTS:
-    stat_aa_settings = aa_settings_t(
+    stat_aa_settings = AASettings(
             distance_threshold=400, #200 # [px]
             approacher_velocity_threshold=3, # [px/frame]
             avoider_velocity_threshold=3, # [px/frame]
@@ -103,7 +103,7 @@ if PROJECT == PROJECT_ANTS:
             cos_avoider_threshold=0.5,
             min_event_length=10)
 elif PROJECT == PROJECT_ANTS_2019:
-    stat_aa_settings = aa_settings_t(
+    stat_aa_settings = AASettings(
             distance_threshold=200, # [px]
             approacher_velocity_threshold=2, # [px/frame]
             avoider_velocity_threshold=1, # [px/frame]
@@ -112,7 +112,7 @@ elif PROJECT == PROJECT_ANTS_2019:
             cos_avoider_threshold=0.5,
             min_event_length=10)
 else:
-    stat_aa_settings = aa_settings_t(
+    stat_aa_settings = AASettings(
             distance_threshold=200, # [px] = 40 cm
             approacher_velocity_threshold=5, # [px/frame] = 125 px/s = 25 cm/s
             avoider_velocity_threshold=5, # [px/frame] = 125 px/s = 25 cm/s

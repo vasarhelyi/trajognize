@@ -3,7 +3,7 @@ trajognize.stat outputs.
 
 Usage: plot_dailyfqobj.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat dailyfqobj_t object (.txt),
+where inputfile(s) is/are the output of trajognize.stat DailyFQObj object (.txt),
 containing all dailyfqobj, cumulfqobj and movavgfqobj type results.
 
 Output is written in subdirectories of input dir, organized according to

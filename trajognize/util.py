@@ -73,7 +73,7 @@ def exit(errorstr='', exitcode=0):
     sys.exit(exitcode)
 
 
-class phase_t(object):
+class Phase(object):
     """A simple class that prints nice status info about the running scripts to
     standard output.
 

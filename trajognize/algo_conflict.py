@@ -9,7 +9,7 @@ TODOs:
 """
 
 from .project import *
-from .init import MFix, TrajState, rat_blob_t, barcode_t, conflict_t
+from .init import MFix, TrajState, RatBlob, Barcode, Conflict
 from .algo import get_distance_at_position, is_point_inside_ellipse
 
 from . import algo_barcode
@@ -21,7 +21,7 @@ def list_conflicts(conflicts, colorids):
     """List conflicts.
 
     Keyword arguments:
-    conflicts -- list of all conflicts ...[k] = conflict_t
+    conflicts -- list of all conflicts ...[k] = Conflict
     barcodes     -- global list of all barcodes
     blobs        -- global list of all blobs
     colorids     -- global colorid database created by parse_colorid_file()
@@ -84,7 +84,7 @@ def get_gap_conflicts(barcodes, colorids):
             if chosen.mfix & MFix.DEBUG:
                 # create new conflict
                 if not conflicts[k] or algo_trajectory.trajlastframe(conflicts[k][-1]) < frame - 1:
-                    conflicts[k].append(conflict_t("gap", frame))
+                    conflicts[k].append(Conflict("gap", frame))
                 # add barcode to current conflict
                 conflicts[k][-1].barcodeindices.append(i)
 
@@ -115,7 +115,7 @@ def get_overlap_conflicts(barcodes, blobs, colorids):
             if chosen.mfix & MFix.SHARESBLOB:
                 # create new conflict
                 if not conflicts[k] or algo_trajectory.trajlastframe(conflicts[k][-1]) < frame - 1:
-                    conflicts[k].append(conflict_t("overlap", frame, set()))
+                    conflicts[k].append(Conflict("overlap", frame, set()))
                 # add barcode to current conflict
                 conflicts[k][-1].barcodeindices.append(i)
                 # get barcode that is conflicted with this one
@@ -193,7 +193,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                             nublob = blobs[frame][bi]
                             if nublob.color != sharedblob.color: continue
                             # if not used blob is not under previous barcode position, skip
-                            if not is_point_inside_ellipse(nublob, rat_blob_t(oldbarcode.centerx,
+                            if not is_point_inside_ellipse(nublob, RatBlob(oldbarcode.centerx,
                                     oldbarcode.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
                                     oldbarcode.orientation)):
                                 continue
@@ -201,7 +201,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                             if get_distance_at_position(barcode, sbpi, nublob) > MAX_INRAT_DIST:
                                 continue
                             # create new barcode temporarily
-                            newbarcode = barcode_t(barcode.centerx, barcode.centery,
+                            newbarcode = Barcode(barcode.centerx, barcode.centery,
                                     barcode.orientation, barcode.mfix,
                                     list(barcode.blobindices))
                             # store new blob in barcode at sharesblob's place
@@ -220,7 +220,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                                 for x in newbarcode.blobindices:
                                     if x is None: continue
                                     blobx = blobs[frame][x]
-                                    if not is_point_inside_ellipse(blobx, rat_blob_t(oldbarcode.centerx,
+                                    if not is_point_inside_ellipse(blobx, RatBlob(oldbarcode.centerx,
                                             oldbarcode.centery, MAX_INRAT_DIST * MCHIPS / 2, MAX_INRAT_DIST / 2,
                                             oldbarcode.orientation)):
                                         skip = True
@@ -292,7 +292,7 @@ def get_nub_conflicts(trajectories, barcodes, blobs, colorids):
                 # no more check, traj is conflicted (store only conflicted part)
                 # create new conflict
                 if not conflicts[k] or algo_trajectory.trajlastframe(conflicts[k][-1]) < frame - 1:
-                    conflicts[k].append(conflict_t("nub", frame))
+                    conflicts[k].append(Conflict("nub", frame))
                 # add barcode to current conflict
                 conflicts[k][-1].barcodeindices.append(i)
                 conflicted_trajs[k].add(t)

@@ -6,7 +6,7 @@ from math import atan2, cos, pi, sin
 import itertools
 
 from .project import *
-from .init import MFix, barcode_index_t, barcode_t
+from .init import MFix, BarcodeIndex, Barcode
 from .algo import get_angle_deg, get_distance, get_distance_at_position
 from .util import mfix2str
 
@@ -36,7 +36,7 @@ def barcode_is_free(barcodes, k, j, blobs):
     Keyword arguments:
     barcodes   -- list of all barcodes in current frame
     k,j        -- barcode index of barcode to check
-    blobs      -- list of all color blobs (color_blob_t) for current frame
+    blobs      -- list of all color blobs (ColorBlob) for current frame
 
     """
     barcode = barcodes[k][j]
@@ -59,7 +59,7 @@ def check_barcode_blob_consistency(barcodes, blobs, colorids):
         for k in range(len(colorids)):
             for i in range(len(barcodes[frame][k])):
                 barcode = barcodes[frame][k][i]
-                ki = barcode_index_t(k, i)
+                ki = BarcodeIndex(k, i)
                 for j in barcode.blobindices:
                     if j is None: continue
                     if ki not in blobs[frame][j].barcodeindices:
@@ -104,9 +104,9 @@ def add_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
 
 
     Keyword arguments:
-    barcode      -- a barcode of barcode_t type
+    barcode      -- a barcode of Barcode type
     strid        -- string ID of the barcode (colorids[coloridindex])
-    blobs        -- list of all color blobs (color_blob_t) for current frame
+    blobs        -- list of all color blobs (ColorBlob) for current frame
     sdistlists   -- possible chain connections on current frame, created
                     in advance by create_spatial_distlists()
     """
@@ -176,7 +176,7 @@ def add_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
                     best = i
                     mindist = dist
         # check orientation of best candidate
-        temp = barcode_t(0, 0, 0, 0, list(blobchains[best]))
+        temp = Barcode(0, 0, 0, 0, list(blobchains[best]))
         calculate_params(temp, strid, blobs)
         if get_angle_deg(barcode, temp) > MAX_PERFRAME_ANGLE:
             return 0
@@ -185,7 +185,7 @@ def add_missing_unused_blob(barcode, strid, blobs, sdistlists, currentframe):
         return 1
 
     # for partlyfounds we simply get good enough candidate for all missing positions
-    temp = barcode_t(0, 0, 0, 0, list(barcode.blobindices))
+    temp = Barcode(0, 0, 0, 0, list(barcode.blobindices))
     for i in range(len(strid)):
         candidatelist = list(candidates[i])
         if not candidatelist or barcode.blobindices[i] is not None:
@@ -215,9 +215,9 @@ def order_blobindices(barcode, strid, blobs, forcefull=False):
     """Order partlyfound blobs in the order they should appear according to color id.
 
     Keyword arguments:
-    barcode   -- a barcode of barcode_t type
+    barcode   -- a barcode of Barcode type
     strid     -- string ID of the barcode (colorids[coloridindex])
-    blobs     -- list of all color blobs (color_blob_t) for current frame
+    blobs     -- list of all color blobs (ColorBlob) for current frame
     forcefull -- if true, change order of full barcodes as well (might be needed)
 
     """
@@ -253,9 +253,9 @@ def calculate_params(barcode, strid, blobs):
     Function assumes that blob indices are in the order appearing on the rat.
 
     Keyword arguments:
-    barcode -- a barcode of barcode_t type
+    barcode -- a barcode of Barcode type
     strid   -- string id of the barcode
-    blobs   -- list of all color blobs (color_blob_t) for current frame
+    blobs   -- list of all color blobs (ColorBlob) for current frame
 
     """
     # define some parameters
@@ -348,8 +348,8 @@ def remove_overlapping_fullfound(barcodes, blobs, cluster):
     """Remove (possibly) false positive full barcodes that are overlapping.
 
     Keyword arguments:
-    barcodes  -- list of all barcodes (barcode_t) for current frame
-    blobs     -- list of all color blobs (color_blob_t) for current frame
+    barcodes  -- list of all barcodes (Barcode) for current frame
+    blobs     -- list of all color blobs (ColorBlob) for current frame
     cluster   -- current blob cluster
 
     Returns number of barcodes deleted and also changes barcode mfix properties.
@@ -359,7 +359,7 @@ def remove_overlapping_fullfound(barcodes, blobs, cluster):
     """
     # These iterators are used everywhere below:
     # i - blobindex (int)
-    # j - barcodeindex (barcode_index_t)
+    # j - barcodeindex (BarcodeIndex)
     # find barcodes that belong to the current blob cluster
     barcodecluster = set()
     for i in cluster:
@@ -391,8 +391,8 @@ def set_nocluster_property(barcodes, blobs, cluster):
     other blobs not belonging to the same barcode.
 
     Keyword arguments:
-    barcodes  -- list of all barcodes (barcode_t) for current frame
-    blobs     -- list of all color blobs (color_blob_t) for current frame
+    barcodes  -- list of all barcodes (Barcode) for current frame
+    blobs     -- list of all color blobs (ColorBlob) for current frame
     cluster   -- current blob cluster
 
     Warning: function might return 16 tons.
@@ -429,9 +429,9 @@ def find_partlyfound_from_tdist(
     curretframe -- current frame number during the analysis
     tdistlists  -- temporal closeness matrix created by
                    create_temporal_distlists()
-    color_blobs -- global list of all color blobs (color_blob_t)
+    color_blobs -- global list of all color blobs (ColorBlob)
                    structured like this: [framenum][index]
-    barcodes    -- global list of all barcodes (barcode_t)
+    barcodes    -- global list of all barcodes (Barcode)
                    structured like this: [framenum][coloridindex][index]
     colorids    -- global colorid database created by parse_colorid_file()
     sdistlists  -- possible chain connections on current frame, created in advance by
@@ -502,7 +502,7 @@ def find_partlyfound_from_tdist(
                 ii = prevbarcodei.i
                 oldbarcode = barcodes[currentframe-inc][k][ii]
                 # copy prev barcode parameters and store in temporary list
-                barcode = barcode_t(
+                barcode = Barcode(
                         oldbarcode.centerx, oldbarcode.centery, oldbarcode.orientation,
                         MFix.PARTLYFOUND_FROM_TDIST)
                 jj = oldbarcode.blobindices.index(prevblobi)
@@ -540,7 +540,7 @@ def find_partlyfound_from_tdist(
         for barcode in tempbarcodes[k]:
             # so far tempbarcodes contains old barcode position and orientation,
             # we calculate new one now based on actual blob data
-            temp = barcode_t(0, 0, 0, 0, list(barcode.blobindices))
+            temp = Barcode(0, 0, 0, 0, list(barcode.blobindices))
             calculate_params(temp, colorids[k].strid, color_blobs[currentframe])
             # check if barcode position orientation is consistent, skip if not
             if get_distance(temp, barcode) > MAX_PERFRAME_DIST_MD or \
@@ -591,7 +591,7 @@ def find_partlyfound_from_tdist(
 #         if len(cluster) > MCHIPS: continue
 #         # create new barcode from cluster
 #         # Warning: blobindices are not in proper order yet...
-#         newbarcode = barcode_t(0, 0, 0, MFix.PARTLYFOUND_FROM_TDIST, [notusedblobs[i] for i in cluster])
+#         newbarcode = Barcode(0, 0, 0, MFix.PARTLYFOUND_FROM_TDIST, [notusedblobs[i] for i in cluster])
 #         colorsincluster = []
 #         for i in cluster:
 #             blob = color_blobs[currentframe][notusedblobs[i]]
@@ -734,8 +734,8 @@ def set_shared_mfix_flags(barcodes, blobs, colorids):
     Do not change deleted.
 
     Keyword arguments:
-    blobs    -- list of all color blobs (color_blob_t) from the current frame
-    barcodes -- list of all barcodes (barcode_t) from the current frame,
+    blobs    -- list of all color blobs (ColorBlob) from the current frame
+    barcodes -- list of all barcodes (Barcode) from the current frame,
                 structured like this: [coloridindex][index]
     colorids -- global colorid database created by parse_colorid_file()
 
@@ -774,7 +774,7 @@ def set_shared_mfix_flags(barcodes, blobs, colorids):
     for k in range(len(barcodes)):
         for i in range(len(barcodes[k])):
             allindices += algo_blob.barcodeindices_not_deleted(
-                    [barcode_index_t(k, i)], barcodes)
+                    [BarcodeIndex(k, i)], barcodes)
     # iterate over all pairs
     for i in range(1, len(allindices)):
         for j in range(i):
@@ -800,9 +800,9 @@ def remove_close_sharesid(barcodes, blobs, colorids, mfix=None):
     treated correspondingly, and it is not straightforward.
 
     Keyword arguments:
-    barcodes -- list of all barcodes (barcode_t) from the current frame,
+    barcodes -- list of all barcodes (Barcode) from the current frame,
                 structured like this: [coloridindex][index]
-    blobs    -- list of all blobs (color_blob_t) from the current frame
+    blobs    -- list of all blobs (ColorBlob) from the current frame
     mfix     -- special part of algo is executed if MFix.PARTLYFOUND_FROM_TDIST
 
     Returns number of barcodes removed and also changes barcode properties

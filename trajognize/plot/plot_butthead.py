@@ -2,7 +2,7 @@
 
 Usage: plot_butthead.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat butthead_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat ButtHead object (.txt)
 
 Output is written in subdirectories of input dir, according to experiment,
 group and light.

@@ -7,7 +7,7 @@ import sys
 import datetime
 import math
 
-from trajognize.init import point_t, circle_t, ellipse_t, rectangle_t
+from trajognize.init import Point, Circle, Ellipse, Rectangle
 from trajognize.project import *
 
 from .project import *
@@ -188,7 +188,7 @@ def is_barcode_under_object(barcode, objectcenter, objectarea):
     optional center offset.
 
     :param barcode: a barcode
-    :param objectcenter: a point_t/circle_t object defining the CENTER (and arc) of the object
+    :param objectcenter: a Point/Circle object defining the CENTER (and arc) of the object
     :param objectarea: an object defining the AREA (width, height, radius) of the object
                        and possible center offset (see queuing_center_offset())
 
@@ -197,14 +197,14 @@ def is_barcode_under_object(barcode, objectcenter, objectarea):
     """
     (ofsx, ofsy) = queuing_center_offset(objectcenter, objectarea)
     # check for rectangles
-    if isinstance(objectarea, rectangle_t):
+    if isinstance(objectarea, Rectangle):
         if barcode.centerx < (objectcenter.x + ofsx) - objectarea.w/2.0: return False
         if barcode.centerx > (objectcenter.x + ofsx) + objectarea.w/2.0: return False
         if barcode.centery < (objectcenter.y + ofsy) - objectarea.h/2.0: return False
         if barcode.centery > (objectcenter.y + ofsy) + objectarea.h/2.0: return False
         return True
     # check for circles
-    elif isinstance(objectarea, circle_t):
+    elif isinstance(objectarea, Circle):
         # check radius
         dx = barcode.centerx - (objectcenter.x + ofsx)
         dy = barcode.centery - (objectcenter.y + ofsy)
@@ -212,9 +212,9 @@ def is_barcode_under_object(barcode, objectcenter, objectarea):
         if r > objectarea.r:
             return False
         # check angle if given
-        if isinstance(objectcenter, point_t):
+        if isinstance(objectcenter, Point):
             return True
-        elif isinstance(objectcenter, circle_t):
+        elif isinstance(objectcenter, Circle):
             a1 = objectcenter.a1
             a2 = objectcenter.a2
         else:
@@ -323,11 +323,11 @@ def is_object_queueable(object):
     """Return true if there is queuing area is defined for the given object."""
     objectarea = object_queuing_areas[object]
     # check for rectangles
-    if isinstance(objectarea, rectangle_t):
+    if isinstance(objectarea, Rectangle):
         if objectarea.w or objectarea.h:
             return True
     # check for circles
-    elif isinstance(objectarea, circle_t):
+    elif isinstance(objectarea, Circle):
         if objectarea.r:
             return True
     # not queueable

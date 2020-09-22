@@ -46,7 +46,7 @@ def main(argv=[]):
     """
     print("This is trajognize stat. Version:", trajognize.util.get_version_info())
     print("Current project is: %s" % project_str[PROJECT])
-    phase = trajognize.util.phase_t()
+    phase = trajognize.util.Phase()
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
     # initialize experiments dictionary

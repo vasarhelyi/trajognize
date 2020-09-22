@@ -2,7 +2,7 @@
 
 Usage: plot_heatmap.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat heatmap_t, motionmap_t or aamap_t objects (.txt)
+where inputfile(s) is/are the output of trajognize.stat HeatMap, MotionMap or AAMap objects (.txt)
 
 For stats vith virtual substats, use autorun.sh to create symbolic links to a
 common directory before running this script in the common directory.
@@ -24,14 +24,14 @@ try:
     import trajognize.stat.init
     import trajognize.stat.experiments
     import trajognize.stat.project
-    from trajognize.init import rectangle_t, circle_t
+    from trajognize.init import Rectangle, Circle
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
     import trajognize.stat.init
     import trajognize.stat.experiments
     import trajognize.stat.project
-    from trajognize.init import rectangle_t, circle_t
+    from trajognize.init import Rectangle, Circle
 
 
 # TODO: ellipse/polygon needed instead of rect because yrange reverse makes rects disappear. gnuplot bug, 4.6 version needed...
@@ -122,7 +122,7 @@ def get_gnuplot_script(inputfile, outputfile, name, index, exp, experiment,
             for g in grouplist:
                 for point in experiment[object][g]:
                     (ofsx, ofsy) = trajognize.stat.experiments.queuing_center_offset(point, objobj)
-                    if isinstance(objobj, rectangle_t):
+                    if isinstance(objobj, Rectangle):
 #                        objectmarkers.append(GNUPLOT_RECTANGLE_TEMPLATE % (point.x + ofsx,
 #                                point.y + ofsy, objobj.w, objobj.h, "dark-gray"))
                         # TODO: rectangle somehow does not appear with reverse y range...
@@ -132,7 +132,7 @@ def get_gnuplot_script(inputfile, outputfile, name, index, exp, experiment,
                                 "w2": objobj.w/2,
                                 "h2": objobj.h/2,
                                 "color": "dark-gray"})
-                    elif isinstance(objobj, circle_t):
+                    elif isinstance(objobj, Circle):
                         # 360 - x needed because we are >0 v90 <180 ^270, gnuplot is >0 ^90 <180 v270
                         # also, gnuplot always plots CCW, so swapping of a1 and a2 is needed
                         objectmarkers.append(GNUPLOT_CIRCLE_TEMPLATE % (point.x + ofsx,
@@ -149,7 +149,7 @@ def get_gnuplot_script(inputfile, outputfile, name, index, exp, experiment,
                 grouplist = [group]
             for g in grouplist:
                 for point in experiment[object][g]:
-                    if isinstance(objobj, rectangle_t):
+                    if isinstance(objobj, Rectangle):
 #                        objectmarkers.append(GNUPLOT_RECTANGLE_TEMPLATE % (point.x,
 #                                point.y, objobj.w, objobj.h, "white"))
                         # TODO: rectangle somehow does not appear with reverse y range...
@@ -159,7 +159,7 @@ def get_gnuplot_script(inputfile, outputfile, name, index, exp, experiment,
                                 "w2": objobj.w/2,
                                 "h2": objobj.h/2,
                                 "color": "white"})
-                    elif isinstance(objobj, circle_t):
+                    elif isinstance(objobj, Circle):
                         # 360 - x needed because we are >0 v90 <180 ^270, gnuplot is >0 ^90 <180 v270
                         # also, gnuplot always plots CCW, so swapping of a1 and a2 is needed
                         objectmarkers.append(GNUPLOT_CIRCLE_TEMPLATE % (point.x,

@@ -51,11 +51,11 @@ def get_categories_from_filename(filename):
         return (None, None)
 
 
-class avgdist24hobj_t():
+class AvgDist24hObj():
     """Temporary storage class for 24h time distribution of barcodes around food
     and around feeding time.
 
-    Object inherited from trajognize.stat.init.dist24hobj_t
+    Object inherited from trajognize.stat.init.Dist24hObj
 
     """
     def __init__(self, id_count):
@@ -249,7 +249,7 @@ def main(argv=[]):
             continue
         print("  gathering info from", tail)
         # initialize empty object
-        dist24hobj = trajognize.stat.init.dist24hobj_t(id_count)
+        dist24hobj = trajognize.stat.init.Dist24hObj(id_count)
         # add new object (so that we have latest methods from latest version)
         dist24hobj += trajognize.util.load_object(inputfile)
         database[exp][weekday] = dist24hobj
@@ -264,13 +264,13 @@ def main(argv=[]):
         os.makedirs(outputdir)
     for exp in database:
         print(' ', exp)
-        alltemp = avgdist24hobj_t(id_count)
+        alltemp = AvgDist24hObj(id_count)
         for weekday in database[exp]:
             print('   ', weekday)
             data = database[exp][weekday]
             wft = trajognize.stat.project.weekly_feeding_times[weekday]
-            temp = avgdist24hobj_t(id_count)
-            temp2 = avgdist24hobj_t(id_count)
+            temp = AvgDist24hObj(id_count)
+            temp2 = AvgDist24hObj(id_count)
             outputfile = open(os.path.join(outputdir,
                     "calc_avgfooddist24hobj.%s__exp_%s.txt" % (weekday, exp)), 'w')
             if temp.version != data.version:

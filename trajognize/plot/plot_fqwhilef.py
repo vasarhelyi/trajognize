@@ -4,7 +4,7 @@ TODO: generate plot as well...
 
 Usage: plot_fqwhilef.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat fqwhilef_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat FQWhileF object (.txt)
 
 Output is written in subdirectories of input dir, organized according to
 experiment, group, light and object.

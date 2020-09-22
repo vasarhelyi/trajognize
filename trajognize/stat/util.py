@@ -146,12 +146,13 @@ def get_stat_dict():
     class_list = inspect.getmembers(trajognize.stat.init, is_statclass)
     # get class names
     classnames = [c[0] for c in class_list]
+    classnames_lower = [c.lower() for c in classnames]
     stats = dict()
     for f in statfunction_list:
         # get stat name
         stat = f[0][len("calculate_"):]
         # get class name
-        classname = stat + "_t"
+        classname_lower = stat
         # get subclass names
         x = "subclasses_" + stat
         if x in subclassfunction_names:
@@ -161,10 +162,11 @@ def get_stat_dict():
         else:
             subclassfunction = None
         # add entry to stats dict
-        if classname in classnames:
-            c = class_list[classnames.index(classname)]
+        if classname_lower in classnames_lower:
+            i = classnames_lower.index(classname_lower)
+            c = class_list[i]
             stats[stat] = {
-                'init': [classname, inspect.getargspec(c[1].__init__)[0][1:]],
+                'init': [classnames[i], inspect.getargspec(c[1].__init__)[0][1:]],
                 'calc': [f[0], inspect.getargspec(f[1])[0] if inspect.getargspec(f[1])[3] is None else inspect.getargspec(f[1])[0][:-len(inspect.getargspec(f[1])[3])]],
                 'write': ["write_results", inspect.getargspec(c[1].write_results)[0][1:]],
                 'writedaily': ["write_dailyoutput_results", inspect.getargspec(c[1].write_dailyoutput_results)[0][1:]],

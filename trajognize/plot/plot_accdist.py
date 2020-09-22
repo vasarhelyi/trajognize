@@ -2,7 +2,7 @@
 
 Usage: plot_accdist.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat accdist_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat AccDist object (.txt)
 
 Output is written in subdirectories of input dir categorized according to
 experiments.

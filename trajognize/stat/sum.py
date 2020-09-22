@@ -63,7 +63,7 @@ def main(argv=[]):
     """
     print("This is trajognize statsum. Version:", trajognize.util.get_version_info())
     print("Current project is: %s" % project_str[PROJECT])
-    phase = trajognize.util.phase_t()
+    phase = trajognize.util.Phase()
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
     # initialize experiments dictionary
@@ -262,13 +262,13 @@ def main(argv=[]):
                         # print results to stdout
                         print("  writing unique output...")
                         if PROJECT in [PROJECT_ANTS, PROJECT_ANTS_2019]:
-                            uniqueoutputfilename = os.path.join(options.outputpath, 
+                            uniqueoutputfilename = os.path.join(options.outputpath,
                                     os.path.split(os.path.split(os.path.split(inputfile)[0])[0])[1] + "__" +
-                                    os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt") 
+                                    os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt")
                         else:
-                            uniqueoutputfilename = os.path.join(options.outputpath, 
-                                    os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt") 
-                        write_results(uniqueoutputfilename, stats, stat, substat, newobj, 
+                            uniqueoutputfilename = os.path.join(options.outputpath,
+                                    os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt")
+                        write_results(uniqueoutputfilename, stats, stat, substat, newobj,
                                 exps, exp, day, dailyoutput, colorids)
 
                 phase.end_phase()

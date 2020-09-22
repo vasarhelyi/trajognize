@@ -2,7 +2,7 @@
 
 Usage: plot_fqfood.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat fqfood_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat FQFood object (.txt)
 
 Output is written in subdirectories of input dir, organized according to
 experiment, group and light.

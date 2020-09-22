@@ -56,7 +56,7 @@ from math import pi
 from operator import attrgetter
 
 from .project import *
-from .init import MFix, TrajState, barcode_t, trajectory_t, connections_t
+from .init import MFix, TrajState, Barcode, Trajectory, Connections
 from .algo import get_distance, get_distance_at_position, is_point_inside_ellipse
 from .util import mfix2str
 
@@ -124,7 +124,7 @@ def start_new_traj(trajectories, trajsonframe, currentframe, k, barcode,
     blobs        -- list of all color blobs on the current frame
 
     """
-    trajectories[k].append(trajectory_t(currentframe, k))
+    trajectories[k].append(Trajectory(currentframe, k))
     ti = len(trajectories[k])-1
     append_barcode_to_traj(
             trajectories[k][ti], trajsonframe[currentframe][k], ti,
@@ -592,7 +592,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
     framelimit   -- maximum number of frames to look for (in case of extention mode)
                     this is needed due to the possible high number of recursions
                     and thus slow running time
-    connections  -- connections_t() object containing the list of connections
+    connections  -- Connections() object containing the list of connections
                     used in the recursive calls
     index        -- the index of the last chain to continue
     level        -- level of recursion (inner variable, do not use it)
@@ -619,7 +619,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
             mode = 'b' # backward
             inc = -1
         else:
-            raise ValueError("trajb should be of trajectory_t or 'forward' or 'backward' if string")
+            raise ValueError("trajb should be of Trajectory or 'forward' or 'backward' if string")
     # TODO: should be or should not be a switch to connection mode from forward/backward
     # if a chosen neighbor is found in the vicinity? So far there is no switch.
     if mode == 'b':
@@ -650,7 +650,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
     # this is needed because of this: http://effbot.org/zone/default-values.htm
     lastconn = []
     if level == 0:
-        connections = connections_t(toframe)
+        connections = Connections(toframe)
         index = -1
 
 #    print(mode, colorids[k].strid, "level", level, "f%d-%d" % (fromframe, toframe), "flimit", framelimit, "fflimit", connections.fromframelimit, "Nconns", len(connections.data))
@@ -1033,7 +1033,7 @@ def change_colorid(trajectories, k, i, trajsonframe, barcodes, colorids, blobs):
     for frame in range(traj.firstframe, trajlastframe(traj) + 1):
         # initialize
         barcode = barcodes[frame][k][traj.barcodeindices[i]]
-        barcodes[frame][kk].append(barcode_t(
+        barcodes[frame][kk].append(Barcode(
                 barcode.centerx, barcode.centery, barcode.orientation,
                 barcode.mfix, list(barcode.blobindices)))
         ii = len(barcodes[frame][kk]) - 1
@@ -1122,7 +1122,7 @@ def fill_connection_with_nub(conn, k, trajectories, trajsonframe, barcodes, colo
 
                 # not found, create virtual barcode with same params as last one
                 if not found:
-                    candidate = barcode_t(
+                    candidate = Barcode(
                             oldbarcode.centerx, oldbarcode.centery,
                             oldbarcode.orientation, MFix.VIRTUAL | MFix.CHOSEN)
                     barcodes[frame][oldkk].append(candidate)
@@ -1433,7 +1433,7 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
     colorids     -- global colorid database created by parse_colorid_file()
     barcodes     -- global list of all barcodes
     blobs        -- global list of all color blobs
-    settings     -- find_best_trajectories_settings_t class for settings
+    settings     -- FindBestTrajectoriesSettings class for settings
 
     """
 
@@ -1653,7 +1653,7 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
         barcode = barcodes[traj.firstframe][k][traj.barcodeindices[0]]
         if not simulate:
             for frame in range(traj.firstframe):
-                barcodes[frame][k].append(barcode_t(
+                barcodes[frame][k].append(Barcode(
                     barcode.centerx, barcode.centery,
                     barcode.orientation, MFix.VIRTUAL | MFix.CHOSEN))
                 trajsonframe[frame][k].add(i)
@@ -1691,7 +1691,7 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
                     do /= (b - a)
                     j = 1
                     for frame in range(a+1, b):
-                        barcodes[frame][k].append(barcode_t(
+                        barcodes[frame][k].append(Barcode(
                                 barcodea.centerx + j*dx,
                                 barcodea.centery + j*dy,
                                 barcodea.orientation + j*do,
@@ -1710,7 +1710,7 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
         barcode = barcodes[trajlastframe(traj)][k][traj.barcodeindices[-1]]
         if not simulate:
             for frame in range(trajlastframe(traj)+1, len(trajsonframe)):
-                barcodes[frame][k].append(barcode_t(
+                barcodes[frame][k].append(Barcode(
                     barcode.centerx, barcode.centery,
                     barcode.orientation, MFix.VIRTUAL | MFix.CHOSEN))
                 trajsonframe[frame][k].add(i)

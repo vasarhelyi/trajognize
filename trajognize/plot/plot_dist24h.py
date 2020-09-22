@@ -2,7 +2,7 @@
 
 Usage: plot_dist24h.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat dist24h_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat Dist24h object (.txt)
 
 Use autorun.sh to create symbolic links to a common directory before running
 this script in the common directory.

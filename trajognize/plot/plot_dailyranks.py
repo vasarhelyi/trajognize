@@ -6,7 +6,7 @@ trajognize.stat (reordered) outputs in the following formats:
 
 Usage: plot_dailyranks.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat dailyfqobj_t object (.txt),
+where inputfile(s) is/are the output of trajognize.stat DailyFQObj object (.txt),
 containing all dailyfqobj, cumulfqobj and movavgfqobj type results.
 
 Output is written in subdirectories of input dir, organized according to

@@ -7,7 +7,7 @@ import datetime
 import xml.dom.minidom
 from math import radians, sqrt
 
-from .init import color_blob_t, color_blobe_t, md_blob_t, rat_blob_t, colorid_t, barcode_t
+from .init import ColorBlob, ColorBlobE, MDBlob, RatBlob, ColorID, Barcode
 from .util import exit, strid2coloridindex
 
 
@@ -95,7 +95,7 @@ def parse_colorid_file(inputfile='misc/5-3_28patek.xml'):
                  <chip id="RGB" symbol="13" />
 
     Return value:
-    tuple containing used colorids as colorid_t elements
+    tuple containing used colorids as ColorID elements
 
     """
     try:
@@ -104,7 +104,7 @@ def parse_colorid_file(inputfile='misc/5-3_28patek.xml'):
         print("ERROR: could not open colorid file.")
         return None
     colorids = []
-    tempid = colorid_t('', '')
+    tempid = ColorID('', '')
     for node in dom.getElementsByTagName('chip'):
         tempid = None
         tempsymbol = None
@@ -115,7 +115,7 @@ def parse_colorid_file(inputfile='misc/5-3_28patek.xml'):
                 tempsymbol = int(value)
         if tempid is None or tempsymbol is None:
             exit('error in .xml file', 1)
-        colorids.append(colorid_t(tempid, tempsymbol))
+        colorids.append(ColorID(tempid, tempsymbol))
 
     return colorids
 
@@ -129,9 +129,9 @@ def parse_blob_file(inputfile, lastframe=None):
 
     Return value:
     full data tuple (blob, md, rat), where:
-        blob[framenum][index] is a color_blob_t object
-        md[framenum][index]   is a md_blob_t object
-        rat[framenum][index]  is a rat_blob_t object
+        blob[framenum][index] is a ColorBlob object
+        md[framenum][index]   is a MDBlob object
+        rat[framenum][index]  is a RatBlob object
 
         Examples:
             blob[6][10].centerx means 6th frame, 10th blob center x coordinate
@@ -183,7 +183,7 @@ def parse_blob_file(inputfile, lastframe=None):
                 centerx = float(linesplit[j+1])
                 centery = float(linesplit[j+2])
                 radius = float(linesplit[j+3][:-1])
-                color_blobs[framenum].append(color_blob_t(color, centerx, centery, radius, []))
+                color_blobs[framenum].append(ColorBlob(color, centerx, centery, radius, []))
                 j += linetypes[linetype]
         elif linetype == 'BLOBE':
             #if framenum != len(color_blobs):
@@ -197,7 +197,7 @@ def parse_blob_file(inputfile, lastframe=None):
                 axisB = float(linesplit[j+4])
                 radius = sqrt(axisA*axisB)
                 orientation = radians(float(linesplit[j+5][:-1])) # [deg]->[rad]
-                color_blobs[framenum].append(color_blobe_t(color, centerx, centery, radius, axisA, axisB, orientation, []))
+                color_blobs[framenum].append(ColorBlobE(color, centerx, centery, radius, axisA, axisB, orientation, []))
                 j += linetypes[linetype]
         elif linetype == 'MD':
             #if framenum != len(md_blobs):
@@ -209,7 +209,7 @@ def parse_blob_file(inputfile, lastframe=None):
                 axisA = float(linesplit[j+2])
                 axisB = float(linesplit[j+3])
                 orientation = radians(float(linesplit[j+4][:-1])) # [deg]->[rad]
-                md_blobs[framenum].append(md_blob_t(centerx, centery, axisA, axisB, orientation))
+                md_blobs[framenum].append(MDBlob(centerx, centery, axisA, axisB, orientation))
                 j += linetypes[linetype]
         elif linetype == 'RAT':
             #if framenum != len(rat_blobs):
@@ -221,7 +221,7 @@ def parse_blob_file(inputfile, lastframe=None):
                 axisA = float(linesplit[j+2])
                 axisB = float(linesplit[j+3])
                 orientation = radians(float(linesplit[j+4][:-1])) # [deg]->[rad]
-                rat_blobs[framenum].append(rat_blob_t(centerx, centery, axisA, axisB, orientation))
+                rat_blobs[framenum].append(RatBlob(centerx, centery, axisA, axisB, orientation))
                 j += linetypes[linetype]
 
     return (color_blobs, md_blobs, rat_blobs)
@@ -287,7 +287,7 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
 
     Return value:
     list of barcodes organized like this:
-        barcodes[framenum][coloridindex][index] is a barcode_t object
+        barcodes[framenum][coloridindex][index] is a Barcode object
 
     """
     # get number of frames quickly
@@ -324,7 +324,7 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
         barcodecount = int(linesplit[1])
         j = 2
         for i in range(barcodecount):
-            barcode = barcode_t(
+            barcode = Barcode(
                     float(linesplit[j+1]),          # centerx
                     float(linesplit[j+2]),          # centery
                     radians(float(linesplit[j+5])), # orientation [deg]->[rad]

@@ -2,7 +2,7 @@
 
 Usage: plot_dailyobj.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat dailyobj_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat DailyObj object (.txt)
 
 Use autorun.sh to create symbolic links to a common directory before running
 this script in the common directory.

@@ -2,7 +2,7 @@
 
 Usage: plot_aa.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat aa_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat AA object (.txt)
 
 Output is written in subdirectories sorted according to exp, group and light.
 

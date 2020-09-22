@@ -2,7 +2,7 @@
 
 Usage: plot_dist24hobj.py inputfile(s)
 
-where inputfile(s) is/are the output of trajognize.stat dist24hobj_t object (.txt)
+where inputfile(s) is/are the output of trajognize.stat Dist24hObj object (.txt)
 
 Use autorun.sh to create symbolic links to a common directory before running
 this script in the common directory.

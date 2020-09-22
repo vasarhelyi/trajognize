@@ -118,8 +118,8 @@ def find_md_under_blobs(color_blobs, md_blobs):
     """Fill blob's mdindices list if there is a motion blob under the blob.
 
     Keyword arguments:
-    color_blobs -- list of all blobs (color_blob_t) from the current frame
-    md_blobs -- list of all blobs (color_blob_t) from the current frame
+    color_blobs -- list of all blobs (ColorBlob) from the current frame
+    md_blobs -- list of all blobs (ColorBlob) from the current frame
 
     """
     mdindices = [-1 for i in range(len(color_blobs))]
