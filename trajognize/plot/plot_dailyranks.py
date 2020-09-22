@@ -16,8 +16,7 @@ experiment, group, light and object.
 
 import os, subprocess, sys, glob, numpy
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 try:
@@ -124,8 +123,8 @@ def main(argv=[]):
         maxcol = len(strids)+1
         script = get_gnuplot_script(txtfile, outputfile, outputfileabsgrad, name,
                     maxcol, exp, datatype, index,
-                    get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
-                    *get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
+                    plot.get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
+                    *plot.get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
         with open(gnufile, 'w') as f:
             f.write(script)
         try:
@@ -151,8 +150,8 @@ def main(argv=[]):
         os.path.dirname(trajognize.__file__), '../misc/paintdates.dat'))
     for inputfile in inputfiles:
         # reordered file should be the input
-        (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
-        exp = get_exp_from_filename(inputfile)
+        (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
+        exp = plot.get_exp_from_filename(inputfile)
         # initialize daily rank database, where key is [(group, object)][strid]
         dailyranks = {}
         dailynormDS = {}
@@ -168,7 +167,7 @@ def main(argv=[]):
             # symmetry, transitivity
             if name.startswith(datatype) and name.endswith("_F"):
                 # calculate dominance indices
-                datadict = convert_matrixdata_to_dict(alldata[index])
+                datadict = plot.convert_matrixdata_to_dict(alldata[index])
                 normDS = trajognize.calc.hierarchy.deVries_modified_Davids_score(datadict)
                 BBS = trajognize.calc.hierarchy.BBS_scale_score(datadict)
                 LDI = trajognize.calc.hierarchy.Lindquist_dominance_index(datadict)

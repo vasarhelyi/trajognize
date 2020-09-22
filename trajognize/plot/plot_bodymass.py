@@ -11,8 +11,7 @@ and groups.
 
 import os, subprocess, sys, glob, re, numpy
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 try:
@@ -94,9 +93,9 @@ def main(argv=[]):
     for inputfile in inputfiles:
         print("parsing", os.path.split(inputfile)[1])
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
-        (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+        (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
         statsum_basedir = os.path.split(head)[0]
-        exp = get_exp_from_filename(inputfile)
+        exp = plot.get_exp_from_filename(inputfile)
         for index in range(len(alldata)):
             # get categories
             headerline = alldata[index][0]
@@ -115,8 +114,8 @@ def main(argv=[]):
             maxcol = len(headerline)
             script = get_gnuplot_script(inputfile, outputfile, basename, name,
                     maxcol, exp, index,
-                    get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
-                    *get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
+                    plot.get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
+                    *plot.get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
             with open(gnufile, 'w') as f:
                 f.write(script)
             try:

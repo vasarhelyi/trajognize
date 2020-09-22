@@ -18,8 +18,7 @@ import os, subprocess, sys, glob, numpy
 import trajognize.parse
 import trajognize.corr.util
 
-from .plot import *
-
+from . import plot
 from . import plot_matrixmap
 from . import spgm
 
@@ -85,9 +84,9 @@ def main(argv=[]):
     outdirs = []
     corrfiles = []
     for inputfile in inputfiles:
-        (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+        (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
         statsum_basedir = os.path.split(head)[0]
-        exp = get_exp_from_filename(inputfile)
+        exp = plot.get_exp_from_filename(inputfile)
         # parse data file
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
         # TODO: common cbrange for F, C, D

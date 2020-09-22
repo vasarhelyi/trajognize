@@ -11,8 +11,7 @@ experiments.
 
 import os, subprocess, sys, glob
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 GNUPLOT_TEMPLATE = """#!/usr/bin/gnuplot
@@ -57,10 +56,10 @@ def main(argv=[]):
     outdirs = []
     for inputfile in inputfiles:
         print("parsing", os.path.split(inputfile)[1])
-        headers = grep_headers_from_file(inputfile, "veldist_")
-        exp = get_exp_from_filename(inputfile)
+        headers = plot.grep_headers_from_file(inputfile, "veldist_")
+        exp = plot.get_exp_from_filename(inputfile)
         # define output directory
-        (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+        (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
         outdir = os.path.join(head, plotdir, exp)
         if not os.path.isdir(outdir): os.makedirs(outdir)
         # if this is a new output directory, clear SPGM descriptions

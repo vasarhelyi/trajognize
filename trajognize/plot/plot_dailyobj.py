@@ -14,8 +14,7 @@ experiment, group, light and object type.
 
 import os, subprocess, sys, glob
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 try:
@@ -113,8 +112,8 @@ def main(argv=[]):
     for inputfile in inputfiles:
         print("parsing", os.path.split(inputfile)[1])
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
-        headers = grep_headers_from_file(inputfile, "dailyobj")
-        exp = get_exp_from_filename(inputfile)
+        headers = plot.grep_headers_from_file(inputfile, "dailyobj")
+        exp = plot.get_exp_from_filename(inputfile)
         for index in range(len(headers)):
             maxcol = len(headers[index])-5 # _avg, _std, but all is _avg, _std, _num, absgrad_avg, absgrad_std
             # get categories
@@ -122,7 +121,7 @@ def main(argv=[]):
             (light, object, group) = get_categories_from_name(name)
 
             # define output directory
-            (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+            (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
             statsum_basedir = os.path.split(head)[0]
             outdir = os.path.join(head, plotdir, exp, group, light, object)
             if not os.path.isdir(outdir): os.makedirs(outdir)
@@ -138,8 +137,8 @@ def main(argv=[]):
             outputfileabsgrad = outputfilecommon + ".absgrad.png"
             script = get_gnuplot_script(inputfile, outputfile, outputfileall,
                     outputfileabsgrad, name, index, maxcol, exp, object,
-                    get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
-                    *get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
+                    plot.get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
+                    *plot.get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
             with open(gnufile, 'w') as f:
                 f.write(script)
             try:

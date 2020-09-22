@@ -20,7 +20,7 @@ import trajognize.parse
 import trajognize.calc.reorder_matrixfile_eades
 import trajognize.corr.util
 
-from .plot import *
+from . import plot
 from . import plot_matrixmap
 from . import plot_graph
 from . import spgm
@@ -61,9 +61,9 @@ def main(argv=[]):
     for inputfile in inputfiles:
         # create reordered file
         (orderedfile, params) = trajognize.calc.reorder_matrixfile_eades.main([inputfile])
-        (head, tail, plotdir) = get_headtailplot_from_filename(orderedfile)
+        (head, tail, plotdir) = plot.get_headtailplot_from_filename(orderedfile)
         statsum_basedir = os.path.split(os.path.split(head)[0])[0]
-        exp = get_exp_from_filename(orderedfile)
+        exp = plot.get_exp_from_filename(orderedfile)
         # parse data file
         alldata = trajognize.parse.parse_stat_output_file(orderedfile)
         # TODO: common cbrange for F, C, D

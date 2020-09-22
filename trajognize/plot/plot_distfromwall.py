@@ -11,8 +11,7 @@ experiment, group, light condition, real/virtual state.
 
 import os, subprocess, sys, glob, re
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 try:
@@ -137,10 +136,10 @@ def main(argv=[]):
     for inputfile in inputfiles:
         print("parsing", os.path.split(inputfile)[1])
         alldata = trajognize.parse.parse_stat_output_file(inputfile)
-        headers = grep_headers_from_file(inputfile, "distfromwall_")
-        (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+        headers = plot.grep_headers_from_file(inputfile, "distfromwall_")
+        (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
         statsum_basedir = os.path.split(head)[0]
-        exp = get_exp_from_filename(inputfile)
+        exp = plot.get_exp_from_filename(inputfile)
         # plot all indices
         for index in range(len(headers)):
             # get categories
@@ -176,13 +175,13 @@ def main(argv=[]):
                 outputfileabsgrad = outputfilecommon + ".absgrad.png"
                 script = get_gnuplot_script_avg(inputfile, outputfile,
                         outputfileabsgrad, name, maxcol, exp, index,
-                        get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
-                        *get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
+                        plot.get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
+                        *plot.get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
             elif avgdist == "dist":
                 maxcol = len(headers[index])
                 script = get_gnuplot_script_dist(inputfile, outputfile, name,
                         maxcol, exp, index,
-                        get_gnuplot_paintdate_str(exps, exp[4:], paintdates,
+                        plot.get_gnuplot_paintdate_str(exps, exp[4:], paintdates,
                         GNUPLOT_TEMPLATE_PAINTDATE_DST))
             with open(gnufile, 'w') as f:
                 f.write(script)

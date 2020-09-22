@@ -11,8 +11,7 @@ experiment, group, light condition, real/virtual state, depending on plotted sta
 
 import os, subprocess, sys, glob, re
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 try:
@@ -101,9 +100,9 @@ def main(argv=[]):
     for inputfile in inputfiles:
         print("parsing", os.path.split(inputfile)[1])
         # calc_heatmap_dailyoutput.py output file should be the input
-        headers = grep_headers_from_file(inputfile, "heatmap_dailyoutput_")
-        (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
-        expgroup = get_exp_from_filename(inputfile)
+        headers = plot.grep_headers_from_file(inputfile, "heatmap_dailyoutput_")
+        (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
+        expgroup = plot.get_exp_from_filename(inputfile)
         (exp, group) = expgroup.split("__")
         group = group[6:] # remove 'group_'
         # plot all indices
@@ -127,8 +126,8 @@ def main(argv=[]):
             maxcol = len(headers[index])-2 # absgrad_avg, absgrad_std
             script = get_gnuplot_script(inputfile, outputfile, outputfileabsgrad,
                     name, maxcol, expgroup, datatype, index,
-                    get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
-                    *get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
+                    plot.get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
+                    *plot.get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
             with open(gnufile, 'w') as f:
                 f.write(script)
             try:

@@ -2,8 +2,7 @@
 
 import os, subprocess, sys, glob, argparse
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 try:
@@ -137,7 +136,7 @@ def main(argv=[]):
     inputfile = options.inputfile
     index = options.index
     # define output directory and filename
-    (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+    (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
     if options.outputpath is None:
         outdir = os.path.join(head, plotdir)
     else:
@@ -153,7 +152,7 @@ def main(argv=[]):
     colsumfile = outputfilecommon + ".colsumfile"
     add_sum_to_matrix_file(inputfile, inputfilesum)
     # get other variables
-    exp = get_exp_from_filename(inputfile)
+    exp = plot.get_exp_from_filename(inputfile)
     id_count = len(headerline) - 1
     gnufile = outputfilecommon + ".gnu"
     outputfile = outputfilecommon + ".png"

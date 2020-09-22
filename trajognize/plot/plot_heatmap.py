@@ -17,8 +17,7 @@ selected for a given output directory in one run.
 
 import os, subprocess, sys, glob, re
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 try:
@@ -245,9 +244,9 @@ def main(argv=[]):
     intdistdata = [] # (outdir, name(common), input, strid, exp)
     for inputfile in inputfiles:
         print("parsing", os.path.split(inputfile)[1])
-        stat = get_stat_from_filename(inputfile)
-        exp = get_exp_from_filename(inputfile)
-        headers = grep_headers_from_file(inputfile, stat)
+        stat = plot.get_stat_from_filename(inputfile)
+        exp = plot.get_exp_from_filename(inputfile)
+        headers = plot.grep_headers_from_file(inputfile, stat)
         (minvalue, maxvalue) = get_minmax_from_file(inputfile) # TODO: this can take quite some time...
         # plot heatmaps
         for index in range(len(headers)):
@@ -265,7 +264,7 @@ def main(argv=[]):
                     group = experiment['groupid'][strid]
 
             # define output directory and filename
-            (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+            (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
             outdir = os.path.join(head, plotdir, exp, group, light, realvirt)
             if not os.path.isdir(outdir): os.makedirs(outdir)
             # if this is a new output directory, clear SPGM descriptions

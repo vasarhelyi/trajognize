@@ -4,8 +4,7 @@ based layout of Enys."""
 
 import os, sys, glob, argparse, igraph, numpy
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 try:
@@ -61,7 +60,7 @@ def main(argv=[]):
     inputfile = options.inputfile
     index = options.index
     # define output directory and filename
-    (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+    (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
     if options.outputpath is None:
         outdir = os.path.join(head, plotdir)
     else:
@@ -77,7 +76,7 @@ def main(argv=[]):
     inputfilencol = outputfilecommon + ".ncol"
     if not create_ncol_file(data, inputfilencol): return
     # get other variables
-    exp = get_exp_from_filename(inputfile)
+    exp = plot.get_exp_from_filename(inputfile)
     id_count = len(headerline) - 1
     outputfile = outputfilecommon + ".graph.png"
 

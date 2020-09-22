@@ -14,8 +14,7 @@ experiment and real/virt state.
 
 import os, subprocess, sys, glob
 
-from .plot import *
-
+from . import plot
 from . import spgm
 
 try:
@@ -133,8 +132,8 @@ def main(argv=[]):
     outdirs = []
     for inputfile in inputfiles:
         print("parsing", os.path.split(inputfile)[1])
-        headers = grep_headers_from_file(inputfile, "dist24hobj")
-        exp = get_exp_from_filename(inputfile)
+        headers = plot.grep_headers_from_file(inputfile, "dist24hobj")
+        exp = plot.get_exp_from_filename(inputfile)
         for index in range(len(headers)):
             maxcol = len(headers[index])-3 # _avg, _std, but all is _avg, _std, _num
             # get categories
@@ -142,7 +141,7 @@ def main(argv=[]):
             (weekday, object, group) = get_categories_from_name(name)
 
             # define output directory
-            (head, tail, plotdir) = get_headtailplot_from_filename(inputfile)
+            (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
             outdir = os.path.join(head, plotdir, exp, group, object)
             if not os.path.isdir(outdir): os.makedirs(outdir)
             # if this is a new output directory, clear SPGM descriptions
