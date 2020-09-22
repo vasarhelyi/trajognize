@@ -27,7 +27,6 @@ first day, 1st to the second day of the video.
 import os, numpy
 from math import hypot, atan2, cos, sin, radians
 # imports from base class
-import trajognize.project
 import trajognize.init
 import trajognize.util
 import trajognize.algo
@@ -51,7 +50,7 @@ def subclasses_heatmap(colorids):
 
 
 def calculate_heatmap(barcodes, light_log, cage_log, entrytimes, starttime,
-    colorids, experiment, subclassindex, dailyoutput):
+    colorids, project_settings, experiment, subclassindex, dailyoutput):
     """Get barcode position distributions as heatmaps for all light conditions
     and real/virt states.
 
@@ -66,6 +65,8 @@ def calculate_heatmap(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -78,19 +79,21 @@ def calculate_heatmap(barcodes, light_log, cage_log, entrytimes, starttime,
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     day = 0
     if dailyoutput:
-        heatmaps = [init.HeatMap(), init.HeatMap()]
+        heatmaps = [init.HeatMap(project_settings), init.HeatMap(project_settings)]
         # do not calculate anything if we are not part of an experiment
         if experiment is None:
             return heatmaps
     else:
-        heatmaps = [init.HeatMap()]
+        heatmaps = [init.HeatMap(project_settings)]
         # do not calculate anything if we are not part of an experiment
         if experiment is None:
             return heatmaps[0]
     id_count = len(barcodes[0])
     for currentframe in range(len(barcodes)):
         # get current date
-        datetimeatframe = trajognize.util.get_datetime_at_frame(starttime, currentframe)
+        datetimeatframe = trajognize.util.get_datetime_at_frame(
+            starttime, currentframe, project_settings.FPS
+        )
         # check day lapse
         if dailyoutput and not day and datetimeatframe.date() > starttime.date():
             day = 1
@@ -99,7 +102,7 @@ def calculate_heatmap(barcodes, light_log, cage_log, entrytimes, starttime,
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get virtual subclass
@@ -116,13 +119,13 @@ def calculate_heatmap(barcodes, light_log, cage_log, entrytimes, starttime,
                 # get center and skip bad ones: nan or outside image area
                 centerx = barcode.centerx
                 centery = barcode.centery
-                if trajognize.project.correctcage:
-                    centerx += trajognize.project.cage_center.x - cagecenter[0]
-                    centery += trajognize.project.cage_center.y - cagecenter[1]
-                if centerx != centerx or centerx >= trajognize.project.image_size.x or centerx < 0: continue
-                if centery != centery or centery >= trajognize.project.image_size.y or centery < 0: continue
+                if project_settings.correct_cage:
+                    centerx += project_settings.cage_center.x - cagecenter[0]
+                    centery += project_settings.cage_center.y - cagecenter[1]
+                if centerx != centerx or centerx >= project_settings.image_size.x or centerx < 0: continue
+                if centery != centery or centery >= project_settings.image_size.y or centery < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(centerx, centery)
                     group = experiment['groupid'][colorids[k].strid]
                     for poly in experiment['wallall'][group]:
@@ -154,7 +157,7 @@ def subclasses_motionmap(colorids):
 
 
 def calculate_motionmap(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment, subclassindex):
+        colorids, project_settings, experiment, subclassindex):
     """Get moving barcode position distributions as motion heatmaps
     for all light conditions and real/virt states.
 
@@ -169,6 +172,8 @@ def calculate_motionmap(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -177,7 +182,7 @@ def calculate_motionmap(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
-    motionmaps = init.MotionMap()
+    motionmaps = init.MotionMap(project_settings)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return motionmaps
@@ -188,11 +193,11 @@ def calculate_motionmap(barcodes, light_log, cage_log, entrytimes, starttime,
     for currentframe in range(1, len(barcodes)):
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes,
-                trajognize.util.get_datetime_at_frame(starttime, currentframe)):
+                trajognize.util.get_datetime_at_frame(starttime, currentframe, project_settings.FPS)):
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get chosen barcodes for current frame
@@ -211,13 +216,13 @@ def calculate_motionmap(barcodes, light_log, cage_log, entrytimes, starttime,
                 # get center and skip bad ones: nan or outside image area
                 cx = barcode.centerx
                 cy = barcode.centery
-                if trajognize.project.correctcage:
-                    cx += trajognize.project.cage_center.x - cagecenter[0]
-                    cy += trajognize.project.cage_center.y - cagecenter[1]
-                if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-                if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+                if project_settings.correct_cage:
+                    cx += project_settings.cage_center.x - cagecenter[0]
+                    cy += project_settings.cage_center.y - cagecenter[1]
+                if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+                if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(cx, cy)
                     group = experiment['groupid'][colorids[k].strid]
                     for poly in experiment['wallall'][group]:
@@ -228,13 +233,13 @@ def calculate_motionmap(barcodes, light_log, cage_log, entrytimes, starttime,
                 # do the same for prev barcode
                 prevcx = prevbarcode.centerx
                 prevcy = prevbarcode.centery
-                if trajognize.project.correctcage:
-                    prevcx += trajognize.project.cage_center.x - prevcagecenter[0]
-                    prevcy += trajognize.project.cage_center.y - prevcagecenter[1]
-                if prevcx != prevcx or prevcx >= trajognize.project.image_size.x or prevcx < 0: continue
-                if prevcy != prevcy or prevcy >= trajognize.project.image_size.y or prevcy < 0: continue
+                if project_settings.correct_cage:
+                    prevcx += project_settings.cage_center.x - prevcagecenter[0]
+                    prevcy += project_settings.cage_center.y - prevcagecenter[1]
+                if prevcx != prevcx or prevcx >= project_settings.image_size.x or prevcx < 0: continue
+                if prevcy != prevcy or prevcy >= project_settings.image_size.y or prevcy < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(prevcx, prevcy)
                     for poly in experiment['wallall'][group]:
                         if util.is_inside_polygon(pos, poly):
@@ -280,7 +285,7 @@ def subclasses_dist24h():
 
 
 def calculate_dist24h(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment, subclassindex):
+        colorids, project_settings, experiment, subclassindex):
     """Calculate 24h time distribution of barcodes.
 
     :param barcodes: global list of barcodes (Barcode)
@@ -294,6 +299,8 @@ def calculate_dist24h(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -303,13 +310,15 @@ def calculate_dist24h(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    dist24h = init.Dist24h(id_count)
+    dist24h = init.Dist24h(project_settings, id_count)
     # get starting time
     secofday = starttime.hour * 3600 + starttime.minute * 60 + starttime.second
     # iterate for all frames
     for currentframe in range(len(barcodes)):
         # get current time
-        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime, currentframe)
+        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime,
+            currentframe, project_settings.FPS
+        )
         # check for weekday (indexed by subclassindex)
         if subclassindex < 7 and subclassindex != datetime_at_frame.weekday():
             continue
@@ -320,9 +329,9 @@ def calculate_dist24h(barcodes, light_log, cage_log, entrytimes, starttime,
         cagecenter = cage_at_frame(currentframe)
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get current frame in min (TODO: use datetime_at_frame instead)
-        bin = ((secofday + currentframe/trajognize.project.FPS) % 86400 ) / 60
+        bin = ((secofday + currentframe/project_settings.FPS) % 86400 ) / 60
         # get chosen barcodes
         chosens = util.get_chosen_barcodes(barcodes[currentframe])
         # store number of barcodes in the proper time bin
@@ -332,13 +341,13 @@ def calculate_dist24h(barcodes, light_log, cage_log, entrytimes, starttime,
             barcode = chosens[k]
             centerx = barcode.centerx
             centery = barcode.centery
-            if trajognize.project.correctcage:
-                centerx += trajognize.project.cage_center.x - cagecenter[0]
-                centery += trajognize.project.cage_center.y - cagecenter[1]
-            if centerx != centerx or centerx >= trajognize.project.image_size.x or centerx < 0: continue
-            if centery != centery or centery >= trajognize.project.image_size.y or centery < 0: continue
+            if project_settings.correct_cage:
+                centerx += project_settings.cage_center.x - cagecenter[0]
+                centery += project_settings.cage_center.y - cagecenter[1]
+            if centerx != centerx or centerx >= project_settings.image_size.x or centerx < 0: continue
+            if centery != centery or centery >= project_settings.image_size.y or centery < 0: continue
             # filter results based on whether pateks are inside their own cage/territory
-            if trajognize.project.filter_for_valid_cage:
+            if project_settings.filter_for_valid_cage:
                 pos = trajognize.init.Point(centerx, centery)
                 group = experiment['groupid'][colorids[k].strid]
                 for poly in experiment['wallall'][group]:
@@ -376,7 +385,7 @@ def subclasses_dist24hobj():
 
 
 def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment, subclassindex):
+        colorids, project_settings, experiment, subclassindex):
     """Calculate 24h time distribution of barcodes around interesting objects.
 
     Note that in joined groups when more food/home/water/entrance objects
@@ -394,6 +403,8 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -402,20 +413,22 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     # initialize object
     id_count = len(barcodes[0])
-    dist24hobj = init.Dist24hObj(id_count)
+    dist24hobj = init.Dist24hObj(project_settings, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return dist24hobj
     # initialize light
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
-    tempbarcode = trajognize.init.Barcode()
+    tempbarcode = trajognize.init.Barcode(MCHIPS=project_settings.MCHIPS)
     # get starting time
     secofday = starttime.hour * 3600 + starttime.minute * 60 + starttime.second
     # iterate for all frames
     for currentframe in range(len(barcodes)):
         # get current time
-        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime, currentframe)
+        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime,
+            currentframe, project_settings.FPS
+        )
         # check for weekday (indexed by subclassindex)
         if subclassindex < 7 and subclassindex != datetime_at_frame.weekday():
             continue
@@ -424,11 +437,11 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get current frame in min (TODO: use datetime_at_frame instead)
-        bin = ((secofday + currentframe/trajognize.project.FPS) % 86400 ) / 60
+        bin = ((secofday + currentframe/project_settings.FPS) % 86400 ) / 60
         # get chosen barcodes
         chosens = util.get_chosen_barcodes(barcodes[currentframe])
         # store number of barcodes in the proper time bin
@@ -438,11 +451,11 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
             # get center and skip bad ones: nan or outside image area
             tempbarcode.centerx = chosens[k].centerx
             tempbarcode.centery = chosens[k].centery
-            if trajognize.project.correctcage:
-                tempbarcode.centerx += trajognize.project.cage_center.x - cagecenter[0]
-                tempbarcode.centery += trajognize.project.cage_center.y - cagecenter[1]
-            if tempbarcode.centerx != tempbarcode.centerx or tempbarcode.centerx >= trajognize.project.image_size.x or tempbarcode.centerx < 0: continue
-            if tempbarcode.centery != tempbarcode.centery or tempbarcode.centery >= trajognize.project.image_size.y or tempbarcode.centery < 0: continue
+            if project_settings.correct_cage:
+                tempbarcode.centerx += project_settings.cage_center.x - cagecenter[0]
+                tempbarcode.centery += project_settings.cage_center.y - cagecenter[1]
+            if tempbarcode.centerx != tempbarcode.centerx or tempbarcode.centerx >= project_settings.image_size.x or tempbarcode.centerx < 0: continue
+            if tempbarcode.centery != tempbarcode.centery or tempbarcode.centery >= project_settings.image_size.y or tempbarcode.centery < 0: continue
             # check if barcode is under any object of the group
             num = [0]*len(project.object_types)
             group = experiment['groupid'][strid]
@@ -451,7 +464,7 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
                 if object not in experiment.keys(): continue
                 for objectcenter in experiment[object][group]:
                     if experiments.is_barcode_under_object(tempbarcode, objectcenter,
-                            project.object_areas[object]):
+                            project.object_areas[object], project_settings.image_size):
                         num[i] = 1
                         break
                 else:
@@ -471,7 +484,7 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
 
 
 def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate daily occurrence of barcodes around interesting objects.
 
     Day number is calculated from the beginning of the current experiment.
@@ -491,6 +504,8 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -498,18 +513,20 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     # initialize object
     id_count = len(barcodes[0])
-    dailyobj = init.DailyObj(id_count)
+    dailyobj = init.DailyObj(project_settings, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return dailyobj
     # initialize light
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
-    tempbarcode = trajognize.init.Barcode()
+    tempbarcode = trajognize.init.Barcode(MCHIPS=project_settings.MCHIPS)
     # iterate for all frames
     for currentframe in range(len(barcodes)):
         # get current time
-        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime, currentframe)
+        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime,
+            currentframe, project_settings.FPS
+        )
         # get day
         day = trajognize.stat.experiments.get_days_since_start(experiment, datetime_at_frame)
         # check entry times and skip current frame if not valid
@@ -517,7 +534,7 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get chosen barcodes
@@ -529,11 +546,11 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
             # get center and skip bad ones: nan or outside image area
             tempbarcode.centerx = chosens[k].centerx
             tempbarcode.centery = chosens[k].centery
-            if trajognize.project.correctcage:
-                tempbarcode.centerx += trajognize.project.cage_center.x - cagecenter[0]
-                tempbarcode.centery += trajognize.project.cage_center.y - cagecenter[1]
-            if tempbarcode.centerx != tempbarcode.centerx or tempbarcode.centerx >= trajognize.project.image_size.x or tempbarcode.centerx < 0: continue
-            if tempbarcode.centery != tempbarcode.centery or tempbarcode.centery >= trajognize.project.image_size.y or tempbarcode.centery < 0: continue
+            if project_settings.correct_cage:
+                tempbarcode.centerx += project_settings.cage_center.x - cagecenter[0]
+                tempbarcode.centery += project_settings.cage_center.y - cagecenter[1]
+            if tempbarcode.centerx != tempbarcode.centerx or tempbarcode.centerx >= project_settings.image_size.x or tempbarcode.centerx < 0: continue
+            if tempbarcode.centery != tempbarcode.centery or tempbarcode.centery >= project_settings.image_size.y or tempbarcode.centery < 0: continue
             # check if barcode is under any object of the group
             num = [0]*len(project.object_types)
             group = experiment['groupid'][strid]
@@ -542,7 +559,7 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
                 if object not in experiment.keys(): continue
                 for objectcenter in experiment[object][group]:
                     if experiments.is_barcode_under_object(tempbarcode, objectcenter,
-                            project.object_areas[object]):
+                            project.object_areas[object], project_settings.image_size):
                         num[i] = 1
                         break
                 else:
@@ -561,7 +578,8 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
     return dailyobj
 
 
-def calculate_sameiddist(barcodes, light_log, entrytimes, starttime):
+def calculate_sameiddist(barcodes, light_log, entrytimes, starttime,
+    project_settings):
     """Calculate distributions of number of barcodes of the same ID.
 
     This stat is a debug stat. Final output contains 1 chosen only...
@@ -573,19 +591,21 @@ def calculate_sameiddist(barcodes, light_log, entrytimes, starttime):
     :param entrytimes: dictionary of entry times created by
             trajognize.parse.parse_entry_times()
     :param starttime: datetime of the first frame of the current video
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
 
     """
     light_at_frame = trajognize.util.param_at_frame(light_log)
     id_count = len(barcodes[0])
-    sameiddists = init.SameIDDist(id_count)
+    sameiddists = init.SameIDDist(project_settings, id_count)
     for currentframe in range(len(barcodes)):
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes,
-                trajognize.util.get_datetime_at_frame(starttime, currentframe)):
+                trajognize.util.get_datetime_at_frame(starttime, currentframe, project_settings.FPS)):
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         for k in range(id_count):
             # get number of barcodes
             num = len(barcodes[currentframe][k])
@@ -608,7 +628,7 @@ def calculate_sameiddist(barcodes, light_log, entrytimes, starttime):
 
 
 def calculate_nearestneighbor(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate nearest neighbor occurence matrix.
 
     :param barcodes: global list of barcodes (Barcode)
@@ -622,6 +642,8 @@ def calculate_nearestneighbor(barcodes, light_log, cage_log, entrytimes, startti
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups
             to avoid nearest neighbors through walls. If experiment is None,
             we do not calculate anything.
@@ -638,18 +660,18 @@ def calculate_nearestneighbor(barcodes, light_log, cage_log, entrytimes, startti
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    nearestneighbors = init.NearestNeighbor(id_count)
+    nearestneighbors = init.NearestNeighbor(project_settings, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return nearestneighbors
     for currentframe in range(len(barcodes)):
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes,
-                trajognize.util.get_datetime_at_frame(starttime, currentframe)):
+                trajognize.util.get_datetime_at_frame(starttime, currentframe, project_settings.FPS)):
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get chosen barcodes for current frame
@@ -661,13 +683,13 @@ def calculate_nearestneighbor(barcodes, light_log, cage_log, entrytimes, startti
             barcode = chosens[i]
             cx = barcode.centerx
             cy = barcode.centery
-            if trajognize.project.correctcage:
-                cx += trajognize.project.cage_center.x - cagecenter[0]
-                cy += trajognize.project.cage_center.y - cagecenter[1]
-            if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-            if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+            if project_settings.correct_cage:
+                cx += project_settings.cage_center.x - cagecenter[0]
+                cy += project_settings.cage_center.y - cagecenter[1]
+            if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+            if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
             # filter results based on whether pateks are inside their own cage/territory
-            if trajognize.project.filter_for_valid_cage:
+            if project_settings.filter_for_valid_cage:
                 pos = trajognize.init.Point(cx, cy)
                 group = experiment['groupid'][colorids[i].strid]
                 for poly in experiment['wallall'][group]:
@@ -676,7 +698,7 @@ def calculate_nearestneighbor(barcodes, light_log, cage_log, entrytimes, startti
                 else:
                     continue
             # initialize min distance to something surely too big
-            mindist = trajognize.project.image_size.x + trajognize.project.image_size.y
+            mindist = project_settings.image_size.x + project_settings.image_size.y
             k = None
             for j in range(id_count):
                 if i == j or not chosens[j]: continue
@@ -685,19 +707,20 @@ def calculate_nearestneighbor(barcodes, light_log, cage_log, entrytimes, startti
                         colorids[i].strid, colorids[j].strid, experiment):
                     continue
                 # check for cage wall between them
-                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter):
+                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter,
+                        project_settings.use_cage):
                     continue
                 # get center and skip bad ones: nan or outside image area
                 barcode = chosens[j]
                 cx = barcode.centerx
                 cy = barcode.centery
-                if trajognize.project.correctcage:
-                    cx += trajognize.project.cage_center.x - cagecenter[0]
-                    cy += trajognize.project.cage_center.y - cagecenter[1]
-                if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-                if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+                if project_settings.correct_cage:
+                    cx += project_settings.cage_center.x - cagecenter[0]
+                    cy += project_settings.cage_center.y - cagecenter[1]
+                if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+                if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(cx, cy)
                     for poly in experiment['wallall'][group]:
                         if util.is_inside_polygon(pos, poly):
@@ -728,7 +751,7 @@ def calculate_nearestneighbor(barcodes, light_log, cage_log, entrytimes, startti
 
 
 def calculate_neighbor(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate neighbor matrices and neighbor number distributions.
 
     :param barcodes: global list of barcodes (Barcode)
@@ -742,6 +765,8 @@ def calculate_neighbor(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups
             to avoid nearest neighbors through walls. If experiment is None,
             we do not calculate anything.
@@ -757,20 +782,22 @@ def calculate_neighbor(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    neighbors = init.Neighbor(id_count)
+    neighbors = init.Neighbor(project_settings, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return neighbors
     for currentframe in range(len(barcodes)):
         # get current day
-        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime, currentframe)
+        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime,
+            currentframe, project_settings.FPS
+        )
         day = trajognize.stat.experiments.get_days_since_start(experiment, datetime_at_frame)
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes, datetime_at_frame):
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get chosen barcodes for current frame
@@ -782,13 +809,13 @@ def calculate_neighbor(barcodes, light_log, cage_log, entrytimes, starttime,
             # get center and skip bad ones: nan or outside image area
             cx = barcode.centerx
             cy = barcode.centery
-            if trajognize.project.correctcage:
-                cx += trajognize.project.cage_center.x - cagecenter[0]
-                cy += trajognize.project.cage_center.y - cagecenter[1]
-            if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-            if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+            if project_settings.correct_cage:
+                cx += project_settings.cage_center.x - cagecenter[0]
+                cy += project_settings.cage_center.y - cagecenter[1]
+            if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+            if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
             # filter results based on whether pateks are inside their own cage/territory
-            if trajognize.project.filter_for_valid_cage:
+            if project_settings.filter_for_valid_cage:
                 pos = trajognize.init.Point(cx, cy)
                 group = experiment['groupid'][colorids[i].strid]
                 for poly in experiment['wallall'][group]:
@@ -805,19 +832,20 @@ def calculate_neighbor(barcodes, light_log, cage_log, entrytimes, starttime,
                         colorids[i].strid, colorids[j].strid, experiment):
                     continue
                 # check for cage wall between them
-                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter):
+                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter,
+                        project_settings.use_cage):
                     continue
                 barcode = chosens[j]
                 # get center and skip bad ones: nan or outside image area
                 cx = barcode.centerx
                 cy = barcode.centery
-                if trajognize.project.correctcage:
-                    cx += trajognize.project.cage_center.x - cagecenter[0]
-                    cy += trajognize.project.cage_center.y - cagecenter[1]
-                if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-                if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+                if project_settings.correct_cage:
+                    cx += project_settings.cage_center.x - cagecenter[0]
+                    cy += project_settings.cage_center.y - cagecenter[1]
+                if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+                if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(cx, cy)
                     for poly in experiment['wallall'][group]:
                         if util.is_inside_polygon(pos, poly):
@@ -836,7 +864,7 @@ def calculate_neighbor(barcodes, light_log, cage_log, entrytimes, starttime,
 
 
 def calculate_dailyfqobj(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate daily generalized FQ matrix, i.e. pairwise OR norm over/queuing
     object relations.
 
@@ -851,6 +879,8 @@ def calculate_dailyfqobj(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -860,14 +890,14 @@ def calculate_dailyfqobj(barcodes, light_log, cage_log, entrytimes, starttime,
     fqobj stat.
 
     """
-    dailyfqobj = init.DailyFQObj(len(colorids))
+    dailyfqobj = init.DailyFQObj(project_settings, len(colorids))
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
-            colorids, experiment, dailyfqobj)
+            colorids, project_settings, experiment, dailyfqobj)
     return dailyfqobj
 
 
 def calculate_fqfood(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate real feeding-queuing matrix, i.e. pairwise OR norm
     feeding/queuing relations for real feeding times (and no friday).
 
@@ -882,6 +912,8 @@ def calculate_fqfood(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -890,14 +922,14 @@ def calculate_fqfood(barcodes, light_log, cage_log, entrytimes, starttime,
     extra parameter. For more details see fqobj stat.
 
     """
-    fqfood = init.FQFood(len(colorids))
+    fqfood = init.FQFood(project_settings, len(colorids))
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
-            colorids, experiment, None, fqfood)
+            colorids, project_settings, experiment, None, fqfood)
     return fqfood
 
 
 def calculate_fqwhilef(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate how many others are feeding or queuing while one is feeding
     during real feeding times (and no friday).
 
@@ -912,6 +944,8 @@ def calculate_fqwhilef(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -920,14 +954,15 @@ def calculate_fqwhilef(barcodes, light_log, cage_log, entrytimes, starttime,
     extra parameter. For more details see fqobj stat.
 
     """
-    fqwhilef = init.FQWhileF(len(colorids))
+    fqwhilef = init.FQWhileF(project_settings, len(colorids))
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
-            colorids, experiment, None, None, fqwhilef)
+            colorids, project_settings, experiment, None, None, fqwhilef)
     return fqwhilef
 
 
 def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment, dailyfqobj=None, fqfood=None, fqwhilef=None):
+        colorids, project_settings, experiment, dailyfqobj=None, fqfood=None,
+        fqwhilef=None):
     """Calculate generalized FQ matrix, i.e. pairwise OR norm over/queuing
     object relations.
 
@@ -942,6 +977,8 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -965,13 +1002,15 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    fqobj = init.FQObj(id_count)
+    fqobj = init.FQObj(project_settings, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return fqobj
     for currentframe in range(len(barcodes)):
         # get current time
-        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime, currentframe)
+        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime,
+            currentframe, project_settings.FPS
+        )
         # get day if needed
         if dailyfqobj is not None:
             day = trajognize.stat.experiments.get_days_since_start(experiment, datetime_at_frame)
@@ -985,7 +1024,7 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
                 continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get chosen barcodes for current frame
@@ -997,29 +1036,30 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
         for i in range(id_count):
             if not chosens[i]: continue
             a = trajognize.init.Barcode(chosens[i].centerx, chosens[i].centery,
-                    chosens[i].orientation)
-            if trajognize.project.correctcage:
-                a.centerx += trajognize.project.cage_center.x - cagecenter[0]
-                a.centery += trajognize.project.cage_center.y - cagecenter[1]
-            if a.centerx != a.centerx or a.centerx >= trajognize.project.image_size.x or a.centerx < 0: continue
-            if a.centery != a.centery or a.centery >= trajognize.project.image_size.y or a.centery < 0: continue
+                    chosens[i].orientation, MCHIPS=project_settings.MCHIPS)
+            if project_settings.correct_cage:
+                a.centerx += project_settings.cage_center.x - cagecenter[0]
+                a.centery += project_settings.cage_center.y - cagecenter[1]
+            if a.centerx != a.centerx or a.centerx >= project_settings.image_size.x or a.centerx < 0: continue
+            if a.centery != a.centery or a.centery >= project_settings.image_size.y or a.centery < 0: continue
             # iterate colorids j
             for j in range(id_count):
                 if i == j or not chosens[j]: continue
                 b = trajognize.init.Barcode(chosens[j].centerx, chosens[j].centery,
-                        chosens[j].orientation)
-                if trajognize.project.correctcage:
-                    b.centerx += trajognize.project.cage_center.x - cagecenter[0]
-                    b.centery += trajognize.project.cage_center.y - cagecenter[1]
-                if b.centerx != b.centerx or b.centerx >= trajognize.project.image_size.x or b.centerx < 0: continue
-                if b.centery != b.centery or b.centery >= trajognize.project.image_size.y or b.centery < 0: continue
+                        chosens[j].orientation, MCHIPS=project_settings.MCHIPS)
+                if project_settings.correct_cage:
+                    b.centerx += project_settings.cage_center.x - cagecenter[0]
+                    b.centery += project_settings.cage_center.y - cagecenter[1]
+                if b.centerx != b.centerx or b.centerx >= project_settings.image_size.x or b.centerx < 0: continue
+                if b.centery != b.centery or b.centery >= project_settings.image_size.y or b.centery < 0: continue
                 # check for group consistency
                 if not experiments.are_in_same_group( \
                         colorids[i].strid, colorids[j].strid, experiment):
                     continue
                 group = experiment['groupid'][colorids[i].strid]
                 # check for cage wall between them (we check on original coords, not corrected)
-                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter):
+                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter,
+                        project_settings.use_cage):
                     continue
 
                 # TODO: check if they are nearest neighbours or not!
@@ -1043,22 +1083,22 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
                         if cos(bangle - b.orientation) < 0: continue
                         # check F and Q states
                         if experiments.is_barcode_under_object(a, objectcenter,
-                                project.object_areas[obj]):
+                                project.object_areas[obj], project_settings.image_size):
                             fa = True
                         else:
                             fa = False
                         if experiments.is_barcode_under_object(b, objectcenter,
-                                project.object_areas[obj]):
+                                project.object_areas[obj], project_settings.image_size):
                             fb = True
                         else:
                             fb = False
                         if experiments.is_barcode_under_object(a, objectcenter,
-                                project.object_queuing_areas[obj]):
+                                project.object_queuing_areas[obj], project_settings.image_size):
                             qa = True
                         else:
                             qa = False
                         if experiments.is_barcode_under_object(b, objectcenter,
-                                project.object_queuing_areas[obj]):
+                                project.object_queuing_areas[obj], project_settings.image_size):
                             qb = True
                         else:
                             qb = False
@@ -1096,17 +1136,17 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
         fqobj.frames[light] += 1
     if dailyfqobj is not None:
         # no return needed, we write to dailyfqobj param pointer
-        for light in trajognize.project.good_light:
+        for light in project_settings.good_light:
             dailyfqobj.frames[light] = fqobj.frames[light]
         dailyfqobj.files = 1
     elif fqfood is not None:
         # no return needed, we write to fqfood param pointer
-        for light in trajognize.project.good_light:
+        for light in project_settings.good_light:
             fqfood.frames[light] = fqobj.frames[light]
         fqfood.files = 1
     elif fqwhilef is not None:
         # no return needed, we write to fqwhilef param pointer
-        for light in trajognize.project.good_light:
+        for light in project_settings.good_light:
             fqwhilef.frames[light] = fqobj.frames[light]
         fqwhilef.files = 1
     else:
@@ -1115,7 +1155,7 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
 
 
 def calculate_aamap(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment, subtitlefile, aa_settings):
+        colorids, project_settings, experiment, subtitlefile, aa_settings):
     """Calculate AA (approach-avoidance) heatmap.
 
     :param barcodes: global list of barcodes (Barcode)
@@ -1129,6 +1169,8 @@ def calculate_aamap(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -1141,14 +1183,15 @@ def calculate_aamap(barcodes, light_log, cage_log, entrytimes, starttime,
     WARNING: no cage correction is defined on aamap yet
 
     """
-    aamap = init.AAMap()
+    aamap = init.AAMap(project_settings)
     calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment, subtitlefile, aa_settings, aamap)
+        colorids, project_settings, experiment, subtitlefile, aa_settings, aamap)
     return aamap
 
 
 def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment, subtitlefile, aa_settings, aamap=None):
+        colorids, project_settings, experiment, subtitlefile, aa_settings,
+        aamap=None):
     """Calculate AA (approach-avoidance) matrix.
 
     :param barcodes: global list of barcodes (Barcode)
@@ -1162,6 +1205,8 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -1183,7 +1228,7 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    aa = init.AA(id_count, aa_settings)
+    aa = init.AA(project_settings, id_count, aa_settings)
     history = [[[-aa.min_event_length]*aa.min_event_length for i in range(id_count)] for j in range(id_count)]
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
@@ -1196,11 +1241,11 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
     for currentframe in range(1, len(barcodes)):
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes,
-                trajognize.util.get_datetime_at_frame(starttime, currentframe)):
+                trajognize.util.get_datetime_at_frame(starttime, currentframe, project_settings.FPS)):
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get chosen barcodes for current frame
@@ -1213,13 +1258,13 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
                 barcode = chosens[i]
                 cx = barcode.centerx
                 cy = barcode.centery
-                if trajognize.project.correctcage:
-                    cx += trajognize.project.cage_center.x - cagecenter[0]
-                    cy += trajognize.project.cage_center.y - cagecenter[1]
-                if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-                if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+                if project_settings.correct_cage:
+                    cx += project_settings.cage_center.x - cagecenter[0]
+                    cy += project_settings.cage_center.y - cagecenter[1]
+                if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+                if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(cx, cy)
                     group = experiment['groupid'][colorids[i].strid]
                     for poly in experiment['wallall'][group]:
@@ -1236,19 +1281,20 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
                         continue
                     group = experiment['groupid'][colorids[i].strid]
                     # check for cage wall between them
-                    if experiments.is_wall_between(chosens[i], chosens[j], cagecenter):
+                    if experiments.is_wall_between(chosens[i], chosens[j], cagecenter,
+                            project_settings.use_cage):
                         continue
                     # get center and skip bad ones: nan or outside image area
                     barcode = chosens[j]
                     cx = barcode.centerx
                     cy = barcode.centery
-                    if trajognize.project.correctcage:
-                        cx += trajognize.project.cage_center.x - cagecenter[0]
-                        cy += trajognize.project.cage_center.y - cagecenter[1]
-                    if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-                    if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+                    if project_settings.correct_cage:
+                        cx += project_settings.cage_center.x - cagecenter[0]
+                        cy += project_settings.cage_center.y - cagecenter[1]
+                    if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+                    if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
                     # filter results based on whether pateks are inside their own cage/territory
-                    if trajognize.project.filter_for_valid_cage:
+                    if project_settings.filter_for_valid_cage:
                         pos = trajognize.init.Point(cx, cy)
                         for poly in experiment['wallall'][group]:
                             if util.is_inside_polygon(pos, poly):
@@ -1311,13 +1357,13 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
                             subtitleindex += 1
 #                             msg = util.get_subtitle_string(
 #                                     subtitleindex,
-#                                     currentframe/float(trajognize.project.FPS),
+#                                     currentframe/float(project_settings.FPS),
 #                                     "%s -> %s" % (colorids[i].strid, colorids[j].strid),
 #                                     "#ffffff",
 #                                     (chosens[i].centerx + chosens[j].centerx)/2.0,
 #                                     (chosens[i].centery + chosens[j].centery)/2.0,
-#                                     trajognize.project.image_size.x,
-#                                     trajognize.project.image_size.y)
+#                                     project_settings.image_size.x,
+#                                     project_settings.image_size.y)
                             msg = "%d\t%s\t%g\t%g\t%s\t%g\t%g\n" % (
                                     currentframe,
                                     colorids[i].strid, chosens[i].centerx, chosens[i].centery,
@@ -1334,9 +1380,9 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
                         # to next frame if velocity is still large...)
                         for ii in range(va):
                             x = int(prevchosens[i].centerx + ii*dvx)
-                            if x < 0 or x >= trajognize.project.image_size.x: continue
+                            if x < 0 or x >= project_settings.image_size.x: continue
                             y = int(prevchosens[i].centery + ii*dvy)
-                            if y < 0 or y >= trajognize.project.image_size.y: continue
+                            if y < 0 or y >= project_settings.image_size.y: continue
                             # store good ones on aamap
                             aamap.data[light][x][y] += 1
                         aamap.points[light] += 1
@@ -1355,7 +1401,7 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
 
 
 def calculate_butthead(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment, subtitlefile):
+        colorids, project_settings, experiment, subtitlefile):
     """Calculate butthead matrix.
 
     :param barcodes: global list of barcodes (Barcode)
@@ -1369,6 +1415,8 @@ def calculate_butthead(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -1385,7 +1433,7 @@ def calculate_butthead(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    butthead = init.ButtHead(id_count)
+    butthead = init.ButtHead(project_settings, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return butthead
@@ -1394,11 +1442,11 @@ def calculate_butthead(barcodes, light_log, cage_log, entrytimes, starttime,
     for currentframe in range(1, len(barcodes)):
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes,
-                trajognize.util.get_datetime_at_frame(starttime, currentframe)):
+                trajognize.util.get_datetime_at_frame(starttime, currentframe, project_settings.FPS)):
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get chosen barcodes for current frame
@@ -1410,13 +1458,13 @@ def calculate_butthead(barcodes, light_log, cage_log, entrytimes, starttime,
             barcode = chosens[i]
             cx = barcode.centerx
             cy = barcode.centery
-            if trajognize.project.correctcage:
-                cx += trajognize.project.cage_center.x - cagecenter[0]
-                cy += trajognize.project.cage_center.y - cagecenter[1]
-            if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-            if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+            if project_settings.correct_cage:
+                cx += project_settings.cage_center.x - cagecenter[0]
+                cy += project_settings.cage_center.y - cagecenter[1]
+            if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+            if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
             # filter results based on whether pateks are inside their own cage/territory
-            if trajognize.project.filter_for_valid_cage:
+            if project_settings.filter_for_valid_cage:
                 pos = trajognize.init.Point(cx, cy)
                 group = experiment['groupid'][colorids[i].strid]
                 for poly in experiment['wallall'][group]:
@@ -1433,19 +1481,20 @@ def calculate_butthead(barcodes, light_log, cage_log, entrytimes, starttime,
                     continue
                 group = experiment['groupid'][colorids[i].strid]
                 # check for cage wall between them
-                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter):
+                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter,
+                        project_settings.use_cage):
                     continue
                 # get center and skip bad ones: nan or outside image area
                 barcode = chosens[j]
                 cx = barcode.centerx
                 cy = barcode.centery
-                if trajognize.project.correctcage:
-                    cx += trajognize.project.cage_center.x - cagecenter[0]
-                    cy += trajognize.project.cage_center.y - cagecenter[1]
-                if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-                if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+                if project_settings.correct_cage:
+                    cx += project_settings.cage_center.x - cagecenter[0]
+                    cy += project_settings.cage_center.y - cagecenter[1]
+                if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+                if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(cx, cy)
                     for poly in experiment['wallall'][group]:
                         if util.is_inside_polygon(pos, poly):
@@ -1480,13 +1529,13 @@ def calculate_butthead(barcodes, light_log, cage_log, entrytimes, starttime,
                     subtitleindex += 1
                     msg = util.get_subtitle_string(
                             subtitleindex,
-                            currentframe/float(trajognize.project.FPS),
+                            currentframe/float(project_settings.FPS),
                             "%s -> %s" % (colorids[i].strid, colorids[j].strid),
                             "#0000ff",
                             (chosens[i].centerx + chosens[j].centerx)/2.0,
                             (chosens[i].centery + chosens[j].centery)/2.0,
-                            trajognize.project.image_size.x,
-                            trajognize.project.image_size.y)
+                            project_settings.image_size.x,
+                            project_settings.image_size.y)
 #                            msg = "%d\t%s\t%g\t%g\t%s\t%g\t%g\n" % (
 #                                    currentframe,
 #                                    colorids[i].strid, chosens[i].centerx, chosens[i].centery,
@@ -1498,7 +1547,7 @@ def calculate_butthead(barcodes, light_log, cage_log, entrytimes, starttime,
 
 
 def calculate_sdist(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate spatial distance distribution of barcodes of
     different color on the same frame.
 
@@ -1513,6 +1562,8 @@ def calculate_sdist(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -1528,18 +1579,18 @@ def calculate_sdist(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    sdist = init.SDist()
+    sdist = init.SDist(project_settings)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return sdist
     for currentframe in range(len(barcodes)):
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes,
-                trajognize.util.get_datetime_at_frame(starttime, currentframe)):
+                trajognize.util.get_datetime_at_frame(starttime, currentframe, project_settings.FPS)):
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get chosen barcodes for current frame
@@ -1551,13 +1602,13 @@ def calculate_sdist(barcodes, light_log, cage_log, entrytimes, starttime,
             barcode = chosens[i]
             cx = barcode.centerx
             cy = barcode.centery
-            if trajognize.project.correctcage:
-                cx += trajognize.project.cage_center.x - cagecenter[0]
-                cy += trajognize.project.cage_center.y - cagecenter[1]
-            if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-            if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+            if project_settings.correct_cage:
+                cx += project_settings.cage_center.x - cagecenter[0]
+                cy += project_settings.cage_center.y - cagecenter[1]
+            if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+            if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
             # filter results based on whether pateks are inside their own cage/territory
-            if trajognize.project.filter_for_valid_cage:
+            if project_settings.filter_for_valid_cage:
                 pos = trajognize.init.Point(cx, cy)
                 group = experiment['groupid'][colorids[i].strid]
                 for poly in experiment['wallall'][group]:
@@ -1572,19 +1623,20 @@ def calculate_sdist(barcodes, light_log, cage_log, entrytimes, starttime,
                         colorids[i].strid, colorids[j].strid, experiment):
                     continue
                 # check for cage wall between them
-                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter):
+                if experiments.is_wall_between(chosens[i], chosens[j], cagecenter,
+                        project_settings.use_cage):
                     continue
                 # get center and skip bad ones: nan or outside image area
                 barcode = chosens[i]
                 cx = barcode.centerx
                 cy = barcode.centery
-                if trajognize.project.correctcage:
-                    cx += trajognize.project.cage_center.x - cagecenter[0]
-                    cy += trajognize.project.cage_center.y - cagecenter[1]
-                if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-                if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+                if project_settings.correct_cage:
+                    cx += project_settings.cage_center.x - cagecenter[0]
+                    cy += project_settings.cage_center.y - cagecenter[1]
+                if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+                if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(cx, cy)
                     for poly in experiment['wallall'][group]:
                         if util.is_inside_polygon(pos, poly):
@@ -1603,7 +1655,7 @@ def calculate_sdist(barcodes, light_log, cage_log, entrytimes, starttime,
 
 
 def calculate_veldist(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate velocity distribution of barcodes of same color from positions
     on consecutive frames.
 
@@ -1618,6 +1670,8 @@ def calculate_veldist(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -1633,7 +1687,7 @@ def calculate_veldist(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    veldist = init.VelDist(id_count)
+    veldist = init.VelDist(project_settings, id_count)
     prevchosens = util.get_chosen_barcodes(barcodes[0])
     prevframe = 0
     for currentframe in range(1, len(barcodes)):
@@ -1641,11 +1695,11 @@ def calculate_veldist(barcodes, light_log, cage_log, entrytimes, starttime,
         cagecenter = cage_at_frame(currentframe)
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes,
-                trajognize.util.get_datetime_at_frame(starttime, currentframe)):
+                trajognize.util.get_datetime_at_frame(starttime, currentframe, project_settings.FPS)):
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         chosens = util.get_chosen_barcodes(barcodes[currentframe])
         if currentframe == prevframe + 1:
             for k in range(id_count):
@@ -1654,13 +1708,13 @@ def calculate_veldist(barcodes, light_log, cage_log, entrytimes, starttime,
                 barcode = chosens[k]
                 cx = barcode.centerx
                 cy = barcode.centery
-                if trajognize.project.correctcage:
-                    cx += trajognize.project.cage_center.x - cagecenter[0]
-                    cy += trajognize.project.cage_center.y - cagecenter[1]
-                if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-                if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+                if project_settings.correct_cage:
+                    cx += project_settings.cage_center.x - cagecenter[0]
+                    cy += project_settings.cage_center.y - cagecenter[1]
+                if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+                if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(cx, cy)
                     group = experiment['groupid'][colorids[k].strid]
                     for poly in experiment['wallall'][group]:
@@ -1682,7 +1736,7 @@ def calculate_veldist(barcodes, light_log, cage_log, entrytimes, starttime,
 
 
 def calculate_accdist(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate acceleration distribution of barcodes of same color from positions
     on 3 consecutive frames.
 
@@ -1697,6 +1751,8 @@ def calculate_accdist(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -1711,7 +1767,7 @@ def calculate_accdist(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    accdist = init.AccDist(id_count)
+    accdist = init.AccDist(project_settings, id_count)
     prevprevchosens = util.get_chosen_barcodes(barcodes[0]) #, trajognize.init.MFix.VIRTUAL)
     prevchosens = util.get_chosen_barcodes(barcodes[1]) #, trajognize.init.MFix.VIRTUAL)
     prevprevframe = 0
@@ -1721,11 +1777,11 @@ def calculate_accdist(barcodes, light_log, cage_log, entrytimes, starttime,
         cagecenter = cage_at_frame(currentframe)
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes,
-                trajognize.util.get_datetime_at_frame(starttime, currentframe)):
+                trajognize.util.get_datetime_at_frame(starttime, currentframe, project_settings.FPS)):
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         chosens = util.get_chosen_barcodes(barcodes[currentframe]) #, trajognize.init.MFix.VIRTUAL)
         if currentframe == prevframe + 1 and prevframe == prevprevframe + 1:
             for k in range(id_count):
@@ -1734,13 +1790,13 @@ def calculate_accdist(barcodes, light_log, cage_log, entrytimes, starttime,
                 barcode = chosens[k]
                 cx = barcode.centerx
                 cy = barcode.centery
-                if trajognize.project.correctcage:
-                    cx += trajognize.project.cage_center.x - cagecenter[0]
-                    cy += trajognize.project.cage_center.y - cagecenter[1]
-                if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-                if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+                if project_settings.correct_cage:
+                    cx += project_settings.cage_center.x - cagecenter[0]
+                    cy += project_settings.cage_center.y - cagecenter[1]
+                if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+                if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
                 # filter results based on whether pateks are inside their own cage/territory
-                if trajognize.project.filter_for_valid_cage:
+                if project_settings.filter_for_valid_cage:
                     pos = trajognize.init.Point(cx, cy)
                     group = experiment['groupid'][colorids[k].strid]
                     for poly in experiment['wallall'][group]:
@@ -1766,7 +1822,7 @@ def calculate_accdist(barcodes, light_log, cage_log, entrytimes, starttime,
 
 
 def calculate_basic(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Get basic statitics on frame numbers, errors, etc.
 
     :param barcodes: global list of barcodes (Barcode)
@@ -1780,6 +1836,8 @@ def calculate_basic(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -1790,7 +1848,7 @@ def calculate_basic(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
-    basic = init.Basic()
+    basic = init.Basic(project_settings)
     id_count = len(barcodes[0])
     for currentframe in range(len(barcodes)):
         # get light condition
@@ -1799,7 +1857,7 @@ def calculate_basic(barcodes, light_log, cage_log, entrytimes, starttime,
 
         # check entry times
         if trajognize.util.is_entry_time(entrytimes,
-                trajognize.util.get_datetime_at_frame(starttime, currentframe)):
+                trajognize.util.get_datetime_at_frame(starttime, currentframe, project_settings.FPS)):
             basic.entrytime[light] += 1
             continue
 
@@ -1820,18 +1878,18 @@ def calculate_basic(barcodes, light_log, cage_log, entrytimes, starttime,
                 if chosens[k].mfix & (1<<i):
                     basic.mfixcount[light][i] += 1
             for c in colorids[k].strid:
-                basic.colors_chosen[light][trajognize.init.color2int[c]] += 1
+                basic.colors_chosen[light][project_settings.color2int(c)] += 1
 
             # get all barcodes to calculate non-valid cage stat
             # get center and skip bad ones: nan or outside image area
             barcode = chosens[k]
             cx = barcode.centerx
             cy = barcode.centery
-            if trajognize.project.correctcage:
-                cx += trajognize.project.cage_center.x - cagecenter[0]
-                cy += trajognize.project.cage_center.y - cagecenter[1]
-            if cx != cx or cx >= trajognize.project.image_size.x or cx < 0: continue
-            if cy != cy or cy >= trajognize.project.image_size.y or cy < 0: continue
+            if project_settings.correct_cage:
+                cx += project_settings.cage_center.x - cagecenter[0]
+                cy += project_settings.cage_center.y - cagecenter[1]
+            if cx != cx or cx >= project_settings.image_size.x or cx < 0: continue
+            if cy != cy or cy >= project_settings.image_size.y or cy < 0: continue
             # filter results based on whether pateks are inside their own cage/territory
             pos = trajognize.init.Point(cx, cy)
             group = experiment['groupid'][colorids[k].strid]
@@ -1848,14 +1906,14 @@ def calculate_basic(barcodes, light_log, cage_log, entrytimes, starttime,
                 # TODO: this is not accurate, blobs should be checked instead...
                 if barcode.mfix & trajognize.init.MFix.VIRTUAL: continue
                 for c in colorids[k].strid:
-                    basic.colors_all[light][trajognize.init.color2int[c]] += 1
+                    basic.colors_all[light][project_settings.color2int(c)] += 1
 
     basic.files = 1
     return basic
 
 
 def calculate_distfromwall(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, experiment):
+        colorids, project_settings, experiment):
     """Calculate daily distance-from-wall distribution of barcodes.
 
     Day number is calculated from the beginning of the current experiment.
@@ -1871,6 +1929,8 @@ def calculate_distfromwall(barcodes, light_log, cage_log, entrytimes, starttime,
     :param starttime: datetime of the first frame of the current video
     :param colorids: global colorid database created by
             trajognize.util.parse_colorid_file()
+    :param project_settings: global project settings imported by
+            trajognize.settings.import_trajognize_settings_from_file()
     :param experiment: the current experiment that defines rat groups, walls and
             interesting object centers. If experiment is None,
             we do not calculate anything.
@@ -1878,7 +1938,7 @@ def calculate_distfromwall(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     # initialize object
     id_count = len(barcodes[0])
-    distfromwall = init.DistFromWall(id_count)
+    distfromwall = init.DistFromWall(project_settings, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return distfromwall
@@ -1891,7 +1951,9 @@ def calculate_distfromwall(barcodes, light_log, cage_log, entrytimes, starttime,
     prevframe = 0
     for currentframe in range(len(barcodes)):
         # get current time
-        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime, currentframe)
+        datetime_at_frame = trajognize.util.get_datetime_at_frame(starttime,
+            currentframe, project_settings.FPS
+        )
         # get day
         day = trajognize.stat.experiments.get_days_since_start(experiment, datetime_at_frame)
         # check entry times and skip current frame if not valid
@@ -1899,7 +1961,7 @@ def calculate_distfromwall(barcodes, light_log, cage_log, entrytimes, starttime,
             continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
-        if light not in trajognize.project.good_light: continue
+        if light not in project_settings.good_light: continue
         # get cage
         cagecenter = cage_at_frame(currentframe)
         # get chosen barcodes
@@ -1916,14 +1978,14 @@ def calculate_distfromwall(barcodes, light_log, cage_log, entrytimes, starttime,
             # get center and skip bad ones: nan or outside image area
             x = chosens[k].centerx
             y = chosens[k].centery
-            if trajognize.project.correctcage:
-                x += trajognize.project.cage_center.x - cagecenter[0]
-                y += trajognize.project.cage_center.y - cagecenter[1]
-            if x != x or x >= trajognize.project.image_size.x or x < 0:
+            if project_settings.correct_cage:
+                x += project_settings.cage_center.x - cagecenter[0]
+                y += project_settings.cage_center.y - cagecenter[1]
+            if x != x or x >= project_settings.image_size.x or x < 0:
                 px[k] = -1
                 py[k] = -1
                 continue
-            if y != y or y >= trajognize.project.image_size.y or y < 0:
+            if y != y or y >= project_settings.image_size.y or y < 0:
                 px[k] = -1
                 py[k] = -1
                 continue

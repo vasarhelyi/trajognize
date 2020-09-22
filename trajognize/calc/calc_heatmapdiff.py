@@ -18,7 +18,7 @@ Output is written in a subdirectory of input dir.
 import os, subprocess, sys, glob, re
 
 try:
-    import trajognize.project
+    import trajognize.settings
     import trajognize.parse
     import trajognize.stat.init
     import trajognize.stat.experiments
@@ -27,7 +27,7 @@ try:
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
-    import trajognize.project
+    import trajognize.settings
     import trajognize.parse
     import trajognize.stat.init
     import trajognize.stat.experiments
@@ -46,13 +46,17 @@ def get_strid_from_tail(tail):
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if not argv:
+    if len(argv) < 2:
         print(__doc__)
         return
     if sys.platform.startswith('win'):
-        inputfiles = glob.glob(argv[0])
+        projectfile = argv[0]
+        inputfiles = glob.glob(argv[1])
     else:
-        inputfiles = argv
+        projectfile = argv[0]
+        inputfiles = argv[1:]
+
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
     exps = trajognize.stat.experiments.get_initialized_experiments()
     outdirs = []
 
@@ -84,9 +88,9 @@ def main(argv=[]):
         experiment = exps[exp[4:]]
         # caculate average
         if stat == "heatmap":
-            avgobj = trajognize.stat.init.HeatMap()
+            avgobj = trajognize.stat.init.HeatMap(project_settings)
         elif stat == "motionmap":
-            avgobj = trajognize.stat.init.MotionMap()
+            avgobj = trajognize.stat.init.MotionMap(project_settings)
         else:
             raise NotImplementedError("unhandled stat: {}".format(stat))
         for inputfile in filedict[key]:
@@ -96,16 +100,16 @@ def main(argv=[]):
                 newobj.print_status()
                 avgobj += newobj
         # no overloading for __div__ exists, we do it manually:
-        for light in trajognize.project.good_light:
+        for light in project_settings.good_light:
             avgobj.data[light] /= len(filedict[key])
         # write new results for all files
-        print
+        print()
         for inputfile in filedict[key]:
             # calculate difference from average
             newobj = trajognize.util.load_object(inputfile)
             if newobj:
                 # no overloading for __sub__ exists, we do it manually:
-                for light in trajognize.project.good_light:
+                for light in project_settings.good_light:
                     newobj.data[light] -= avgobj.data[light]
             # define output directory and write results
             (head, tail, plotdir) = trajognize.plot.plot.get_headtailplot_from_filename(inputfile)

@@ -8,9 +8,6 @@ import datetime
 import math
 
 from trajognize.init import Point, Circle, Ellipse, Rectangle
-from trajognize.project import *
-
-from .project import *
 
 #: index for weekdays starting from saturday
 ordered_weekdays = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']
@@ -93,13 +90,14 @@ def are_in_same_group(stridi, stridj, experiment):
         return False
 
 
-def is_wall_between(a, b, cage):
+def is_wall_between(a, b, cage, use_cage):
     """Return true if there is a cage wall between the two barcodes on the
     given frame.
 
     :param a: first barcode (or any object with centerx/centery member)
     :param b: second barcode (or any object with centerx/centery member)
     :param cage: cage params at given frame: [x, y, alpha, beta]
+    :param use_cage: should we use cage at all?
 
     Algo description:
     The equation of a line is y = ix+b
@@ -158,7 +156,7 @@ def is_wall_between(a, b, cage):
     return False
 
 
-def queuing_center_offset(objectcenter, objectarea):
+def queuing_center_offset(objectcenter, objectarea, image_size):
     """if center of objectarea is nonzero, it is used as center offset,
     depending on quarter of image (- if < mid, + if > mid
 
@@ -181,7 +179,7 @@ def queuing_center_offset(objectcenter, objectarea):
     return (ofsx, ofsy)
 
 
-def is_barcode_under_object(barcode, objectcenter, objectarea):
+def is_barcode_under_object(barcode, objectcenter, objectarea, image_size):
     """Return true if barcode lays on/under object, defined by objectcenter as center
     (and arc if circle) and and objectarea as area (radius, height, width) with
     optional center offset.
@@ -190,11 +188,12 @@ def is_barcode_under_object(barcode, objectcenter, objectarea):
     :param objectcenter: a Point/Circle object defining the CENTER (and arc) of the object
     :param objectarea: an object defining the AREA (width, height, radius) of the object
                        and possible center offset (see queuing_center_offset())
+    :param image_size: size of the image in pixels
 
     Warning: function assumes that all angles are in the range of [0, 360]
 
     """
-    (ofsx, ofsy) = queuing_center_offset(objectcenter, objectarea)
+    (ofsx, ofsy) = queuing_center_offset(objectcenter, objectarea, image_size)
     # check for rectangles
     if isinstance(objectarea, Rectangle):
         if barcode.centerx < (objectcenter.x + ofsx) - objectarea.w/2.0: return False

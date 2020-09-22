@@ -14,7 +14,6 @@ import subprocess
 import psutil
 
 # internal imports
-from .project import FPS, get_datetime_from_filename
 from .init import MFix
 from .version import __version__
 
@@ -24,17 +23,19 @@ def get_version_info():
     # TODO: add git revision
     return __version__
 
-# get_datetime_from_filename() is moved to project.py as it is project-specific
+# get_datetime_from_filename() is moved to settings.py as it is project-specific
 
 
-def get_datetime_at_frame(starttime, currentframe):
+def get_datetime_at_frame(starttime, currentframe, fps):
     """Return the datetime of a given frame, relative to the first frame.
 
-    :param starttime: the datetime of the first frame
-    :param currentframe: a given frame
+    Parameters:
+        starttime(datetime): the datetime of the first frame
+        currentframe(int): a given frame
+        fps(float): frames per second of the video
 
     """
-    return starttime + datetime.timedelta(0, currentframe/FPS)
+    return starttime + datetime.timedelta(0, currentframe/fps)
 
 
 def is_entry_time(entrytimes, sometime):

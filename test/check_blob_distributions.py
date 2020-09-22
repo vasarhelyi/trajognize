@@ -40,8 +40,13 @@ argparser.add_argument("-nd", "--nodist", dest="nodist", action="store_true", de
 argparser.add_argument("-nm", "--nomotiondist", dest="nomotiondist", action="store_true", default=False, help="do not calculate distribution of motion blobs")
 argparser.add_argument("-nh", "--noheatmap", dest="noheatmap", action="store_true", default=False, help="do not calculate heatmaps")
 argparser.add_argument("-cc", "--correctcage", dest="correctcage", action="store_true", default=False, help="correct for cage center dislocations")
-argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define individual blob input file, or a path that has blob files at [PATH]*/OUT/*.blobs", metavar="PATH")
+argparser.add_argument("-i", "--inputpath", required=True, dest="inputpath", help="define individual blob input file, or a path that has blob files at [PATH]*/OUT/*.blobs", metavar="PATH")
+argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
 args = argparser.parse_args()
+
+# project settings
+project_settings = trajognize.settings.import_trajognize_settings_from_file(args.projectfile)
+print("Current project is: %s\n" % project_settings.project_name)
 
 # init distance distribution matrices
 max_sdist = 150 # [pixel]
@@ -67,9 +72,9 @@ if not args.nomotiondist:
 # init blob occurrence heatmaps
 if not args.noheatmap:
     heatmap_bin_size = 1 # [pixel]
-    heatmaps = [[[[0 for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in range(int(trajognize.project.image_size.x/heatmap_bin_size))] for c in range(5)] for light in range(2)] # [light][color][x][y]
-    heatmap_md = [[[0 for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in range(int(trajognize.project.image_size.x/heatmap_bin_size))] for light in range(2)] # [light][x][y]
-    heatmap_rat = [[[0 for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in range(int(trajognize.project.image_size.x/heatmap_bin_size))] for light in range(2)] # [light][x][y]
+    heatmaps = [[[[0 for y in range(int(project_settings.image_size.y/heatmap_bin_size)) ] for x in range(int(project_settings.image_size.x/heatmap_bin_size))] for c in range(5)] for light in range(2)] # [light][color][x][y]
+    heatmap_md = [[[0 for y in range(int(project_settings.image_size.y/heatmap_bin_size)) ] for x in range(int(project_settings.image_size.x/heatmap_bin_size))] for light in range(2)] # [light][x][y]
+    heatmap_rat = [[[0 for y in range(int(project_settings.image_size.y/heatmap_bin_size)) ] for x in range(int(project_settings.image_size.x/heatmap_bin_size))] for light in range(2)] # [light][x][y]
 
 # get input path
 path = trajognize.util.get_path_as_first_arg((None, args.inputpath))
@@ -259,10 +264,10 @@ for inputfile in files:
                     centerx = color_blobs[currentframe][i].centerx
                     centery = color_blobs[currentframe][i].centery
                     if args.correctcage:
-                        centerx += trajognize.project.cage_center_x - cagecenter[0]
-                        centery += trajognize.project.cage_center_y - cagecenter[1]
-                    if centerx != centerx or centerx >= trajognize.project.image_size.x or centerx < 0: continue
-                    if centery != centery or centery >= trajognize.project.image_size.y or centery < 0: continue
+                        centerx += project_settings.cage_center_x - cagecenter[0]
+                        centery += project_settings.cage_center_y - cagecenter[1]
+                    if centerx != centerx or centerx >= project_settings.image_size.x or centerx < 0: continue
+                    if centery != centery or centery >= project_settings.image_size.y or centery < 0: continue
                     # store good ones on heatmap
                     heatmaps[light][color_blobs[currentframe][i].color][int(centerx/heatmap_bin_size)][int(centery/heatmap_bin_size)] += 1
                     good[light] += 1
@@ -291,10 +296,10 @@ for inputfile in files:
                     centerx = md_blobs[currentframe][i].centerx
                     centery = md_blobs[currentframe][i].centery
                     if args.correctcage:
-                        centerx += trajognize.project.cage_center_x - cagecenter[0]
-                        centery += trajognize.project.cage_center_y - cagecenter[1]
-                    if centerx != centerx or centerx >= trajognize.project.image_size.x or centerx < 0: continue
-                    if centery != centery or centery >= trajognize.project.image_size.y or centery < 0: continue
+                        centerx += project_settings.cage_center_x - cagecenter[0]
+                        centery += project_settings.cage_center_y - cagecenter[1]
+                    if centerx != centerx or centerx >= project_settings.image_size.x or centerx < 0: continue
+                    if centery != centery or centery >= project_settings.image_size.y or centery < 0: continue
                     # store good ones on heatmap
                     heatmap_md[light][int(centerx/heatmap_bin_size)][int(centery/heatmap_bin_size)] += 1
                     good[light] += 1
@@ -323,10 +328,10 @@ for inputfile in files:
                     centerx = rat_blobs[currentframe][i].centerx
                     centery = rat_blobs[currentframe][i].centery
                     if args.correctcage:
-                        centerx += trajognize.project.cage_center_x - cagecenter[0]
-                        centery += trajognize.project.cage_center_y - cagecenter[1]
-                    if centerx != centerx or centerx >= trajognize.project.image_size.x or centerx < 0: continue
-                    if centery != centery or centery >= trajognize.project.image_size.y or centery < 0: continue
+                        centerx += project_settings.cage_center_x - cagecenter[0]
+                        centery += project_settings.cage_center_y - cagecenter[1]
+                    if centerx != centerx or centerx >= project_settings.image_size.x or centerx < 0: continue
+                    if centery != centery or centery >= project_settings.image_size.y or centery < 0: continue
                     # store good ones on heatmap
                     heatmap_rat[light][int(centerx/heatmap_bin_size)][int(centery/heatmap_bin_size)] += 1
                     good[light] += 1
@@ -399,39 +404,39 @@ if not args.nomotiondist:
 
 # print heatmaps
 if not args.noheatmap:
-    for light in range(len(trajognize.project.good_light)):
+    for light in range(len(project_settings.good_light)):
         for k in range(5):
-            print("\n\n# heatmap of %s %s blobs" % (trajognize.project.good_light[light], trajognize.project.colornames[k]))
-            print("heatmap_%s_%s" % (trajognize.project.good_light[light], trajognize.project.colornames[k]), end=" ")
-            for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+            print("\n\n# heatmap of %s %s blobs" % (project_settings.good_light[light], project_settings.color_names[k]))
+            print("heatmap_%s_%s" % (project_settings.good_light[light], project_settings.color_names[k]), end=" ")
+            for x in range(int(project_settings.image_size.x/heatmap_bin_size)):
                 print("\t%d" % (x * heatmap_bin_size), end=" ")
             print("")
-            for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)):
+            for y in range(int(project_settings.image_size.y/heatmap_bin_size)):
                 print("%d" % (y * heatmap_bin_size), end=" ")
-                for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+                for x in range(int(project_settings.image_size.x/heatmap_bin_size)):
                     print("\t%d" % heatmaps[light][k][x][y], end=" ")
                 print("")
 
-    for light in range(len(trajognize.project.good_light)):
-        print("\n\n# heatmap of %s motion blobs" % trajognize.project.good_light[light])
-        print("heatmap_%s_md" % trajognize.project.good_light[light], end=" ")
-        for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+    for light in range(len(project_settings.good_light)):
+        print("\n\n# heatmap of %s motion blobs" % project_settings.good_light[light])
+        print("heatmap_%s_md" % project_settings.good_light[light], end=" ")
+        for x in range(int(project_settings.image_size.x/heatmap_bin_size)):
             print("\t%d" % (x * heatmap_bin_size), end=" ")
         print("")
-        for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)):
+        for y in range(int(project_settings.image_size.y/heatmap_bin_size)):
             print("%d" % (y * heatmap_bin_size), end=" ")
-            for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+            for x in range(int(project_settings.image_size.x/heatmap_bin_size)):
                 print("\t%d" % heatmap_md[light][x][y], end=" ")
             print("")
 
-    for light in range(len(trajognize.project.good_light)):
-        print("\n\n# heatmap of %s rat blobs" % trajognize.project.good_light[light])
-        print("heatmap_%s_rat" % trajognize.project.good_light[light], end=" ")
-        for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+    for light in range(len(project_settings.good_light)):
+        print("\n\n# heatmap of %s rat blobs" % project_settings.good_light[light])
+        print("heatmap_%s_rat" % project_settings.good_light[light], end=" ")
+        for x in range(int(project_settings.image_size.x/heatmap_bin_size)):
             print("\t%d" % (x * heatmap_bin_size), end=" ")
         print("")
-        for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)):
+        for y in range(int(project_settings.image_size.y/heatmap_bin_size)):
             print("%d" % (y * heatmap_bin_size), end=" ")
-            for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+            for x in range(int(project_settings.image_size.x/heatmap_bin_size)):
                 print("\t%d" % heatmap_rat[light][x][y], end=" ")
             print("")

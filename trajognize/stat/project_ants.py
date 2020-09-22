@@ -8,7 +8,6 @@ as they form a reproductive hierarchy.
 import datetime, math, os
 
 from trajognize.init import Point, Circle, Ellipse, Rectangle
-from trajognize.project import *
 
 # define the colony we are analysing
 COLONY = "F30" # October 21 to November 4, 2016

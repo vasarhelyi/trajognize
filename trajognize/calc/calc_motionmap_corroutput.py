@@ -1,6 +1,6 @@
 """This script summarizes motionmap results into correlation files.
 
-Usage: calc_motionmap_corroutput.py inputdir [experiment]
+Usage: calc_motionmap_corroutput.py projectfile inputdir [experiment]
 
 where inputdir is/are the location where the .zipped python object outputs of
 trajognize.statsum with options "-s motionmap" are located
@@ -15,7 +15,7 @@ import os, sys, glob, re
 from collections import defaultdict
 
 try:
-    import trajognize.project
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.util
@@ -23,7 +23,7 @@ try:
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
-    import trajognize.project
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.util
@@ -47,16 +47,18 @@ def get_categories_from_filename(filename):
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if not argv:
+    if len(argv) not in [2, 3]:
         print(__doc__)
         return
-    inputdir = argv[0]
+    projectfile = argv[0]
+    inputdir = argv[1]
     statsum_basedir = os.path.split(inputdir)[0]
-    if len(argv) == 2:
-        experiment = argv[1]
+    if len(argv) == 3:
+        experiment = argv[2]
     else:
         experiment = '*'
     inputfiles = glob.glob(os.path.join(inputdir, "stat_motionmap.*__exp_%s.zip" % experiment))
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
     exps = trajognize.stat.experiments.get_initialized_experiments()
     corrfiles = []
 
@@ -72,13 +74,13 @@ def main(argv=[]):
             continue
         print("gathering info from", tail)
         # initialize empty object
-        motionmaps = trajognize.stat.init.MotionMap()
+        motionmaps = trajognize.stat.init.MotionMap(project_settings)
         # add new object (so that we have latest methods from latest version)
         motionmaps += trajognize.util.load_object(inputfile)
         # calculate simplified statistics (like in dailyoutput)
         # but first we need to copy data to a heatmap stat to use its built-in stat functions:
-        heatmaps = trajognize.stat.init.HeatMap()
-        for light in trajognize.project.good_light:
+        heatmaps = trajognize.stat.init.HeatMap(project_settings)
+        for light in project_settings.good_light:
             heatmaps.data[light][0] = motionmaps.data[light]
             heatmaps.frames[light] = motionmaps.frames[light]
             heatmaps.points[light][0] = motionmaps.points[light]

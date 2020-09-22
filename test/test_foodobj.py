@@ -17,11 +17,12 @@ obj = 'home'
 obj = 'watertop'
 obj = 'food'
 
+image_size = trajognize.init.Point(1920, 1080)
 for x in range(0,2000,50):
     for y in range(0,1080,50):
         b.centerx = x
         b.centery = y
         if trajognize.stat.experiments.is_barcode_under_object(barcode, objectcenter,
 #                trajognize.stat.experiments.object_areas[obj]):
-                trajognize.stat.project.object_queuing_areas[obj]):
+                trajognize.stat.project.object_queuing_areas[obj], image_size):
             print("ez van alatta: %d, %d " % (x, y))

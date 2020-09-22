@@ -6,7 +6,6 @@ experiments from 2015 summer, at ELTE Department of Biological Physics.
 import datetime, math, os
 
 from trajognize.init import Point, Circle, Ellipse, Rectangle
-from trajognize.project import *
 
 #: possible interesting objects
 object_types = []

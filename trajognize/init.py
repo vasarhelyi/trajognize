@@ -6,8 +6,6 @@ from collections import namedtuple
 from enum import IntEnum
 from math import atan2, sin, cos, pi
 
-from .project import *
-
 ################################################################################
 class MFix(IntEnum):
     """mFIX values of barcodes.
@@ -80,15 +78,18 @@ class Variables:
     """A class for all dynamic variables as a common placeholder for quick
     load and save operations at the middle of execution.
     """
-    __slots__ = ('colorids', 'color_blobs', 'md_blobs', 'rat_blobs', 'barcodes',
-            'sdistlists', 'tdistlists', 'clusterlists', 'clusterindices',
-            'mdindices', 'trajectories', 'trajsonframe')
+    __slots__ = ('colorids', 'project_settings', 'color_blobs', 'md_blobs',
+            'rat_blobs', 'barcodes', 'sdistlists', 'tdistlists', 'clusterlists',
+            'clusterindices', 'mdindices', 'trajectories', 'trajsonframe')
 
     def __init__(self):
         """Empty initialization."""
         #: global colorid database created by parse_colorid_file()
         #: colorids[coloridindex] is a 'ColorID' object
         self.colorids = 0
+        #: global project settings created by
+        #: import_trajognize_settings_from_file()
+        self.project_settings = None
         #: global list of all color blobs
         #: color_blobs[framenum][index] is a 'ColorBlob' object
         self.color_blobs = 0
@@ -137,7 +138,8 @@ class Barcode:
     # Keep memory requirements low by preventing the creation of instance dictionaries.
     __slots__ = ('centerx', 'centery', 'orientation', 'mfix', 'blobindices')
 
-    def __init__(self, centerx=0, centery=0, orientation=0, mfix=0, blobindices=[]):
+    def __init__(self, centerx=0, centery=0, orientation=0, mfix=0, MCHIPS=3,
+            blobindices=[]):
         self.centerx = centerx               # [pixel]
         self.centery = centery               # [pixel]
         self.orientation = orientation       # [rad]
@@ -159,7 +161,7 @@ class Trajectory:
     __slots__ = ('k', 'firstframe', 'barcodeindices', 'fullfound_count', 'fullnocluster_count',
             'colorblob_count', 'sharesblob_count', 'offset_count', 'state')
 
-    def __init__(self, firstframe, coloridindex):
+    def __init__(self, firstframe, coloridindex, MCHIPS):
         self.k = coloridindex # coloridindex of the trajectory
         self.firstframe = firstframe
         self.barcodeindices = []

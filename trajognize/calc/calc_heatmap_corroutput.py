@@ -1,6 +1,6 @@
 """This script summarizes heatmap results into correlation files.
 
-Usage: calc_heatmap_corroutput.py inputdir [experiment]
+Usage: calc_heatmap_corroutput.py projectfile inputdir [experiment]
 
 where inputdir is/are the location where the .zipped python object outputs of
 trajognize.statsum with options "-s heatmap" are located
@@ -15,6 +15,7 @@ import os, sys, glob, re
 from collections import defaultdict
 
 try:
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.util
@@ -22,6 +23,7 @@ try:
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.util
@@ -45,17 +47,19 @@ def get_categories_from_filename(filename):
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if not argv:
+    if len(argv) not in [2, 3]:
         print(__doc__)
         return
-    inputdir = argv[0]
+    projectfile = argv[0]
+    inputdir = argv[1]
     statsum_basedir = os.path.split(inputdir)[0]
-    if len(argv) == 2:
-        experiment = argv[1]
+    if len(argv) == 3:
+        experiment = argv[2]
     else:
         experiment = '*'
     inputfiles = glob.glob(os.path.join(inputdir, "stat_heatmap.*__exp_%s.zip" % experiment))
     exps = trajognize.stat.experiments.get_initialized_experiments()
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
     corrfiles = []
 
     # create full database of all data
@@ -70,7 +74,7 @@ def main(argv=[]):
             continue
         print("gathering info from", tail)
         # initialize empty object
-        heatmaps = trajognize.stat.init.HeatMap()
+        heatmaps = trajognize.stat.init.HeatMap(project_settings)
         # add new object (so that we have latest methods from latest version)
         heatmaps += trajognize.util.load_object(inputfile)
         # calculate simplified statistics (like in dailyoutput)

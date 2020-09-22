@@ -31,7 +31,7 @@ except ImportError:
     import trajognize.stat.init
     import trajognize.stat.experiments
     import trajognize.stat.project
-    from trajognize.init import Rectangle, Circle
+    from trajognize.init import Rectangle, Circle, Point
 
 
 # TODO: ellipse/polygon needed instead of rect because yrange reverse makes rects disappear. gnuplot bug, 4.6 version needed...
@@ -98,7 +98,7 @@ plot \\
 
 
 def get_gnuplot_script(inputfile, outputfile, name, index, exp, experiment,
-        group, maxvalue):
+        group, maxvalue, image_size):
     """Return .gnu script body as string."""
     data = {
         "inputfile": inputfile,
@@ -121,7 +121,9 @@ def get_gnuplot_script(inputfile, outputfile, name, index, exp, experiment,
                 grouplist = [group]
             for g in grouplist:
                 for point in experiment[object][g]:
-                    (ofsx, ofsy) = trajognize.stat.experiments.queuing_center_offset(point, objobj)
+                    (ofsx, ofsy) = trajognize.stat.experiments.queuing_center_offset(
+                        point, objobj, image_size
+                    )
                     if isinstance(objobj, Rectangle):
 #                        objectmarkers.append(GNUPLOT_RECTANGLE_TEMPLATE % (point.x + ofsx,
 #                                point.y + ofsy, objobj.w, objobj.h, "dark-gray"))
@@ -284,8 +286,9 @@ def main(argv=[]):
                         strid,
                         exp))
             # plot
+            image_size = Point(1920, 1080) # TODO: get from project_settings somehow
             script = get_gnuplot_script(inputfile, outputfile, name, index, exp,
-                    experiment, group, maxvalue)
+                    experiment, group, maxvalue, image_size)
             with open(gnufile, 'w') as f:
                 f.write(script)
             try:

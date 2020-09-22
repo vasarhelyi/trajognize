@@ -177,7 +177,7 @@ def parse_blob_file(inputfile, lastframe=None):
         if linetype == 'BLOB':
             #if framenum != len(color_blobs):
             #    print("WARNING - framenum mismatch, framenum=%d, len(color_blobs)=%d" % (framenum, len(color_blobs)))
-            #color_blobs.append([ [] for x in color2int ])
+            #color_blobs.append([ [] for x in project_settings.color2int_lookup ])
             for i in range(blobcount):
                 color = int(linesplit[j][1:])
                 centerx = float(linesplit[j+1])
@@ -290,6 +290,7 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
         barcodes[framenum][coloridindex][index] is a Barcode object
 
     """
+    MCHIPS = len(colorids[0].strid)
     # get number of frames quickly
     try:
         i = int(deque(open(inputfile), 1)[0].split(None, 1)[0])
@@ -328,7 +329,8 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
                     float(linesplit[j+1]),          # centerx
                     float(linesplit[j+2]),          # centery
                     radians(float(linesplit[j+5])), # orientation [deg]->[rad]
-                    int(linesplit[j+6]))            # mfix
+                    int(linesplit[j+6]),            # mfix
+                    MCHIPS)
 
             k = strid2coloridindex(linesplit[j], colorids)
             barcodes[framenum-firstframe][k].append(barcode)

@@ -9,7 +9,6 @@ import argparse
 import datetime
 # imports from base class
 import trajognize
-from trajognize.project import *
 
 # imports from self subclass
 from .project import stat_aa_settings, get_exp_from_colorid_filename
@@ -45,7 +44,6 @@ def main(argv=[]):
 
     """
     print("This is trajognize stat. Version:", trajognize.util.get_version_info())
-    print("Current project is: %s" % project_str[PROJECT])
     phase = trajognize.util.Phase()
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
@@ -55,8 +53,9 @@ def main(argv=[]):
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
     argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["stats"]+sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["stats"]+sorted(stats.keys())))
     argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output files")
-    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", help="define barcode input file name (.blobs.barcodes)")
-    argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
+    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", required=True, help="define barcode input file name (.blobs.barcodes)")
+    argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", required=True, help="define colorid input file name (.xml)")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
     argparser.add_argument("-e", "--entrytimesfile", metavar="FILE", dest="entrytimesfile", help="define entry times input file name (.dat, .txt)")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for .barcodes.stat_*.zip output files")
@@ -66,7 +65,6 @@ def main(argv=[]):
     argparser.add_argument("-sci", "--subclassindex", metavar="INDEX", dest="subclassindex", nargs='+', type=int, help="Define only some of the stat subclasses to run. Works bugfree only if a single stat is selected.")
     argparser.add_argument("-d", "--dailyoutput", dest="dailyoutput", action="store_true", default=False, help="Store output separated for days. This is kind of a hack and should be used only with heatmaps.")
     argparser.add_argument("-sub", "--subtitle", dest="subtitle", action="store_true", default=False, help="create subtitle output")
-
 
 
     # if arguments are passed to main(argv), parse them
@@ -92,22 +90,13 @@ def main(argv=[]):
     # check arguments
     phase.start_phase("Checking command line arguments...")
     # inputfile
-    if options.inputfile is None:
-        # default on windows (gabor's laptop)
-        if sys.platform.startswith('win'):
-            options.inputfile = 'd:\\ubi\\ELTE\\patekok\\video\\random_sample_trial_run__trajognize\\done\\random_sample_trial_run__trajognize_2011-08-30_12-42-09.588960.ts\\OUT\\2011-08-30_12-42-09.588960.ts.blobs.barcodes'
-        # default on non windows (linux, atlasz)
-        else:
-            options.inputfile = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/done/random_sample_trial_run_2011-06-10_13-15-29.335159.ts/OUT/2011-06-10_13-15-29.335159.ts.blobs.barcodes'
-        print("  WARNING! No input file is specified! Default for %s is: '%s'" % (sys.platform, options.inputfile))
-    else:
-        print("  Using inputfile: '%s'" % options.inputfile)
+    print("  Using inputfile: '%s'" % options.inputfile)
     # colorid file
-    if options.coloridfile is None:
-        options.coloridfile = 'misc/5-3_28patek.xml'
-        print("  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile)
-    else:
-        print("  Using colorid file: '%s'" % options.coloridfile)
+    print("  Using colorid file: '%s'" % options.coloridfile)
+    # project settings
+    print("  Using project settings file: '%s'" % options.projectfile)
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
+    print("  Current project is: %s\n" % project_settings.project_name)
     # entrytimes file
     if options.entrytimesfile is None:
         options.entrytimesfile = 'misc/entrytimes.dat'
@@ -193,14 +182,14 @@ def main(argv=[]):
         # in most projects we use only a single lighting condition, let it be NIGHTLIGHT
         # in most projects we do not use cage correction, let it be the center value
         light_log = {0: 'NIGHTLIGHT'}
-        cage_log = {0: [image_size.x/2, image_size.y/2, 0, 90]}
+        cage_log = {0: [project_settings.image_size.x/2, project_settings.image_size.y/2, 0, 90]}
     if light_log is None and cage_log is None:
         print("  reading input log file failed. Exiting.""")
         return
     print("  %d LED switches parsed" % len(light_log))
     print("  %d CAGE coordinates parsed" % len(cage_log))
     # get current experiment name (assuming that it will remain the same on the whole video)
-    starttime = trajognize.util.get_datetime_from_filename(inputfile)
+    starttime = project_settings.get_datetime_from_filename(inputfile)
     # get days for dailyoutput (current and next if we are around midnight)
     if options.dailyoutput:
         dailyoutput = True

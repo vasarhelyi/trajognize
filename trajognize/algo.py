@@ -4,8 +4,6 @@ All kinds of general algorithms used by trajognize.main().
 
 from math import hypot, cos, sin, degrees
 import numpy
-from .project import AVG_INRAT_DIST
-from .init import int2color
 
 
 def calculate_running_avg(new, k, prevavg, prevstd):
@@ -66,7 +64,7 @@ def get_distance(a, b):
     anything that has .centerx and .centery parameters."""
     return hypot(a.centerx - b.centerx, a.centery - b.centery)
 
-def get_blob_center_on_barcode(barcode, position):
+def get_blob_center_on_barcode(barcode, position, AVG_INRAT_DIST):
     """Calculate the center of a blob on a barcode at a given position."""
     centerx = barcode.centerx
     centery = barcode.centery
@@ -76,10 +74,12 @@ def get_blob_center_on_barcode(barcode, position):
 
     return (centerx, centery)
 
-def get_distance_at_position(barcode, position, blob):
+def get_distance_at_position(barcode, position, blob, AVG_INRAT_DIST):
     """Calculate the distance between a blob at a given position on a barcode
     and a blob."""
-    centerx, centery = get_blob_center_on_barcode(barcode, position)
+    centerx, centery = get_blob_center_on_barcode(barcode, position,
+        AVG_INRAT_DIST
+    )
 
     return hypot(centerx - blob.centerx, centery - blob.centery)
 

@@ -11,7 +11,6 @@ import glob
 
 # imports from base class
 import trajognize
-from trajognize.project import *
 
 # imports from self subclass
 from . import init
@@ -62,7 +61,6 @@ def main(argv=[]):
 
     """
     print("This is trajognize statsum. Version:", trajognize.util.get_version_info())
-    print("Current project is: %s" % project_str[PROJECT])
     phase = trajognize.util.Phase()
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
@@ -71,8 +69,9 @@ def main(argv=[]):
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
     argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["exps", "stats"]+sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["exps", "stats"]+sorted(stats.keys())))
-    argparser.add_argument("-i", "--inputpath", metavar="PATH", dest="inputpath", help="define input path to have stat files at [PATH]/*/OUT/*.blobs.barcodes.stat_*.zip")
-    argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
+    argparser.add_argument("-i", "--inputpath", metavar="PATH", required=True, dest="inputpath", help="define input path to have stat files at [PATH]/*/OUT/*.blobs.barcodes.stat_*.zip")
+    argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=True, dest="coloridfile", help="define colorid input file name (.xml)")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for summarized results")
     argparser.add_argument("-s", "--statistics", metavar="stat", dest="statistics", nargs="+", choices=sorted(stats.keys()), default=sorted(stats.keys()), help="Define only some of the statistics to run. Possible values: %s" % sorted(stats.keys()))
@@ -110,23 +109,12 @@ def main(argv=[]):
     # check arguments
     phase.start_phase("Checking command line arguments...")
     # input path
-    if options.inputpath is None:
-        # default on windows (gabor's laptop)
-        if sys.platform.startswith('win'):
-            options.inputpath = r'd:\ubi\ELTE\patekok\video\random_sample_trial_run__trajognize\done'
-        # default on non windows (linux, atlasz)
-        else:
-            options.inputpath = '/h/mnt/user04/project/flocking/abeld/ratlab/results/random_sample_trial_run/done/'
-        print("  WARNING! No input path is specified! Default for %s is: '%s'" % (sys.platform, options.inputpath))
     print("  Using input path: '%s'" % options.inputpath)
     inputdirs = glob.glob(os.path.join(options.inputpath, '*' + os.sep))
 
     # colorid file
-    if options.coloridfile is None:
-        options.coloridfile = 'misc/5-3_28patek.xml'
-        print("  WARNING! No colorid file is specified! Default is: '%s'" % options.coloridfile)
-    else:
-        print("  Using colorid file: '%s'" % options.coloridfile)
+    print("  Using colorid file: '%s'" % options.coloridfile)
+
     # output path
     if options.outputpath is None:
         options.outputpath = options.inputpath
@@ -152,6 +140,12 @@ def main(argv=[]):
     else:
         uniqueoutput = False
 
+    phase.end_phase()
+
+    # parse project settings file
+    phase.start_phase("Reading project settings file...")
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
+    print("  Current project is: %s\n" % v.project_settings.project_name)
     phase.end_phase()
 
     # parse colorid file
@@ -238,7 +232,7 @@ def main(argv=[]):
             else:
                 # get current experiment name (TODO: assuming that it will remain the same on the whole video)
                 explist = experiments.get_experiment(exps,
-                        trajognize.util.get_datetime_from_filename(inputfile))
+                        project_settings.get_datetime_from_filename(inputfile))
                 # if current experiment is not in list, add next object to summarized result
                 if "all" in options.experiments and (not explist or explist[0] not in options.experiments):
                     # calculate summarized result only if all experiments are to be calculated

@@ -6,7 +6,7 @@ import os,sys,argparse
 
 # import definitions as they appear in file
 from .init import MFix, Variables, Barcode
-from .project import *
+from .settings import import_trajognize_settings_from_file
 
 # import functions organized according to files
 from . import algo
@@ -18,10 +18,12 @@ from . import output
 from . import parse
 from . import util
 
+
+
 def main(argv=[]):
     """Main code. Execute as 'bin/trajognize [options]' or as 'trajognize.main(["option1", "value1", ...])'.
 
-    Short descrition of the algorithms (numbering correspond to debug save/load level,
+    Short description of the algorithms (numbering correspond to debug save/load level,
     however debug saving/loading is too slow and needs too much memory so far...):
 
     1.   Load colorids, entry times, calibration files, input blob files.
@@ -53,7 +55,6 @@ def main(argv=[]):
 
     """
     print("This is trajognize. Version:", util.get_version_info())
-    print("Current project is: %s\n" % project_str[PROJECT])
     v = Variables()
     phase = util.Phase()
     # parse command line arguments
@@ -61,6 +62,7 @@ def main(argv=[]):
     argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output file")
     argparser.add_argument("-i", "--inputfile", metavar="FILE", required=True, dest="inputfile", help="define blob input file name (.blobs)")
     argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=True, dest="coloridfile", help="define colorid input file name (.xml)")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for .barcodes output file")
     argparser.add_argument("-n", "--framenum", metavar="NUM", dest="framenum", type=int, help="define max frames to read (used for debug reasons)")
@@ -84,6 +86,10 @@ def main(argv=[]):
     print("  Using inputfile: '%s'" % options.inputfile)
     # colorid file
     print("  Using colorid file: '%s'" % options.coloridfile)
+    # project settings
+    print("  Using project settings file: '%s'" % options.projectfile)
+    v.project_settings = import_trajognize_settings_from_file(options.projectfile)
+    print("  Current project is: %s\n" % v.project_settings.project_name)
     # output path
     if options.outputpath is None:
         (options.outputpath, tail) = os.path.split(options.inputfile)
@@ -120,8 +126,8 @@ def main(argv=[]):
         v.colorids = parse.parse_colorid_file(options.coloridfile)
         if v.colorids is None: return
         print("  %d colorids read, e.g. first is (%s,%s)" % (len(v.colorids), v.colorids[0].strid, v.colorids[0].symbol))
-        if len(v.colorids[0].strid) != MCHIPS:
-            print("  ERROR: colorids consist of %d colors, but MCHIPS is %d" % (len(v.colorids[0].strid), MCHIPS))
+        if len(v.colorids[0].strid) != v.project_settings.MCHIPS:
+            print("  ERROR: colorids consist of %d colors, but MCHIPS is %d" % (len(v.colorids[0].strid), v.project_settings.MCHIPS))
             return
         phase.end_phase()
 
@@ -174,7 +180,9 @@ def main(argv=[]):
         phase.start_phase("Initialize calculated variables (sdistlists, clusterlists, md blobs over blobs, etc.)...")
         for currentframe in range(framecount):
             # calculate spatial distances between blobs
-            v.sdistlists[currentframe] = algo_blob.create_spatial_distlists(v.color_blobs[currentframe])
+            v.sdistlists[currentframe] = algo_blob.create_spatial_distlists(
+                v.color_blobs[currentframe], v.project_settings.MAX_INRAT_DIST
+            )
             # find blob clusters for later error checking and set clusterindex variable in all blobs
             (v.clusterlists[currentframe], v.clusterindices[currentframe]) = algo_blob.find_clusters_in_sdistlists(v.color_blobs[currentframe], v.sdistlists[currentframe])
             # set mdindex variable in all blobs
@@ -204,16 +212,22 @@ def main(argv=[]):
         for currentframe in range(framecount):
             # find colorid chains
             chainlists = algo_blob.find_chains_in_sdistlists(
-                    v.color_blobs[currentframe], v.sdistlists[currentframe], v.colorids)
+                    v.color_blobs[currentframe], v.sdistlists[currentframe],
+                    v.colorids, v.project_settings)
             # store full IDs
             for k in range(len(v.colorids)):
                 if not chainlists[k]: continue
                 for chain in chainlists[k]:
                     # append to blob list
-                    barcode = Barcode(0, 0, 0, MFix.FULLFOUND, chain)
-                    algo_barcode.calculate_params(barcode,  v.colorids[k].strid, v.color_blobs[currentframe])
+                    barcode = Barcode(0, 0, 0, MFix.FULLFOUND, v.project_settings.MCHIPS, chain)
+                    algo_barcode.calculate_params(barcode,  v.colorids[k].strid,
+                        v.color_blobs[currentframe], v.project_settings.AVG_INRAT_DIST
+                    )
                     v.barcodes[currentframe][k].append(barcode)
-                    algo_blob.update_blob_barcodeindices(barcode, k, len(v.barcodes[currentframe][k])-1, v.color_blobs[currentframe])
+                    algo_blob.update_blob_barcodeindices(barcode, k,
+                        len(v.barcodes[currentframe][k])-1,
+                        v.color_blobs[currentframe]
+                    )
                     count += 1
             # print status
             phase.check_and_print_phase_status('forward', currentframe, framecount)
@@ -244,14 +258,16 @@ def main(argv=[]):
             for currentframe in range(framecount):
                 # remove close sharesid ones
                 count_sharesid += algo_barcode.remove_close_sharesid(
-                        v.barcodes[currentframe], v.color_blobs[currentframe], v.colorids)
+                        v.barcodes[currentframe], v.color_blobs[currentframe],
+                        v.colorids, v.project_settings)
                 # remove overlapping ones
                 for cluster in v.clusterlists[currentframe]:
                     count_overlapped += algo_barcode.remove_overlapping_fullfound(
                             v.barcodes[currentframe], v.color_blobs[currentframe], cluster)
                     # set nocluster property for 'remote' barcodes
                     algo_barcode.set_nocluster_property(
-                            v.barcodes[currentframe], v.color_blobs[currentframe], cluster)
+                            v.barcodes[currentframe], v.color_blobs[currentframe], cluster,
+                            v.project_settings.MCHIPS)
 
                 # print status
                 phase.check_and_print_phase_status('forward', currentframe, framecount)
@@ -283,7 +299,8 @@ def main(argv=[]):
             for currentframe in range(1,framecount):
                 # main algo is in algo.py, all function params are lists so they are modified in the call
                 (a, b, c) = algo_barcode.find_partlyfound_from_tdist(
-                        'forward', currentframe, v.tdistlists, v.color_blobs, v.barcodes, v.colorids,
+                        'forward', currentframe, v.tdistlists, v.color_blobs,
+                        v.barcodes, v.colorids, v.project_settings,
                         v.sdistlists[currentframe], v.md_blobs, v.mdindices)
                 count += a
                 count_adjusted += b
@@ -321,7 +338,8 @@ def main(argv=[]):
             for currentframe in range(framecount-2, -1, -1):
                 # main algo is in algo.py, all function params are lists so they are modified in the call
                 (a, b, c) = algo_barcode.find_partlyfound_from_tdist(
-                        'backward', currentframe, v.tdistlists, v.color_blobs, v.barcodes, v.colorids,
+                        'backward', currentframe, v.tdistlists, v.color_blobs,
+                        v.barcodes, v.colorids, v.project_settings,
                         v.sdistlists[currentframe], v.md_blobs, v.mdindices)
                 count += a
                 count_adjusted += b
@@ -359,7 +377,8 @@ def main(argv=[]):
             for currentframe in range(framecount):
                 # remove close sharesid ones
                 count_sharesid += algo_barcode.remove_close_sharesid(
-                        v.barcodes[currentframe], v.color_blobs[currentframe], v.colorids, MFix.PARTLYFOUND_FROM_TDIST)
+                        v.barcodes[currentframe], v.color_blobs[currentframe],
+                        v.colorids, v.project_settings, MFix.PARTLYFOUND_FROM_TDIST)
                 # print status
                 phase.check_and_print_phase_status('forward', currentframe, framecount)
             phase.end_phase("%d sharesid barcodes deleted/joined." % count_sharesid)
@@ -381,7 +400,7 @@ def main(argv=[]):
         for currentframe in range(framecount):
             # set mfix flags temporarily (we might use this info later
             algo_barcode.set_shared_mfix_flags(v.barcodes[currentframe],
-                    v.color_blobs[currentframe], v.colorids)
+                    v.color_blobs[currentframe], v.colorids, v.project_settings)
             # print status
             #phase.check_and_print_phase_status('backward', currentframe, framecount)
         phase.end_phase()
@@ -401,9 +420,10 @@ def main(argv=[]):
                 phase.start_phase("Creating trajectory database...")
                 for currentframe in range(framecount):
                     algo_trajectory.initialize_trajectories(
-                            v.trajectories, v.trajsonframe, v.barcodes, v.color_blobs, currentframe,
-                            v.colorids, v.md_blobs, v.mdindices)
-
+                        v.trajectories, v.trajsonframe, v.barcodes,
+                        v.color_blobs, currentframe, v.colorids,
+                        v.project_settings, v.md_blobs, v.mdindices
+                    )
                     # write results to output text file
                     # barcode_textfile_writeframe(v.barcodes[currentframe], currentframe, v.colorids)
                     # print status
@@ -436,7 +456,7 @@ def main(argv=[]):
                 phase.start_phase("Sort trajectories, choose and connect best, delete overlapping bad ones...")
                 algo_trajectory.find_best_trajectories(
                         v.trajectories, v.trajsonframe, v.colorids, v.barcodes,
-                        v.color_blobs, find_best_trajectories_settings)
+                        v.color_blobs, v.project_settings)
                 phase.end_phase()
             elif options.debugload == 9:
                 phase.start_phase("Reading previously saved debug environment at level %d..." % options.debugload)
@@ -480,7 +500,7 @@ def main(argv=[]):
             for currentframe in range(framecount):
                 # set mfix flags temporarily (we might use this info later
                 algo_barcode.set_shared_mfix_flags(v.barcodes[currentframe],
-                        v.color_blobs[currentframe], v.colorids)
+                        v.color_blobs[currentframe], v.colorids, v.project_settings)
                 # print status
                 #phase.check_and_print_phase_status('backward', currentframe, framecount)
             phase.end_phase()
@@ -491,8 +511,9 @@ def main(argv=[]):
             ########################################################################
             # get conflicts
             phase.start_phase("Check, list and (solve) remaining conflicts...")
-            algo_conflict.create_conflict_database_and_try_resolve(v.trajectories, v.barcodes,
-                    v.color_blobs, v.colorids)
+            algo_conflict.create_conflict_database_and_try_resolve(v.trajectories,
+                v.barcodes, v.color_blobs, v.colorids, v.project_settings
+            )
             phase.end_phase()
 
             # debug quickcheck on barcode and blob database consistency

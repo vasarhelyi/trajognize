@@ -5,7 +5,6 @@ All kinds of algorithms used by trajognize.main() that are related to blobs.
 from math import degrees, acos
 import numpy
 
-from .project import *
 from .init import MFix, BarcodeIndex
 from .algo import distance_matrix, get_distance, is_point_inside_ellipse
 
@@ -13,12 +12,13 @@ from .algo import distance_matrix, get_distance, is_point_inside_ellipse
 chainlists = [] # chains of possible ids with blob indices
 
 
-def create_spatial_distlists(blobs):
+def create_spatial_distlists(blobs, MAX_INRAT_DIST):
     """Return a list for all blobs containing blob indices
     that are close enough to be on the same rat on a given frame.
 
     Keyword arguments:
     blobs -- list of all blobs (ColorBlob) from a given frame
+    MAX_INRAT_DIST -- max distance between rats on the same frame
 
     """
     n = len(blobs)
@@ -31,7 +31,8 @@ def create_spatial_distlists(blobs):
     return sdistlists
 
 
-def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdindices, mdindices):
+def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs,
+    prevmdindices, mdindices, project_settings):
     """Return a list for all blobs containing prevblob indices
     that are close enough to be the same blobs as on the previous frame.
 
@@ -49,6 +50,7 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdin
     md_blobs      -- list of all motion blobs (motion_blob_t) from the current frame
     prevmdindices -- motion blob index for blobs of the previous frame
     mdindices     -- motion blob index for blobs of the current frame
+    project_settings -- global project-specific settings
 
     Backward compatible - simply feed with 'next*' as prev*.
 
@@ -56,11 +58,12 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdin
     n = len(blobs)
     m = len(prevblobs)
     # include color in third coordinate to be 0 if match and too large if not
-    pn = numpy.array([[b.centerx, b.centery, MAX_PERFRAME_DIST_MD * b.color] for b in blobs])
-    pm = numpy.array([[b.centerx, b.centery, MAX_PERFRAME_DIST_MD * b.color] for b in prevblobs])
+    pn = numpy.array([[b.centerx, b.centery, project_settings.MAX_PERFRAME_DIST_MD * b.color] for b in blobs])
+    pm = numpy.array([[b.centerx, b.centery, project_settings.MAX_PERFRAME_DIST_MD * b.color] for b in prevblobs])
     distmatrix = distance_matrix(pn, pm)
-    a = [numpy.where(distmatrix[i] <= MAX_PERFRAME_DIST)[0] for i in range(n)]
-    b = [numpy.where((distmatrix[i] <= 2 * MAX_PERFRAME_DIST_MD) & (distmatrix[i] > MAX_PERFRAME_DIST))[0] for i in range(n)]
+    a = [numpy.where(distmatrix[i] <= project_settings.MAX_PERFRAME_DIST)[0] for i in range(n)]
+    b = [numpy.where((distmatrix[i] <= 2 * project_settings.MAX_PERFRAME_DIST_MD) & \
+        (distmatrix[i] > project_settings.MAX_PERFRAME_DIST))[0] for i in range(n)]
     # tdistlist is initialized with closeby prevblobs with lower threshold
     tdistlists = [numpy.ndarray.tolist(a[i]) for i in range(n)]
     # higher threshold closeby prevblobs are added if other conditions are met
@@ -89,7 +92,7 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs, prevmdin
     return tdistlists
 
 
-def find_chains_in_sdistlists(blobs, sdistlists, colorids):
+def find_chains_in_sdistlists(blobs, sdistlists, colorids, project_settings):
     """Find all color blob chains on a frame that could be real colorids
     and return them in lists for all colorids separately.
 
@@ -101,15 +104,16 @@ def find_chains_in_sdistlists(blobs, sdistlists, colorids):
     sdistlists -- possible chain connections, created in advance by
                   create_spatial_distlists()
     colorids   -- global colorid database created by parse_colorid_file()
+    project_settings -- global project-specific settings
 
     Uses the recursive function find_chains_in_sdistlists_recursively()
 
     """
     chainlists = [[] for x in range(len(colorids))]
-    lastit = [-1 for x in range(MCHIPS)]
+    lastit = [-1 for x in range(project_settings.MCHIPS)]
     # iterate all colorids
     for k in range(len(colorids)):
-        color0 = color2int[colorids[k].strid[0]]
+        color0 = project_settings.color2int(colorids[k].strid[0])
         # iterate all from given color (from) to find all good chains for that colorid
         fr = -1
         while fr < len(blobs) - 1:
@@ -118,7 +122,7 @@ def find_chains_in_sdistlists(blobs, sdistlists, colorids):
             # store blob index (last iteration of current level)
             lastit[0] = fr
             # iterate all that are chained to the first element and find the rest recursively
-            color1 = color2int[colorids[k].strid[1]]
+            color1 = project_settings.color2int(colorids[k].strid[1])
             for distto in sdistlists[fr][0]:
                 # if the colors match
                 if blobs[distto].color == color1:
@@ -126,13 +130,16 @@ def find_chains_in_sdistlists(blobs, sdistlists, colorids):
                     lastit[1] = distto
                     # iterate through all possibilities and save chains
                     find_chains_in_sdistlists_recursively(
-                            blobs, sdistlists, chainlists, colorids, lastit, k, distto, 2)
+                        blobs, sdistlists, chainlists, colorids,
+                        project_settings, lastit, k, distto, 2
+                    )
 
     return chainlists
 
 
 def find_chains_in_sdistlists_recursively(
-        blobs, sdistlists, chainlists, colorids, lastit, k, fr, i):
+        blobs, sdistlists, chainlists, colorids, project_settings,
+        lastit, k, fr, i):
     """Helper function to find chains recursively.
 
     Should be called by itself and find_chains_in_sdistlists() only.
@@ -145,17 +152,17 @@ def find_chains_in_sdistlists_recursively(
 
     """
     # if no more chain elements needed, check good order and store chain
-    if i == MCHIPS:
+    if i == project_settings.MCHIPS:
         # bad order: do not store (next one is further than a later one)
-        blobchain = [blobs[lastit[x]] for x in range(MCHIPS)]
-        if not is_blob_chain_appropriate_as_barcode(blobchain):
+        blobchain = [blobs[lastit[x]] for x in range(project_settings.MCHIPS)]
+        if not is_blob_chain_appropriate_as_barcode(blobchain, project_settings.MCHIPS):
             return
         # good order: store
-        chainlists[k].append([lastit[j] for j in range(MCHIPS)])
+        chainlists[k].append([lastit[j] for j in range(project_settings.MCHIPS)])
         return
 
     # if more chain elements needed, call self recursively
-    color = color2int[colorids[k].strid[i]]
+    color = project_settings.color2int(colorids[k].strid[i])
     for distto in sdistlists[fr][0]:
         # if the colors match
         if blobs[distto].color == color:
@@ -163,25 +170,28 @@ def find_chains_in_sdistlists_recursively(
             lastit[i] = distto
             # increase common counter and go to next level
             find_chains_in_sdistlists_recursively(
-                    blobs, sdistlists, chainlists, colorids, lastit, k, distto, i+1)
+                blobs, sdistlists, chainlists, colorids, project_settings,
+                lastit, k, distto, i+1
+            )
 
 
-def is_blob_chain_appropriate_as_barcode(blobchain, check_distance=None):
+def is_blob_chain_appropriate_as_barcode(blobchain, MCHIPS, check_distance=None):
     """Decice whether a (full) chain of blobs is appropriate as a barcode.
 
     Keyword arguments:
     blobchain      -- list/tuple of blobs as a chain
+    MCHIPS         -- number of chips / bins in a barcode
     check_distance -- optional argument to check for distance between blobs
 
     """
     # check absolute distance if needed
     if check_distance:
-        for j in range(MCHIPS-1):
+        for j in range(MCHIPS - 1):
             if get_distance(blobchain[j], blobchain[j+1]) > check_distance:
                 return False
 
     # check for good order according to distance between blobs
-    for j in range(MCHIPS-2):
+    for j in range(MCHIPS - 2):
         for jj in range(j+2, MCHIPS):
             d12 = get_distance(blobchain[j], blobchain[j+1])  # 1,2
             d1x = get_distance(blobchain[j], blobchain[jj])   # 1,3
@@ -190,7 +200,7 @@ def is_blob_chain_appropriate_as_barcode(blobchain, check_distance=None):
                 return False
 
     # bad angle: do not store (too small angle in the middle)
-    for j in range(1, MCHIPS-1):
+    for j in range(1, MCHIPS - 1):
         v1 = (blobchain[j-1].centerx - blobchain[j].centerx, blobchain[j-1].centery - blobchain[j].centery)
         v2 = (blobchain[j+1].centerx - blobchain[j].centerx, blobchain[j+1].centery - blobchain[j].centery)
         av12 = ((v1[0]**2 + v1[1]**2)**0.5) * ((v2[0]**2 + v2[1]**2)**0.5)

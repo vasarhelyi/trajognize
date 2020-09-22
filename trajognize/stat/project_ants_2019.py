@@ -8,7 +8,6 @@ reproductive hierarchy.
 import datetime, math, os
 
 from trajognize.init import Point, Circle, Ellipse, Rectangle
-from trajognize.project import *
 
 # define the colony we are analysing
 COLONY = "S12" # data from Shuttle 1 and 2 together

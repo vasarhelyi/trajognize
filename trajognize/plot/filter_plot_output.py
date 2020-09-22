@@ -24,7 +24,6 @@ Note 2:
 
 import glob, os, sys, argparse, socket
 try:
-    import trajognize.project
     import trajognize.stat.project
     import trajognize.stat.experiments
     import trajognize.stat.init
@@ -32,7 +31,6 @@ try:
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
-    import trajognize.project
     import trajognize.stat.project
     import trajognize.stat.experiments
     import trajognize.stat.init
@@ -52,7 +50,7 @@ exps = trajognize.stat.experiments.get_initialized_experiments()
 # collect all possible values for each filter
 allexps = sorted(exps.keys())
 allstats = sorted(stats.keys() + ['bodymass', 'wounds'])
-alllights = sorted(list(trajognize.project.good_light))
+alllights = sorted(list(["DAYLIGHT", "NIGHTLIGHT"]))
 allrealvirts = sorted(list(trajognize.stat.init.mfix_types) + ['ANY'])
 allobjects = sorted(trajognize.stat.project.object_areas.keys())
 allgroups = set()
@@ -117,7 +115,7 @@ def main(argv=[]):
     if not argv and len(sys.argv) <= 1: argv.append('-h')
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
-    argparser.add_argument("-p", "--inputpath", metavar="PATH", dest="inputpath", default='', help="define input path with statsum output")
+    argparser.add_argument("-p", "--inputpath", metavar="PATH", required=True, dest="inputpath", default='', help="define input path with statsum output")
     argparser.add_argument("-v", "--verboseonly", dest="verbose_only", action="store_true", default=False, help="Do not create real symlinks, only print output.")
     argparser.add_argument("-m", "--maxsymlinks", metavar="num", dest="max_symlinks", type=int, default=100, help="Maximum number of symlinks to create.")
     # filters
@@ -140,23 +138,6 @@ def main(argv=[]):
     else:
         options = argparser.parse_args()
 
-    # check arguments
-    # input path
-    if not options.inputpath:
-        # get host name
-        hostname = socket.gethostname()
-        # default on windows (gabor's laptop)
-        if sys.platform.startswith('win'):
-            if hostname == 'ubi-ELTE':
-                options.inputpath = r'd:\ubi\ELTE\patekok\statsum'
-        # default on non windows (linux: atlasz or biolfiz1)
-        else:
-            if hostname == 'biolfiz1':
-                options.inputpath = '/data2/patekok/results/full_run__statsum'
-            elif hostname == 'atlasz':
-                options.inputpath = '/project/flocking/abeld/ratlab/results/full_run__statsum/done'
-            elif hostname == 'hal':
-                options.inputpath = '/home/nagymate/public_html/sjt/patekfilter/gallery/gal_sshfs_biolfiz1'
     # if names are specified, insert groups that contain those names
     if options.names:
         for exp in options.experiments if options.experiments else allexps:

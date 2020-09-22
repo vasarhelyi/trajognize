@@ -35,8 +35,9 @@ argparser.add_argument("-ns", "--nosameiddist", dest="nosameiddist", action="sto
 argparser.add_argument("-nh", "--noheatmap", dest="noheatmap", action="store_true", default=False, help="do not calculate heatmaps")
 argparser.add_argument("-nt", "--notimedist", dest="notimedist", action="store_true", default=False, help="do not calculate 24h time distribution")
 argparser.add_argument("-cc", "--correctcage", dest="correctcage", action="store_true", default=False, help="correct for cage center dislocations")
-argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define barcode input path to have barcode files at [PATH]*/OUT/*.blobs.barcodes", metavar="PATH")
-argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
+argparser.add_argument("-i", "--inputpath", required=True, dest="inputpath", help="define barcode input path to have barcode files at [PATH]*/OUT/*.blobs.barcodes", metavar="PATH")
+argparser.add_argument("-c", "--coloridfile", required=True, metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
+argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
 args = argparser.parse_args()
 
 # parse colorid file
@@ -45,17 +46,22 @@ if colorids is None:
     print("could not parse colorid file")
     sys.exit(1)
 
+# project settings
+project_settings = trajognize.settings.import_trajognize_settings_from_file(args.projectfile)
+print("Current project is: %s\n" % project_settings.project_name)
+
+
 # init barcode occurrence heatmaps
 if not args.noheatmap:
     heatmap_bin_size = 1 # [pixel]
-    heatmaps = [[[0 for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)) ] for x in range(int(trajognize.project.image_size.x/heatmap_bin_size))] for light in range(len(trajognize.project.good_light))] # [light][x][y]
+    heatmaps = [[[0 for y in range(int(project_settings.image_size.y/heatmap_bin_size)) ] for x in range(int(project_settings.image_size.x/heatmap_bin_size))] for light in range(len(project_settings.good_light))] # [light][x][y]
 
 # init same id number distributions
 if not args.nosameiddist:
     MAX_SAME_ID_WARN = 10
     MAX_SAME_ID = 200
     PATEK_COUNT = len(colorids)
-    sameiddists = [[[[0 for x in range(MAX_SAME_ID + 1)] for deleted in range(2)] for ids in range(PATEK_COUNT+1)] for light in range(len(trajognize.project.good_light))] # [light][id/all][deleteddeleted][numsameid]
+    sameiddists = [[[[0 for x in range(MAX_SAME_ID + 1)] for deleted in range(2)] for ids in range(PATEK_COUNT+1)] for light in range(len(project_settings.good_light))] # [light][id/all][deleteddeleted][numsameid]
 
 # init 24h time distributions
 if not args.notimedist:
@@ -138,14 +144,14 @@ for inputfile in files:
                         centerx = barcode.centerx
                         centery = barcode.centery
                         if args.correctcage:
-                            centerx += trajognize.project.cage_center_x - cagecenter[0]
-                            centery += trajognize.project.cage_center_y - cagecenter[1]
-                        if centerx != centerx or centerx >= trajognize.project.image_size.x or centerx < 0: continue
-                        if centery != centery or centery >= trajognize.project.image_size.y or centery < 0: continue
+                            centerx += project_settings.cage_center_x - cagecenter[0]
+                            centery += project_settings.cage_center_y - cagecenter[1]
+                        if centerx != centerx or centerx >= project_settings.image_size.x or centerx < 0: continue
+                        if centery != centery or centery >= project_settings.image_size.y or centery < 0: continue
                         # store good ones on heatmap
                         heatmaps[light][int(centerx/heatmap_bin_size)][int(centery/heatmap_bin_size)] += 1
                         good[light] += 1
-            for light, lightstr in enumerate(trajognize.project.good_light):
+            for light, lightstr in enumerate(project_settings.good_light):
                 print("  %d barcodes added to %s heatmap" % (good[light], lightstr))
 
         if not args.nosameiddist:
@@ -183,7 +189,7 @@ for inputfile in files:
                             num -= 1
                     sameiddists[light][k][1][num] += 1
                     sameiddists[light][PATEK_COUNT][1][num] += 1
-            for light, lightstr in enumerate(trajognize.project.good_light):
+            for light, lightstr in enumerate(project_settings.good_light):
                 num = 0
                 for i in range(2,MAX_SAME_ID+1):
                     num += sameiddists[light][PATEK_COUNT][1][i]
@@ -204,7 +210,7 @@ for inputfile in files:
             numsumsum = 0
             for currentframe in range(len(barcodes)):
                 # get current frame in min
-                bin = ((secofday + currentframe/trajognize.project.FPS) % 86400 ) / 60
+                bin = ((secofday + currentframe/project_settings.FPS) % 86400 ) / 60
                 numsum = 0
                 # store number of barcodes in the proper time bin
                 for k in range(len(colorids)):
@@ -241,24 +247,24 @@ for inputfile in files:
 
 # print heatmaps
 if not args.noheatmap:
-    for light in range(len(trajognize.project.good_light)):
-        print("\n\n# heatmap of %s barcodes" % trajognize.project.good_light[light])
-        print("heatmap_%s" % trajognize.project.good_light[light], end= " ")
-        for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+    for light in range(len(project_settings.good_light)):
+        print("\n\n# heatmap of %s barcodes" % project_settings.good_light[light])
+        print("heatmap_%s" % project_settings.good_light[light], end= " ")
+        for x in range(int(project_settings.image_size.x/heatmap_bin_size)):
             print("\t%d" % (x * heatmap_bin_size), end=" ")
         print("")
-        for y in range(int(trajognize.project.image_size.y/heatmap_bin_size)):
+        for y in range(int(project_settings.image_size.y/heatmap_bin_size)):
             print("%d" % (y * heatmap_bin_size), end=" ")
-            for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
+            for x in range(int(project_settings.image_size.x/heatmap_bin_size)):
                 print("\t%d" % heatmaps[light][x][y], end=" ")
             print("")
 
 # print sameiddists
 if not args.nosameiddist:
-    for light in range(len(trajognize.project.good_light)):
+    for light in range(len(project_settings.good_light)):
         for deleted in range(2):
-            print("\n\n# same id distribution of %s barcodes (%s)" % (trajognize.project.good_light[light], "including MFix.DELETED" if deleted == 0 else "only valid"))
-            print("sameiddists_%s_%s" % (trajognize.project.good_light[light], "withdeleted" if deleted == 0 else "onlyvalid"), end="")
+            print("\n\n# same id distribution of %s barcodes (%s)" % (project_settings.good_light[light], "including MFix.DELETED" if deleted == 0 else "only valid"))
+            print("sameiddists_%s_%s" % (project_settings.good_light[light], "withdeleted" if deleted == 0 else "onlyvalid"), end="")
             for j in range(PATEK_COUNT):
                 print("\t%s" % colorids[j].strid, end=" ")
             print("\tALL")

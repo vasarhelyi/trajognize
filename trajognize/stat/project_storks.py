@@ -6,7 +6,6 @@ by Iris and Mate, 2019/2020.
 import datetime, math, os
 
 from trajognize.init import Point, Circle, Ellipse, Rectangle
-from trajognize.project import *
 
 #: possible interesting objects
 object_types = []

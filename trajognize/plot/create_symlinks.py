@@ -4,7 +4,7 @@ result type. This is the opposite of the normal/original directory structure...
 
 Usage:
 
-    python create_symlinks.py [inputdir] [outputdir]
+    python create_symlinks.py projectfile inputdir [outputdir]
 
 Note:
 
@@ -12,19 +12,19 @@ Note:
 
     find -L * -xtype l > symlinks.txt
     for f in $(cat symlinks.txt) ; do unlink $f ; done
-    
+
 """
 
 import glob, os, sys, re
 try:
-    import trajognize.project
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.stat.project
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
-    import trajognize.project
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.stat.project
@@ -39,27 +39,21 @@ linkdir = linkdirprefix + '_'.join([x.upper() for x in directory_order])
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if len(argv) == 0:
-        if sys.platform.startswith('win'):
-#            inputdir = r'd:\ubi\ELTE\patekok\video\random_sample_trial_run__trajognize\done'
-            inputdir = r'd:\ubi\ELTE\patekok\statsum'
-        else:
-            inputdir = r'/project/flocking/abeld/ratlab/results/full_run__statsum/done'
-        outputdir = os.path.join(inputdir, linkdir)
-    elif len(argv) == 1:
-        inputdir = argv[0]
-        outputdir = os.path.join(inputdir, linkdir)
-    elif len(argv) == 2:
-        inputdir = argv[0]
-        outputdir = argv[1]
-    else:
+    if len(argv) not in [2, 3]:
         print(__doc__)
         return
+    projectfile = argv[0]
+    inputdir = argv[1]
+    if len(argv) == 2:
+        outputdir = os.path.join(inputdir, linkdir)
+    elif len(argv) == 3:
+        outputdir = argv[2]
 
     print("Input dir:", inputdir)
     print("Output dir:", outputdir)
 
     exps = trajognize.stat.experiments.get_initialized_experiments()
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
     for root, subfolders, files in os.walk(inputdir):
         x = root[len(inputdir)+1:]
         # ignore symlink dirs
@@ -100,7 +94,7 @@ def main(argv=[]):
             found_group = 'unknown_group'
 
         # check light
-        for light in trajognize.project.good_light:
+        for light in project_settings.good_light:
             if light.lower() in subs:
                 found_light = light.lower()
                 break
