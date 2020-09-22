@@ -38,13 +38,13 @@ def get_label_color(mfix):
 def main(argv=[]):
     """Main entry point."""
     if len(argv) != 2 or "-h" in argv or "--help" in argv:
-        print __doc__
+        print(__doc__)
         return
     inputfile = argv[0]
     coloridfile = argv[1]
     outputfile = open(inputfile + ".srt", 'w')
 
-    print("Project: %s" % trajognize.project.PROJECT)
+    print("Project: %s" % trajognize.project.project_str[trajognize.project.PROJECT])
     print("Image size: %gx%g" % trajognize.project.image_size)
     print("FPS: %g" % trajognize.project.FPS)
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:])) # pass only real params to main
     except Exception as ex:
-        print >>sys.stderr, ex
+        print(ex, file=sys.stderr)
         import traceback
         traceback.print_exc(ex)
         sys.exit(1)
@@ -266,7 +266,7 @@ for inputfile in files:
 # print heatmaps
 if not args.noheatmap:
     for light in range(len(trajognize.project.good_light)):
-        print"\n\n# heatmap of %s barcodes" % trajognize.project.good_light[light]
+        print("\n\n# heatmap of %s barcodes" % trajognize.project.good_light[light])
         print("heatmap_%s" % trajognize.project.good_light[light], end=" ")
         for x in range(int(trajognize.project.image_size.x/heatmap_bin_size)):
             print("\t%d" % (x * heatmap_bin_size), end=" ")
@@ -281,7 +281,7 @@ if not args.noheatmap:
 if not args.nosameiddist:
     for light in range(len(trajognize.project.good_light)):
         for deleted in range(2):
-            print"\n\n# same id distribution of %s barcodes (%s)" % (trajognize.project.good_light[light], "including MFIX_DELETED" if deleted == 0 else "only valid")
+            print("\n\n# same id distribution of %s barcodes (%s)" % (trajognize.project.good_light[light], "including MFIX_DELETED" if deleted == 0 else "only valid"))
             print("sameiddists_%s_%s" % (trajognize.project.good_light[light], "withdeleted" if deleted == 0 else "onlyvalid"), end=" ")
             for j in range(PATEK_COUNT):
                 print("\t%s" % colorids[j].strid, end=" ")
@@ -303,7 +303,7 @@ if not args.notimedist:
     s = "time_bin"
     for k in range(len(name)):
         s += "\tavg_%s\tstd_%s\tnum_%s" % (name[k], name[k], name[k])
-    print s
+    print(s)
     # write all minute bins (1440)
     for bin in range(1440):
         s = "%02d:%02d:00" % (bin/60, bin%60)
@@ -311,4 +311,4 @@ if not args.notimedist:
             if num_24h[k][bin] > 0:
                 std_24h[k][bin] = sqrt(std_24h[k][bin] / num_24h[k][bin])
             s += "\t%f\t%f\t%d" % (avg_24h[k][bin], std_24h[k][bin], num_24h[k][bin])
-        print s
+        print(s)
