@@ -117,8 +117,7 @@ def is_wall_between(a, b, cage):
     TODO: find a reasonable max diameter for this correction, now 50 pixel is used.
 
     """
-    #WARNING: algo so far implemented only for PROJECT_2011
-    if PROJECT != PROJECT_2011:
+    if use_cage is False:
         return False
 
     # check cage params, return "there is no wall" if cage coords is nan
@@ -270,12 +269,13 @@ def get_days_since_start(experiment, sometime):
 
 def get_day_offset(experiment):
     """Get day offset of a given experiment. This is a hack in project_2011
-    to accomodate first experiment cut up parts..."""
-    if PROJECT != PROJECT_2011:
-        return 0
+    to accomodate first experiment cut up parts... Works until you do not define
+    an experiment name containing the string 'first_part'. Sorry..."""
 
     if "first_part" in experiment['name']:
-        return (experiment['start'].date() - experiments['first_A1_A2_B1_B2']['start'].date()).days
+        return (experiment['start'].date() -
+            experiments['first_A1_A2_B1_B2']['start'].date()
+        ).days
     else:
         return 0
 
@@ -284,7 +284,10 @@ def get_dayrange_of_experiment(experiment):
     """Return a list of strings containing all days through an experiment."""
     firstday = experiment['start'].date()
     lastday = experiment['stop'].date()
-    dayrange = [str(firstday + datetime.timedelta(n)) for n in range(int((lastday - firstday).days) + 1)]
+    dayrange = [str(firstday + datetime.timedelta(n))
+        for n in range(int((lastday - firstday).days) + 1)
+    ]
+
     return dayrange
 
 
@@ -297,14 +300,18 @@ def get_dayrange_of_all_experiments(experiments=experiments):
         if lastday is None or lastday < exp['stop']: lastday = exp['stop']
     firstday = firstday.date()
     lastday = lastday.date()
-    dayrange = [str(firstday + datetime.timedelta(n)) for n in range(int((lastday - firstday).days) + 1)]
+    dayrange = [str(firstday + datetime.timedelta(n))
+        for n in range(int((lastday - firstday).days) + 1)
+    ]
+
     return dayrange
 
 
 def is_weekly_feeding_time(date, exclude_fridays=False):
     """Check whether a given datetime is part of the weekly feeding time
     schedule."""
-    if PROJECT != PROJECT_2011:
+
+    if not weekly_feeding_times:
         return False
 
     weekday = date.strftime('%A').lower()
@@ -316,6 +323,7 @@ def is_weekly_feeding_time(date, exclude_fridays=False):
     for start, duration in weekly_feeding_times[weekday]:
         if hour >= start and hour < start + duration:
             return True
+
     return False
 
 

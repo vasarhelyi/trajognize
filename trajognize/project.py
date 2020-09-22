@@ -8,6 +8,7 @@ import os
 
 ################################################################################
 # project definitions
+
 PROJECT_2011 = 1 # the big rat experiment back in 2011 by ELTE CollMot
 PROJECT_MAZE = 2 # the rat maze experiment in 2015 summer at ELTE
 PROJECT_FISH = 3 # fish experiments 2015 by Ian Cousin Lab
@@ -46,7 +47,12 @@ Point = namedtuple('Point','x y')
 image_size = Point(1920, 1080)
 
 #: average center x coordinate of the cage, determined from 84 sample video averages
-cage_center = Point(925, 537)
+if PROJECT == PROJECT_2011:
+    use_cage = True
+    cage_center = Point(925, 537)
+else:
+    use_cage = False
+    cage_center = Point(image_size.x // 2, image_size.y // 2)
 
 ################################################################################
 # color blob definitions
@@ -151,6 +157,15 @@ if PROJECT == PROJECT_ANTS_2019:
     MAX_PERFRAME_ANGLE = 20
 else:
     MAX_PERFRAME_ANGLE = 30
+
+################################################################################
+# trajectory parameters
+
+if PROJECT in [PROJECT_MAZE, PROJECT_ANTS, PROJECT_ANTS_2019]:
+    traj_score_method = 1
+else:
+    traj_score_method = 2
+
 
 ################################################################################
 # stat parameters

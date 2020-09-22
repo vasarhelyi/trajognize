@@ -3,7 +3,7 @@ This file contains all environmental conditions related to the RATLAB experiment
 back in 2011-2012, at ELTE Department of Biological Physics.
 """
 
-import datetime, math
+import datetime, math, os
 
 from trajognize.init import Point, Circle, Ellipse, Rectangle
 from trajognize.project import *
@@ -668,3 +668,12 @@ def get_wall_polygons(experiment, group):
         index4 = index3 + iy[index3]
         polys[i].append(wheelcorners[index4])
     return (polys, polysall)
+
+
+def get_unique_output_filename(outputpath, inputfile):
+    """Get unique output filename for statsum. If '-u' is specified, results
+    will be written to a unique output file with this path and filename.
+    """
+    return os.path.join(outputpath,
+        os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt"
+    )

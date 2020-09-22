@@ -12,7 +12,7 @@ import trajognize
 from trajognize.project import *
 
 # imports from self subclass
-from .project import stat_aa_settings
+from .project import stat_aa_settings, get_exp_from_colorid_filename
 
 from . import util
 from . import experiments
@@ -187,9 +187,11 @@ def main(argv=[]):
     head, tail = os.path.split(inputfile)
     inputfile_log = inputfile[:-15] # remove '.blobs.barcodes'
     inputfile_log += '.log'
-    if PROJECT == PROJECT_2011:
+    if len(all_light) > 1:
         (light_log, cage_log) = trajognize.parse.parse_log_file(inputfile_log)
     else:
+        # in most projects we use only a single lighting condition, let it be NIGHTLIGHT
+        # in most projects we do not use cage correction, let it be the center value
         light_log = {0: 'NIGHTLIGHT'}
         cage_log = {0: [image_size.x/2, image_size.y/2, 0, 90]}
     if light_log is None and cage_log is None:
@@ -212,9 +214,7 @@ def main(argv=[]):
         exp = None
         experiment = None
     else:
-        if PROJECT == PROJECT_2011:
-            exp = explist[0] # first one in list is the main one (we always calculate stat with that)
-        elif PROJECT == PROJECT_MAZE:
+        if get_exp_from_colorid_filename:
             # sorry, this is a project-specific ugly hack...
             tag = os.path.splitext(os.path.split(options.coloridfile)[1])[0].split("_")[-1]
             tag = "male" if tag.startswith('M') else "female" if tag.startswith('F') else "unisex"
@@ -224,10 +224,9 @@ def main(argv=[]):
             else:
                 exp = None
             print(exp)
-        elif PROJECT in [PROJECT_ANTS, PROJECT_ANTS_2019]:
-            exp = explist[0] # first one in list is the main one (we always calculate stat with that)
         else:
-            exp = explist[0] # TODO: define this for all projects
+            # first one in list is the main one (we always calculate stat with that)
+            exp = explist[0]
         experiment = exps[exp]
     print("  current experiment is '%s'" % exp)
     phase.end_phase()

@@ -318,7 +318,7 @@ def initialize_trajectories(trajectories, trajsonframe, barcodes, blobs,
                 #    print('    not found, starting new one trajindex', len(trajectories[k])-1)
 
 
-def traj_score(traj, k=None, kk=None, calculate_deleted=True):
+def traj_score(traj, method=1, k=None, kk=None, calculate_deleted=True):
     """Return final score of a trajectory.
 
     fullfound_count is the first approximation to a good score, taking into
@@ -332,10 +332,12 @@ def traj_score(traj, k=None, kk=None, calculate_deleted=True):
     Also, when connecting trajs, we might choose candidates from another
     colorid, so a score for these cases must be calculated as well.
 
-    Keyword arguments:
-    traj -- a trajectory
-    k    -- dst coloridindex of scoring (same as kk in default)
-    kk   -- src coloridindex of the traj
+    Parameters:
+        traj: a trajectory
+        method(int): 1 or 2, depending on what arbitrary method you need
+        k(int): dst coloridindex of scoring (same as kk in default)
+        kk(int): src coloridindex of the traj
+        calculate_deleted(bool): should we calculate score for deleted traj?
 
     """
     if not calculate_deleted and traj.state == TrajState.DELETED:
@@ -343,11 +345,14 @@ def traj_score(traj, k=None, kk=None, calculate_deleted=True):
 
     # if the score is calculated for the trajs color (default case):
     if k == kk:
-        if PROJECT in [PROJECT_MAZE, PROJECT_ANTS, PROJECT_ANTS_2019]:
+        if method == 1:
             return len(traj.barcodeindices) + sum(traj.colorblob_count[i] for i in range(MCHIPS)) + \
                     (traj.fullfound_count - traj.sharesblob_count + 2*traj.fullnocluster_count) / 3 + traj.offset_count
-        else:
+        elif method == 2:
             return max(0, (traj.fullfound_count - traj.sharesblob_count + traj.fullnocluster_count) / 2 + traj.offset_count)
+        else:
+            raise NotImplementedError("unhandled traj score method: {}".format(method))
+
     # if it is calculated for another color:
     else:
         # score is proportional to the average diff between least and others,
@@ -358,10 +363,12 @@ def traj_score(traj, k=None, kk=None, calculate_deleted=True):
         for i in others:
             score += traj.colorblob_count[i] - traj.colorblob_count[least]
         score /= len(others)
-        if PROJECT in [PROJECT_MAZE, PROJECT_ANTS, PROJECT_ANTS_2019]:
+        if method == 1:
             return len(traj.barcodeindices) + (score - traj.sharesblob_count) / 3 + traj.offset_count
-        else:
+        elif method == 2:
             return max(0, (score - traj.sharesblob_count) / 3 + traj.offset_count)
+        else:
+            raise NotImplementedError("unhandled traj score method: {}".format(method))
 
 def is_traj_good(traj, threshold=50):
     """Return True if trajectory is assumed to be a good one
@@ -378,7 +385,7 @@ def is_traj_good(traj, threshold=50):
 
     """
 
-    if traj_score(traj) >= threshold:
+    if traj_score(traj, traj_score_method) >= threshold:
         return True
     else:
         return False
@@ -727,11 +734,15 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
                         # calculate old score
                         scoreold = 0
                         for (kkk,jj) in conn[0:m]:
-                            scoreold += traj_score(trajectories[kkk][jj], k, kkk)
+                            scoreold += traj_score(trajectories[kkk][jj],
+                                traj_score_method, k, kkk
+                            )
                         # calculate new score
                         scorenew = 0
                         for (kkk,jj) in tempconn:
-                            scorenew += traj_score(trajectories[kkk][jj], k, kkk)
+                            scorenew += traj_score(trajectories[kkk][jj],
+                                traj_score_method, k, kkk
+                            )
                         # skip new
                         if scoreold >= scorenew: # TODO more checking on egalitarian state
                             cont = True
@@ -796,7 +807,7 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
                     if trajlastframe(trajx) < connections.fromframelimit: break
                 else:
                     if trajx.firstframe > connections.fromframelimit: break
-                scores[i] += traj_score(trajx, k, kk)
+                scores[i] += traj_score(trajx, traj_score_method, k, kk)
         # choose best (reverse sort according to total score) and continue search
         # using this as beginning
         si = sorted(list(range(len(connections.data))),
@@ -850,7 +861,9 @@ def connect_chosen_trajs(traja, trajb, k, trajectories, trajsonframe, barcodes,
             scores[i] = -1
             continue
         for (kk,j) in conn:
-            scores[i] += traj_score(trajectories[kk][j], k, kk)
+            scores[i] += traj_score(trajectories[kk][j], traj_score_method,
+                k, kk
+            )
 
     # choose best (reverse sort according to total score) and return
     si = sorted(list(range(len(connections.data))),
@@ -1287,15 +1300,15 @@ def choose_and_connect_trajs(si, score_threshold, trajectories, trajsonframe,
         # end iteration if traj is not good any more
         if not is_traj_good(traj, score_threshold + traj.offset_count):
             break
-        print(traj_score(traj), colorids[k].strid, "i%d s%d (%d-%d)," % (ii, traj.state, traj.firstframe, trajlastframe(traj)), end=" ")
+        print(traj_score(traj, traj_score_method), colorids[k].strid, "i%d s%d (%d-%d)," % (ii, traj.state, traj.firstframe, trajlastframe(traj)), end=" ")
         # skip ones that look good, but are already deleted (by better ones or due to changed score)
         if traj.state == TrajState.DELETED:
-            deletedgood.append((colorids[k].strid, traj_score(traj)))
+            deletedgood.append((colorids[k].strid, traj_score(traj, traj_score_method)))
             continue
         # and also skip ones that were chosen for another colorid
         if traj.state == TrajState.CHANGEDID or traj.k != k: # actually second should not occur here yet
             print("\n  Warning: changed %s traj colorid to %s with score %d, colorblob_count: %s," % (colorids[k].strid,
-                    colorids[traj.k].strid, traj_score(traj), traj.colorblob_count), end=" ")
+                    colorids[traj.k].strid, traj_score(traj, traj_score_method), traj.colorblob_count), end=" ")
             continue
         # skip already chosen ones
         if traj.state == TrajState.CHOSEN:
@@ -1446,10 +1459,10 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
     sum_good_scores = [0 for k in range(len(colorids))]
     for k in range(len(colorids)):
         if trajectories[k]:
-            best_scores[k] = max(traj_score(x) for x in trajectories[k])
-            worst_scores[k] = min(traj_score(x) for x in trajectories[k])
-            sum_scores[k] = sum(traj_score(x) for x in trajectories[k])
-            sum_good_scores[k] = sum(traj_score(x) if is_traj_good(x,
+            best_scores[k] = max(traj_score(x, traj_score_method) for x in trajectories[k])
+            worst_scores[k] = min(traj_score(x, traj_score_method) for x in trajectories[k])
+            sum_scores[k] = sum(traj_score(x, traj_score_method) for x in trajectories[k])
+            sum_good_scores[k] = sum(traj_score(x, traj_score_method) if is_traj_good(x,
                     settings.good_score_threshold) else 0 for x in trajectories[k])
     sortedk = sorted(list(range(len(colorids))),
         key=lambda x: sum_scores[x], reverse=True
@@ -1474,7 +1487,7 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
     si = []
     for k in range(len(colorids)):
         si += [(k, i) for i in range(len(trajectories[k]))]
-    si.sort(key=lambda x: traj_score(trajectories[x[0]][x[1]]), reverse=True)
+    si.sort(key=lambda x: traj_score(trajectories[x[0]][x[1]], traj_score_method), reverse=True)
     # choose and connect them
     choose_and_connect_trajs(si, settings.good_for_sure_score_threshold, trajectories,
             trajsonframe, colorids, barcodes, blobs, kkkk=None, framelimit=settings.framelimit)
@@ -1489,7 +1502,8 @@ def find_best_trajectories(trajectories, trajsonframe, colorids, barcodes, blobs
         # sort all trajectories in given color according to reverse score
         # si stands for 'sorted index'
         si = sorted([(k, i) for i in range(len(trajectories[k]))],
-            key=lambda x: traj_score(trajectories[x[0]][x[1]]), reverse=True
+            key=lambda x: traj_score(trajectories[x[0]][x[1]], traj_score_method),
+            reverse=True
         )
         # choose and connect them
         choose_and_connect_trajs(si, settings.good_score_threshold, trajectories,

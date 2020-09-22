@@ -3,7 +3,7 @@ This file contains all environmental conditions related to the storks project
 by Iris and Mate, 2019/2020.
 """
 
-import datetime, math
+import datetime, math, os
 
 from trajognize.init import Point, Circle, Ellipse, Rectangle
 from trajognize.project import *
@@ -50,6 +50,10 @@ experiments['storks'] = {
     }
 }
 
+
+weekly_feeding_times = {}
+
+
 def get_wall_polygons(experiment, group):
     """Create two wall polygons for a given experiment.
 
@@ -79,3 +83,12 @@ def get_wall_polygons(experiment, group):
     polysall[i].append(Point(0,image_size.y))
 
     return (polys, polysall)
+
+
+def get_unique_output_filename(outputpath, inputfile):
+    """Get unique output filename for statsum. If '-u' is specified, results
+    will be written to a unique output file with this path and filename.
+    """
+    return os.path.join(outputpath,
+        os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt"
+    )

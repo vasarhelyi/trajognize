@@ -8,70 +8,44 @@ See project_2011.py as the default example.
 
 from trajognize.project import *
 
+perform_project_import = True
 if PROJECT == PROJECT_2011:
-    from . import project_2011
-    weekly_feeding_times = project_2011.weekly_feeding_times
-    object_types = project_2011.object_types
-    object_areas = project_2011.object_areas
-    object_queuing_areas = project_2011.object_queuing_areas
-    max_day = project_2011.max_day
-
-    experiments = project_2011.experiments
-    get_wall_polygons = project_2011.get_wall_polygons
-
+    from . import project_2011 as actual_project
 elif PROJECT == PROJECT_MAZE:
-    from . import project_maze
-    weekly_feeding_times = {}
-    object_types = project_maze.object_types
-    object_areas = project_maze.object_areas
-    object_queuing_areas = project_maze.object_queuing_areas
-    max_day = project_maze.max_day
-
-    experiments = project_maze.experiments
-    get_wall_polygons = project_maze.get_wall_polygons
-
+    from . import project_maze as actual_project
 elif PROJECT == PROJECT_ANTS:
-    from . import project_ants
-    weekly_feeding_times = {}
-    object_types = project_ants.object_types
-    object_areas = project_ants.object_areas
-    object_queuing_areas = project_ants.object_queuing_areas
-    max_day = project_ants.max_day
-
-    experiments = project_ants.experiments
-    get_wall_polygons = project_ants.get_wall_polygons
-
+    from . import project_ants as actual_project
 elif PROJECT == PROJECT_ANTS_2019:
-    from . import project_ants_2019
-    weekly_feeding_times = {}
-    object_types = project_ants_2019.object_types
-    object_areas = project_ants_2019.object_areas
-    object_queuing_areas = project_ants_2019.object_queuing_areas
-    max_day = project_ants_2019.max_day
-
-    experiments = project_ants_2019.experiments
-    get_wall_polygons = project_ants_2019.get_wall_polygons
-
+    from . import project_ants_2019 as actual_project
 elif PROJECT == PROJECT_STORKS:
-    from . import project_storks
-    weekly_feeding_times = {}
-    object_types = project_storks.object_types
-    object_areas = project_storks.object_areas
-    object_queuing_areas = project_storks.object_queuing_areas
-    max_day = project_storks.max_day
-
-    experiments = project_storks.experiments
-    get_wall_polygons = project_storks.get_wall_polygons
-
+    from . import project_storks as actual_project
 else:
+    perform_project_import = False
+
     weekly_feeding_times = {}
     object_types = []
     object_areas = {}
     object_queuing_areas = {}
     max_day = 0
-
     experiments = {}
     get_wall_polygons = None
+    get_unique_output_filename = None
+
+if perform_project_import:
+    weekly_feeding_times = actual_project.weekly_feeding_times
+    object_types = actual_project.object_types
+    object_areas = actual_project.object_areas
+    object_queuing_areas = actual_project.object_queuing_areas
+    max_day = actual_project.max_day
+
+    experiments = actual_project.experiments
+    get_wall_polygons = actual_project.get_wall_polygons
+    get_unique_output_filename = actual_project.get_unique_output_filename
+
+if PROJECT == PROJECT_MAZE:
+    get_exp_from_colorid_filename = True
+else:
+    get_exp_from_colorid_filename = False
 
 ################################################################################
 # stat settings

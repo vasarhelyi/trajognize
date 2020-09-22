@@ -17,7 +17,7 @@ from trajognize.project import *
 from . import init
 from . import util
 from . import experiments
-from .project import stat_aa_settings
+from .project import stat_aa_settings, get_unique_output_filename
 
 
 def write_results(outputfilename, stats, stat, substat, statobject, exps, exp,
@@ -261,13 +261,9 @@ def main(argv=[]):
                     if uniqueoutput:
                         # print results to stdout
                         print("  writing unique output...")
-                        if PROJECT in [PROJECT_ANTS, PROJECT_ANTS_2019]:
-                            uniqueoutputfilename = os.path.join(options.outputpath,
-                                    os.path.split(os.path.split(os.path.split(inputfile)[0])[0])[1] + "__" +
-                                    os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt")
-                        else:
-                            uniqueoutputfilename = os.path.join(options.outputpath,
-                                    os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt")
+                        uniqueoutputfilename = get_unique_output_filename(
+                            options.outputpath, inputfile
+                        )
                         write_results(uniqueoutputfilename, stats, stat, substat, newobj,
                                 exps, exp, day, dailyoutput, colorids)
 

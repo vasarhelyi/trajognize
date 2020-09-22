@@ -48,14 +48,14 @@ def list_conflicted_trajs(conflicted_trajs, colorids, trajectories):
     si = [] # si stands for 'sorted index'
     for k in range(len(colorids)):
         si += [(k, t) for t in conflicted_trajs[k]]
-    si.sort(key=lambda x: algo_trajectory.traj_score(trajectories[x[0]][x[1]]),
-        reverse=True
+    si.sort(key=lambda x: algo_trajectory.traj_score(trajectories[x[0]][x[1]],
+        traj_score_method), reverse=True
     )
     for (k, t) in si:
         traj = trajectories[k][t]
         print("   ", colorids[k].strid, "f%d-%d s%d" % (traj.firstframe,
                 algo_trajectory.trajlastframe(traj),
-                algo_trajectory.traj_score(traj)), \
+                algo_trajectory.traj_score(traj, traj_score_method)), \
                 TrajState(traj.state).name)
 
 
