@@ -181,7 +181,7 @@ def matrixfile_write(outputfile, W, name = "", idorder=None):
     elif isinstance(W, list):
         if idorder is None: idorder = range(n)
     else:
-        0/0
+        raise NotImplementedError("unhandled type of object W")
 
     s = [name] + [str(i) for i in idorder]
     outputfile.write("\t".join(s) + "\n")

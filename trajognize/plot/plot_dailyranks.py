@@ -190,8 +190,7 @@ def main(argv=[]):
                         dailyLDI[key][strid] = []
                     # small error checking on correct day order
                     if day != len(dailyranks[key][strid]):
-                        print("day", day, "dailyranks[key]", dailyranks[key])
-                        raise ValueError("0/0")
+                        raise ValueError("day: {}, dailyranks[key]: {}".format(day, dailyranks[key]))
                     # add new rank to daily list
                     dailyranks[key][strid].append(j)
                     dailynormDS[key][strid].append(normDS[strid])

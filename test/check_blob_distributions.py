@@ -250,7 +250,7 @@ for inputfile in files:
                 elif lightstr in ('NIGHTLIGHT', 'STRANGELIGHT'):
                     light = 1
                 else:
-                    0/0
+                    raise ValueError("unknown lightstr: {}".format(lightstr))
                 # get cage
                 cagecenter = cage_at_frame(currentframe)
                 # store blobs on heatmap
@@ -282,7 +282,7 @@ for inputfile in files:
                 elif lightstr in ('NIGHTLIGHT', 'STRANGELIGHT'):
                     light = 1
                 else:
-                    0/0
+                    raise ValueError("unknown lightstr: {}".format(lightstr))
                 # get cage
                 cagecenter = cage_at_frame(currentframe)
                 # store blobs on heatmap
@@ -314,7 +314,7 @@ for inputfile in files:
                 elif lightstr in ('NIGHTLIGHT', 'STRANGELIGHT'):
                     light = 1
                 else:
-                    0/0
+                    raise ValueError("unknown lightstr: {}".format(lightstr))
                 # get cage
                 cagecenter = cage_at_frame(currentframe)
                 # store blobs on heatmap

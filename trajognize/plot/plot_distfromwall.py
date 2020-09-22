@@ -159,7 +159,7 @@ def main(argv=[]):
                     else:
                         group = experiment['groupid'][strid]
             else:
-                0/0
+                NotImplementedError("unhandled avgdist type: {}".format(avgdist))
             # create output directory
             outdir = os.path.join(head, plotdir, exp, group, light, realvirt)
             if not os.path.isdir(outdir): os.makedirs(outdir)

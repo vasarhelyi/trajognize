@@ -132,7 +132,7 @@ class phase_t(object):
                 print("%d%%" % (100-self.phase_status), end=" ")
                 self.phase_status += 1
         else:
-            0/0
+            raise ValueError("unknown direction: {}".format(direction))
         sys.stdout.flush()
 
     def end_phase(self, userstr=None, main=False):

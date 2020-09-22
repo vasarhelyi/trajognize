@@ -88,7 +88,7 @@ def main(argv=[]):
         elif stat == "motionmap":
             avgobj = trajognize.stat.init.motionmap_t()
         else:
-            0/0
+            raise NotImplementedError("unhandled stat: {}".format(stat))
         for inputfile in filedict[key]:
             print("parsing", os.path.split(inputfile)[1])
             newobj = trajognize.util.load_object(inputfile)

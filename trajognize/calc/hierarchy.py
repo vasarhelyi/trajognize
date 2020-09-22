@@ -38,7 +38,7 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
     elif isinstance(W, list):
         keys = range(n) # indices in the input data list matrix
     else:
-        0/0
+        raise NotImplementedError("unhandled type of object W")
 
     ordering = collections.defaultdict() # ordering[ID] = order value (source bottom, sink top)
 
@@ -215,7 +215,7 @@ def dominance_transitivity(W, idorder=None, max_noedge_value=0):
         elif isinstance(W, list):
             idorder = range(n)
         else:
-            0/0
+            raise NotImplementedError("unhandled type of object W")
     for j in range(0, n-1): # from
         for k in range(j+1, n): # to
             if W[idorder[j]][idorder[k]] > max_noedge_value:
@@ -263,7 +263,7 @@ def decompose_CD(W, idorder=None, s_index_power = 1):
         elif isinstance(W, list):
             idorder = range(n)
         else:
-            0/0
+            raise NotImplementedError("unhandled type of object W")
 
     C = collections.defaultdict(collections.defaultdict)
     D = collections.defaultdict(collections.defaultdict)
@@ -330,7 +330,7 @@ def BBS_scale_score(W):
     elif isinstance(W, list):
         idorder = range(len(W))
     else:
-        0/0
+        raise NotImplementedError("unhandled type of object W")
 
     # params for each ID
     wins = dict([(i, 0) for i in idorder]) # wins
@@ -441,7 +441,7 @@ def deVries_modified_Davids_score(W, mode=4):
     elif isinstance(W, list):
         idorder = range(len(W))
     else:
-        0/0
+        raise NotImplementedError("unhandled type of object W")
 
     # params for each ID
     wins = dict([(i, 0) for i in idorder]) # wins
@@ -533,7 +533,7 @@ def Lindquist_dominance_index(W):
     elif isinstance(W, list):
         idorder = range(len(W))
     else:
-        0/0
+        raise NotImplementedError("unhandled type of object W")
 
     # params for each ID
     wins = dict([(i, 0) for i in idorder]) # wins
@@ -578,7 +578,7 @@ def row_sum(W):
     elif isinstance(W, list):
         idorder = range(len(W))
     else:
-        0/0
+        raise NotImplementedError("unhandled type of object W")
 
     # initialize
     rowsum = {}
@@ -612,7 +612,7 @@ def win_above_average(W):
     elif isinstance(W, list):
         idorder = range(len(W))
     else:
-        0/0
+        raise NotImplementedError("unhandled type of object W")
 
     # calculate average
     avgW = 0
@@ -656,7 +656,7 @@ def lose_above_average(W):
     elif isinstance(W, list):
         idorder = range(len(W))
     else:
-        0/0
+        raise NotImplementedError("unhandled type of object W")
 
     # calculate average
     avgW = 0

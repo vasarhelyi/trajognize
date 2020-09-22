@@ -462,7 +462,7 @@ def find_partlyfound_from_tdist(
     elif direction == 'backward':
         inc = -1
     else:
-        0/0
+        raise ValueError("unknown direction: {}".format(direction))
     tempbarcodes = [[] for x in range(len(colorids))] # temporarily found new barcodes
     # calculate temporal distances between blobs
     tdistlists[currentframe] = create_temporal_distlists(

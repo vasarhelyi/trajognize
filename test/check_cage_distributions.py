@@ -84,7 +84,7 @@ for inputfile in files:
             elif lightstr in ('NIGHTLIGHT', 'STRANGELIGHT'):
                 light = 1
             else:
-                0/0
+                raise ValueError("unknown lightstr: {}".format(lightstr))
 
             # avg and std based on this method:
             # http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods

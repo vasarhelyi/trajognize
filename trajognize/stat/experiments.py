@@ -218,7 +218,7 @@ def is_barcode_under_object(barcode, objectcenter, objectarea):
             a1 = objectcenter.a1
             a2 = objectcenter.a2
         else:
-            0/0
+            raise NotImplementedError("unhandled type of 'objectcenter'")
         angle = math.degrees(math.atan2(dy, dx))
         if angle < 0: angle += 360
         if a2 >= a1:
@@ -232,7 +232,7 @@ def is_barcode_under_object(barcode, objectcenter, objectarea):
             else:
                 return False
     else:
-        0/0
+        raise NotImplementedError("unhandled type of 'objectarea'")
 
 
 def get_formatted_description(experiment, commentchar=None):

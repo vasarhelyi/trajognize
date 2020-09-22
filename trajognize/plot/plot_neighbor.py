@@ -118,7 +118,7 @@ def main(argv=[]):
                 # create SPGM picture description
                 spgm.create_picture_description(outputfile, [name, exp], inputfile, gnufile)
             else:
-                0/0
+                raise NotImplementedError("unhandled networknumber: {}".format(networknumber))
 
             # save output for correlation analysis
             if networknumber == "network":
