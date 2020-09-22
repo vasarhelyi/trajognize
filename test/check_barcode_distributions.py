@@ -133,7 +133,7 @@ for inputfile in files:
                 for k in range(len(barcodes[currentframe])):
                     for barcode in barcodes[currentframe][k]:
                         # skip deleted
-                        if barcode.mfix & trajognize.init.MFIX_DELETED: continue
+                        if barcode.mfix & trajognize.init.MFix.DELETED: continue
                         # get center and skip bad ones: nan or outside image area
                         centerx = barcode.centerx
                         centery = barcode.centery
@@ -179,7 +179,7 @@ for inputfile in files:
                     sameiddists[light][PATEK_COUNT][0][num] += 1
                     # store good ones (excluding deleted)
                     for barcode in barcodes[currentframe][k]:
-                        if barcode.mfix & trajognize.init.MFIX_DELETED:
+                        if barcode.mfix & trajognize.init.MFix.DELETED:
                             num -= 1
                     sameiddists[light][k][1][num] += 1
                     sameiddists[light][PATEK_COUNT][1][num] += 1
@@ -211,7 +211,7 @@ for inputfile in files:
                     # get number of not deleted barcodes
                     num = len(barcodes[currentframe][k])
                     for barcode in barcodes[currentframe][k]:
-                        if barcode.mfix & trajognize.init.MFIX_DELETED:
+                        if barcode.mfix & trajognize.init.MFix.DELETED:
                             num -= 1
                     # check for presense only
                     if num > 1: num = 1
@@ -257,7 +257,7 @@ if not args.noheatmap:
 if not args.nosameiddist:
     for light in range(len(trajognize.project.good_light)):
         for deleted in range(2):
-            print("\n\n# same id distribution of %s barcodes (%s)" % (trajognize.project.good_light[light], "including MFIX_DELETED" if deleted == 0 else "only valid"))
+            print("\n\n# same id distribution of %s barcodes (%s)" % (trajognize.project.good_light[light], "including MFix.DELETED" if deleted == 0 else "only valid"))
             print("sameiddists_%s_%s" % (trajognize.project.good_light[light], "withdeleted" if deleted == 0 else "onlyvalid"), end="")
             for j in range(PATEK_COUNT):
                 print("\t%s" % colorids[j].strid, end=" ")
