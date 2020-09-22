@@ -26,17 +26,17 @@ def get_chosen_barcodes(barcodes, mfix=None):
     chosen = [None for k in range(id_count)]
     for k in range(id_count):
         for barcode in barcodes[k]:
-            if barcode.mfix & trajognize.init.MFIX_CHOSEN:
+            if barcode.mfix & trajognize.init.MFix.CHOSEN:
                 if mfix is None or not barcode.mfix & mfix:
                     chosen[k] = barcode
                 break
     return chosen
-    
+
 
 def get_mfi(barcode):
     """Return mfix_type index for a given barcode (or -1 on error)."""
-    if barcode.mfix & trajognize.init.MFIX_CHOSEN:
-        if barcode.mfix & trajognize.init.MFIX_VIRTUAL:
+    if barcode.mfix & trajognize.init.MFix.CHOSEN:
+        if barcode.mfix & trajognize.init.MFix.VIRTUAL:
             return init.mfix_types.index('VIRTUAL')
         else:
             return init.mfix_types.index('REAL')
@@ -85,11 +85,11 @@ def get_stat_from_filename(inputfile):
 
 def get_substat(stat, subclasses, subclassindex):
     """Return name of subclass if exists, otherwise return name of main class.
-    
+
     :param stat: name of a statistic
     :param subclasses: names of all subclasses (or None)
     :param subclassindex: index of the subclass
-    
+
     """
     if subclasses is None:
         return stat
@@ -180,7 +180,7 @@ def init_stat(stats, stat, f_back=1):
     :param stats: dictionary of implemented statistics created by get_stat_dict()
     :param stat: name of a statistic
     :param f_back: number of frames to jump back in caller stack
-    
+
     """
     caller_namespace = inspect.stack()[f_back][0].f_locals
     try:
@@ -224,7 +224,7 @@ def subclasses_stat(stats, stat, f_back=1):
     """
     if stats[stat]['subf'] is None:
         return None
-        
+
     caller_namespace = inspect.stack()[f_back][0].f_locals
     try:
         real_params = [caller_namespace[param_name] for param_name in stats[stat]['subf'][1]]

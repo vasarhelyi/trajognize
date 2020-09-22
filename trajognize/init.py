@@ -3,51 +3,54 @@ Constants and main classes are defined here, like blob, barcode, trajectory.
 """
 
 from collections import namedtuple
+from enum import IntEnum, IntFlag
 from math import atan2, sin, cos, pi
 
 from .project import *
 
+################################################################################
+class MFix(IntFlag):
+    """mFIX values of barcodes.
+    All can be bitwise OR-ed, some are mutually exclusive.
+    """
+    #: mfix = 0: final deletion, do not use for any reason!!!
+    #ZERO = 0
+    #: mfix value when a barcode is fully found (i.e. all blobs are found in it)
+    FULLFOUND = 1
+    #: mfix value for multiple barcodes simultaneously having the same ID
+    SHARESID = 2
+    #: mfix value for multiple barcodes containing the same blob
+    SHARESBLOB = 4
+    #: mfix value for a barcode that was found only partly, but was assigned an id based on the previous/next frame data
+    PARTLYFOUND_FROM_TDIST = 8
+    #: mfix value for barcodes that are probably false positive recognitions and are not needed
+    DELETED = 16
+    #: mfix value for barcodes that are chosen as part of the final trajectory
+    CHOSEN = 32
+    #: mfix value when a barcode is fully found and there is no other blobs around
+    FULLNOCLUSTER = 64
+    #: mfix value when a barcode is deleted and has changed id. This is the old one (kept)
+    CHANGEDID = 128
+    #: mfix value when a barcode is created as an elongation of a chosen traj, without blobs
+    VIRTUAL = 256
+    #: mfix value when a barcode is created as an elongation of a chosen traj, without blobs
+    DEBUG = 512
+    #: temporary mfix used for any debugging reason to see where it took effect during visualization
+    DUMMY_LAST = 1024
 
 ################################################################################
-#: mFIX values of barcodes (all can be bitwise OR-ed, some are mutually exclusive)
-MFIX_STR = ['FULLFOUND', 'SHARESID', 'SHARESBLOB', 'PARTLYFOUND_FROM_TDIST', 'DELETED', 'CHOSEN', 'FULLNOCLUSTER', 'CHANGEDID', 'VIRTUAL', 'DEBUG']
-#: mfix = 0: final deletion, do not use for any reason!!!
-#: mfix value when a barcode is fully found (i.e. all blobs are found in it)
-MFIX_FULLFOUND = 1
-#: mfix value for multiple barcodes simultaneously having the same ID
-MFIX_SHARESID = 2
-#: mfix value for multiple barcodes containing the same blob
-MFIX_SHARESBLOB = 4
-#: mfix value for a barcode that was found only partly, but was assigned an id based on the previous/next frame data
-MFIX_PARTLYFOUND_FROM_TDIST = 8
-#: mfix value for barcodes that are probably false positive recognitions and are not needed
-MFIX_DELETED = 16
-#: mfix value for barcodes that are chosen as part of the final trajectory
-MFIX_CHOSEN = 32
-#: mfix value when a barcode is fully found and there is no other blobs around
-MFIX_FULLNOCLUSTER = 64
-#: mfix value when a barcode is deleted and has changed id. This is the old one (kept)
-MFIX_CHANGEDID = 128
-#: mfix value when a barcode is created as an elongation of a chosen traj, without blobs
-MFIX_VIRTUAL = 256
-#: mfix value when a barcode is created as an elongation of a chosen traj, without blobs
-MFIX_DEBUG = 512
-#: temporary mfix used for any debugging reason to see where it took effect during visualization
-MFIX_DUMMY_LAST = 1024
-
-################################################################################
-#: possible state values of trajectories (and conflicts)
-STATE_STR = ['DELETED', 'INITIALIZED', 'FORCED_END', 'CHOSEN', 'CHANGEDID']
-#: flag for a deleted trajectory
-STATE_DELETED = 0
-#: flag for a trajectory that is not yet deleted/chosen, but exists
-STATE_INITIALIZED = 1
-#: flag for a trajectory that is forced to end (e.g. at a junction)
-STATE_FORCED_END = 2
-#: flag for a trajectory that is chosen as part of the final global trajectory
-STATE_CHOSEN = 3
-#: flag for a trajectory that was false detection and color has changed
-STATE_CHANGEDID = 4
+class TrajState(IntEnum):
+    """possible state values of trajectories (and conflicts)."""
+    #: enum for a deleted trajectory
+    DELETED = 0
+    #: enum for a trajectory that is not yet deleted/chosen, but exists
+    INITIALIZED = 1
+    #: enum for a trajectory that is forced to end (e.g. at a junction)
+    FORCED_END = 2
+    #: enum for a trajectory that is chosen as part of the final global trajectory
+    CHOSEN = 3
+    #: enum for a trajectory that was false detection and color has changed
+    CHANGEDID = 4
 
 ################################################################################
 # named tuples for shapes
@@ -165,7 +168,7 @@ class trajectory_t:
         self.colorblob_count = [0 for x in range(MCHIPS)] # number of found blobs at a given position in the barcode
         self.sharesblob_count = 0 # number of barcodes that share blobs with other barcodes
         self.offset_count = 0 # arbitrary count that modifies traj score. Could decrease or increase.
-        self.state = STATE_INITIALIZED
+        self.state = TrajState.INITIALIZED
 
 
 class connections_t:
@@ -186,7 +189,7 @@ class conflict_t:
         self.firstframe = firstframe # start of conflict (int)
         self.cwith = cwith # conflict with (list of coloridindices)
         self.barcodeindices = [] # barcodes involved
-        self.state = STATE_INITIALIZED # state is defined for trajs but could be used here as well
+        self.state = TrajState.INITIALIZED # state is defined for trajs but could be used here as well
 
 
 class metatraj_t:

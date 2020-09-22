@@ -2,10 +2,11 @@
 All kinds of algorithms used by trajognize.main() that are related to barcodes.
 """
 
+from math import atan2, cos, pi, sin
 import itertools
 
 from .project import *
-from .init import *
+from .init import MFix, barcode_index_t, barcode_t
 from .algo import get_angle_deg, get_distance, get_distance_at_position
 from .util import mfix2str
 
@@ -22,7 +23,7 @@ def get_chosen_barcode_indices(barcodes):
     chosen = [None for k in range(id_count)]
     for k in range(id_count):
         for i in range(len(barcodes[k])):
-            if barcodes[k][i].mfix & MFIX_CHOSEN:
+            if barcodes[k][i].mfix & MFix.CHOSEN:
                 chosen[k] = i
                 break
     return chosen
@@ -39,7 +40,7 @@ def barcode_is_free(barcodes, k, j, blobs):
 
     """
     barcode = barcodes[k][j]
-    if not barcode.mfix or not (barcode.mfix & MFIX_DELETED):
+    if not barcode.mfix or not (barcode.mfix & MFix.DELETED):
         return False
     for i in barcode.blobindices:
         if i is None: continue
@@ -363,7 +364,7 @@ def remove_overlapping_fullfound(barcodes, blobs, cluster):
     barcodecluster = set()
     for i in cluster:
         for j in algo_blob.barcodeindices_not_deleted(
-                blobs[i].barcodeindices, barcodes, MFIX_FULLFOUND):
+                blobs[i].barcodeindices, barcodes, MFix.FULLFOUND):
             barcodecluster.add(j)
     # iterate all barcodes and find ones that are fully overlapping others,
     # (all blobs have more than one barcode index)
@@ -381,7 +382,7 @@ def remove_overlapping_fullfound(barcodes, blobs, cluster):
     # TODO: maybe more sophisticated algo needed
     # TODO: should we have permanent delete (mfix=0) insted?
     for ki in overlappedbarcodes:
-        barcodes[ki.k][ki.i].mfix |= MFIX_DELETED
+        barcodes[ki.k][ki.i].mfix |= MFix.DELETED
     return len(overlappedbarcodes)
 
 
@@ -404,7 +405,7 @@ def set_nocluster_property(barcodes, blobs, cluster):
     barcodeindex = -1
     for i in cluster:
         barcodeindices = algo_blob.barcodeindices_not_deleted(
-                blobs[i].barcodeindices, barcodes, MFIX_FULLFOUND)
+                blobs[i].barcodeindices, barcodes, MFix.FULLFOUND)
         # return if more barcodes are present around
         if len(barcodeindices) != 1:
             return
@@ -415,7 +416,7 @@ def set_nocluster_property(barcodes, blobs, cluster):
             return
 
     # no error, set nocluster property
-    barcodes[barcodeindex.k][barcodeindex.i].mfix |= MFIX_FULLNOCLUSTER
+    barcodes[barcodeindex.k][barcodeindex.i].mfix |= MFix.FULLNOCLUSTER
     return "16 tons"
 
 
@@ -449,7 +450,7 @@ def find_partlyfound_from_tdist(
     3. Group blobs that possibly belong to the same new barcode. If more blobs
        of the same color are close enough to be part of the new barcode,
        choose the one at best position based on last frame.
-    4. Store new barcodes with mfix value of MFIX_PARTLYFOUND_FROM_TDIST
+    4. Store new barcodes with mfix value of MFix.PARTLYFOUND_FROM_TDIST
     5. Check all remaining not used blobs, cluster them and try to assign
        a barcode to them which is not present on the current frame yet
        but was present closeby sometimes in the last/next few seconds.
@@ -503,7 +504,7 @@ def find_partlyfound_from_tdist(
                 # copy prev barcode parameters and store in temporary list
                 barcode = barcode_t(
                         oldbarcode.centerx, oldbarcode.centery, oldbarcode.orientation,
-                        MFIX_PARTLYFOUND_FROM_TDIST)
+                        MFix.PARTLYFOUND_FROM_TDIST)
                 jj = oldbarcode.blobindices.index(prevblobi)
                 barcode.blobindices[jj] = blobi
                 # store barcode temporarily if it is the first with given colorid
@@ -549,7 +550,7 @@ def find_partlyfound_from_tdist(
             # instead of this one to avoid increasing barcode list size
             for i, oldbarcode in enumerate(barcodes[currentframe][k]):
                 if get_distance(oldbarcode, barcode) < 10:
-                    oldbarcode.mfix &= ~MFIX_DELETED
+                    oldbarcode.mfix &= ~MFix.DELETED
                     # remove old blob correspondences
                     for blobj in oldbarcode.blobindices:
                         if blobj is None: continue
@@ -590,7 +591,7 @@ def find_partlyfound_from_tdist(
 #         if len(cluster) > MCHIPS: continue
 #         # create new barcode from cluster
 #         # Warning: blobindices are not in proper order yet...
-#         newbarcode = barcode_t(0, 0, 0, MFIX_PARTLYFOUND_FROM_TDIST, [notusedblobs[i] for i in cluster])
+#         newbarcode = barcode_t(0, 0, 0, MFix.PARTLYFOUND_FROM_TDIST, [notusedblobs[i] for i in cluster])
 #         colorsincluster = []
 #         for i in cluster:
 #             blob = color_blobs[currentframe][notusedblobs[i]]
@@ -747,25 +748,25 @@ def set_shared_mfix_flags(barcodes, blobs, colorids):
         #check 'deleted' flags
         num = 0
         for barcode in barcodes[k]:
-            barcode.mfix &= ~MFIX_SHARESBLOB
-            if not barcode.mfix or (barcode.mfix & MFIX_DELETED): continue
+            barcode.mfix &= ~MFix.SHARESBLOB
+            if not barcode.mfix or (barcode.mfix & MFix.DELETED): continue
             num += 1
             # and remove sharesblob property now (add later again)
         # skip ones with no sharesid (some deleted, only one left)
         if num < 2:
             for barcode in barcodes[k]:
-                barcode.mfix &= ~MFIX_SHARESID
+                barcode.mfix &= ~MFix.SHARESID
         else:
             # set sharesid flag
             for barcode in barcodes[k]:
-                barcode.mfix |= MFIX_SHARESID
+                barcode.mfix |= MFix.SHARESID
 
     # set SHARESBLOB property (on non deleted ones)
     for blob in blobs:
         notdeleted = algo_blob.barcodeindices_not_deleted(blob.barcodeindices, barcodes)
         if len(notdeleted) > 1:
             for x in notdeleted:
-                barcodes[x.k][x.i].mfix |= MFIX_SHARESBLOB
+                barcodes[x.k][x.i].mfix |= MFix.SHARESBLOB
 
     # set SHARESBLOB property also on overlapping barcodes
     # get all barcode indices
@@ -781,8 +782,8 @@ def set_shared_mfix_flags(barcodes, blobs, colorids):
             b = barcodes[allindices[j].k][allindices[j].i]
             if could_be_sharesblob(a, b, allindices[i].k, allindices[j].k,
                     blobs, colorids)[0]:
-                a.mfix |= MFIX_SHARESBLOB
-                b.mfix |= MFIX_SHARESBLOB
+                a.mfix |= MFix.SHARESBLOB
+                b.mfix |= MFix.SHARESBLOB
 
 
 def remove_close_sharesid(barcodes, blobs, colorids, mfix=None):
@@ -802,7 +803,7 @@ def remove_close_sharesid(barcodes, blobs, colorids, mfix=None):
     barcodes -- list of all barcodes (barcode_t) from the current frame,
                 structured like this: [coloridindex][index]
     blobs    -- list of all blobs (color_blob_t) from the current frame
-    mfix     -- special part of algo is executed if MFIX_PARTLYFOUND_FROM_TDIST
+    mfix     -- special part of algo is executed if MFix.PARTLYFOUND_FROM_TDIST
 
     Returns number of barcodes removed and also changes barcode properties
 
@@ -816,14 +817,14 @@ def remove_close_sharesid(barcodes, blobs, colorids, mfix=None):
         for i in range(len(barcodes[k]) - 1):
             barcode = barcodes[k][i]
             # skip ones that has been deleted already
-            if not barcode.mfix or (barcode.mfix & MFIX_DELETED): continue
+            if not barcode.mfix or (barcode.mfix & MFix.DELETED): continue
             for j in range(i + 1, len(barcodes[k])):
                 candidate = barcodes[k][j]
                 # skip ones that has been deleted already
-                if not candidate.mfix or (candidate.mfix & MFIX_DELETED): continue
+                if not candidate.mfix or (candidate.mfix & MFix.DELETED): continue
 
                 # this part is only executed on partlyfounds to concat them if they match
-                if mfix == MFIX_PARTLYFOUND_FROM_TDIST and (barcode.mfix & mfix) and (candidate.mfix & mfix):
+                if mfix == MFix.PARTLYFOUND_FROM_TDIST and (barcode.mfix & mfix) and (candidate.mfix & mfix):
                     # skip ones that are far away
                     if get_distance(barcode, candidate) > 2 * MAX_INRAT_DIST: continue
                     # keep pairs only where we can merge and there are no double blob candidates
@@ -834,15 +835,15 @@ def remove_close_sharesid(barcodes, blobs, colorids, mfix=None):
                             break
                     if skip: continue
                     # delete one (permanently)
-                    candidate.mfix = 0 # |= MFIX_DELETED
+                    candidate.mfix = 0 # |= MFix.DELETED
                     # add all blobs from deleted to other one
                     barcode.blobindices = [a if a is not None else b for a, b in zip(barcode.blobindices, candidate.blobindices)]
                     # and add barcode index to blobs as well to be consistent
                     update_blob_barcodeindices(barcode, k, i, blobs)
                     # also change mfix if all blobs have been found accidentally
                     if None not in barcode.blobindices:
-                        barcode.mfix &= ~MFIX_PARTLYFOUND_FROM_TDIST
-                        barcode.mfix |= MFIX_FULLFOUND
+                        barcode.mfix &= ~MFix.PARTLYFOUND_FROM_TDIST
+                        barcode.mfix |= MFix.FULLFOUND
                     # recalculate its params with new blob indices
                     calculate_params(barcode, strid, blobs)
                     count += 1
@@ -860,10 +861,10 @@ def remove_close_sharesid(barcodes, blobs, colorids, mfix=None):
                 sumrj = sum(0 if blobj is None else blobs[blobj].radius for blobj in candidate.blobindices)
                 # set permanent 'deleted' flag on the not chosen one
                 if (sumrj > sumri):
-                    barcode.mfix = 0 # |= MFIX_DELETED
+                    barcode.mfix = 0 # |= MFix.DELETED
                     break
                 else:
-                    candidate.mfix = 0 #|= MFIX_DELETED
+                    candidate.mfix = 0 #|= MFix.DELETED
 
     return count
 

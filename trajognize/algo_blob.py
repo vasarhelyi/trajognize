@@ -6,7 +6,7 @@ from math import degrees, acos
 import numpy
 
 from .project import *
-from .init import *
+from .init import MFix, barcode_index_t
 from .algo import distance_matrix, get_distance, is_point_inside_ellipse
 
 # global variables
@@ -281,7 +281,7 @@ def barcodeindices_not_deleted(barcodeindices, barcodes, mfix=None):
     good = []
     for ki in barcodeindices:
         mf = barcodes[ki.k][ki.i].mfix
-        if mf and not (mf & MFIX_DELETED):
+        if mf and not (mf & MFix.DELETED):
             if mfix is None or (mf & mfix):
                 good.append(ki)
     return good

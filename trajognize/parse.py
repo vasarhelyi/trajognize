@@ -7,7 +7,7 @@ import datetime
 import xml.dom.minidom
 from math import radians, sqrt
 
-from .init import *
+from .init import color_blob_t, color_blobe_t, md_blob_t, rat_blob_t, colorid_t, barcode_t
 from .util import exit, strid2coloridindex
 
 

@@ -5,7 +5,7 @@ Trajognize main code.
 import os,sys,argparse
 
 # import definitions as they appear in file
-from .init import *
+from .init import MFix, variables_t, barcode_t
 from .project import *
 
 # import functions organized according to files
@@ -210,7 +210,7 @@ def main(argv=[]):
                 if not chainlists[k]: continue
                 for chain in chainlists[k]:
                     # append to blob list
-                    barcode = barcode_t(0, 0, 0, MFIX_FULLFOUND, chain)
+                    barcode = barcode_t(0, 0, 0, MFix.FULLFOUND, chain)
                     algo_barcode.calculate_params(barcode,  v.colorids[k].strid, v.color_blobs[currentframe])
                     v.barcodes[currentframe][k].append(barcode)
                     algo_blob.update_blob_barcodeindices(barcode, k, len(v.barcodes[currentframe][k])-1, v.color_blobs[currentframe])
@@ -359,7 +359,7 @@ def main(argv=[]):
             for currentframe in range(framecount):
                 # remove close sharesid ones
                 count_sharesid += algo_barcode.remove_close_sharesid(
-                        v.barcodes[currentframe], v.color_blobs[currentframe], v.colorids, MFIX_PARTLYFOUND_FROM_TDIST)
+                        v.barcodes[currentframe], v.color_blobs[currentframe], v.colorids, MFix.PARTLYFOUND_FROM_TDIST)
                 # print status
                 phase.check_and_print_phase_status('forward', currentframe, framecount)
             phase.end_phase("%d sharesid barcodes deleted/joined." % count_sharesid)

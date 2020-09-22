@@ -9,7 +9,7 @@ TODOs:
 """
 
 from .project import *
-from .init import *
+from .init import MFix, TrajState, rat_blob_t, barcode_t, conflict_t
 from .algo import get_distance_at_position, is_point_inside_ellipse
 
 from . import algo_barcode
@@ -33,7 +33,7 @@ def list_conflicts(conflicts, colorids):
             print("   ", conflict.ctype, strid, "f%d-%d" % (conflict.firstframe, \
                     algo_trajectory.trajlastframe(conflict)), \
                     conflict.cwith if conflict.cwith is None else [colorids[x].strid for x in conflict.cwith], \
-                    STATE_STR[conflict.state])
+                    TrajState(conflict.state).name)
 
 
 def list_conflicted_trajs(conflicted_trajs, colorids, trajectories):
@@ -56,14 +56,14 @@ def list_conflicted_trajs(conflicted_trajs, colorids, trajectories):
         print("   ", colorids[k].strid, "f%d-%d s%d" % (traj.firstframe,
                 algo_trajectory.trajlastframe(traj),
                 algo_trajectory.traj_score(traj)), \
-                STATE_STR[traj.state])
+                TrajState(traj.state).name)
 
 
 def get_gap_conflicts(barcodes, colorids):
     """Return all gap conflicts, i.e. when two neighboring chosen trajs are
     very far away in space.
 
-    This state is actually pre-stamped with MFIX_DEBUG so far.
+    This state is actually pre-stamped with MFix.DEBUG so far.
 
     Conflict is marked as the gap but actually trajs before or after also
     need to be resolved.
@@ -81,7 +81,7 @@ def get_gap_conflicts(barcodes, colorids):
             i = chosenindices[k]
             chosen = barcodes[frame][k][i]
             # check debug state
-            if chosen.mfix & MFIX_DEBUG:
+            if chosen.mfix & MFix.DEBUG:
                 # create new conflict
                 if not conflicts[k] or algo_trajectory.trajlastframe(conflicts[k][-1]) < frame - 1:
                     conflicts[k].append(conflict_t("gap", frame))
@@ -94,7 +94,7 @@ def get_gap_conflicts(barcodes, colorids):
 def get_overlap_conflicts(barcodes, blobs, colorids):
     """Return all overlap conflicts, i.e. when two barcodes fully overlap.
 
-    MFIX_SHAREDBLOB should be assigned to all such cases, even though
+    MFix.SHAREDBLOB should be assigned to all such cases, even though
     blobs are not actually shared. See algo_barcode.set_shared_mfix_flags()
     for more details.
 
@@ -112,7 +112,7 @@ def get_overlap_conflicts(barcodes, blobs, colorids):
             i = chosenindices[k]
             chosen = barcodes[frame][k][i]
             # check sharesblob state
-            if chosen.mfix & MFIX_SHARESBLOB:
+            if chosen.mfix & MFix.SHARESBLOB:
                 # create new conflict
                 if not conflicts[k] or algo_trajectory.trajlastframe(conflicts[k][-1]) < frame - 1:
                     conflicts[k].append(conflict_t("overlap", frame, set()))
@@ -125,7 +125,7 @@ def get_overlap_conflicts(barcodes, blobs, colorids):
                     if chosenindices[kk] is None: continue
                     ii = chosenindices[kk]
                     chosenx = barcodes[frame][kk][ii]
-                    if (chosenx.mfix & MFIX_SHARESBLOB) and algo_barcode.could_be_sharesblob(
+                    if (chosenx.mfix & MFix.SHARESBLOB) and algo_barcode.could_be_sharesblob(
                             chosen, chosenx, k, kk, blobs[frame], colorids)[0]:
                         conflicts[k][-1].cwith.add(kk)
 
@@ -137,7 +137,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
 
     1. find not used blobs around with same color as conflicted, and try to
        assign this instead of conflicted if it is under barcode on previous frame
-    2. TODO: somehow check which is MFIX_VIRTUAL or MFIX_DEBUG, etc. without nub
+    2. TODO: somehow check which is MFix.VIRTUAL or MFix.DEBUG, etc. without nub
 
     Keyword arguments:
     conflicts    -- list of all overlap conflicts
@@ -150,7 +150,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
     for k in range(len(colorids)):
         strid = colorids[k].strid
         for conflict in conflicts[k]:
-            if conflict.state == STATE_DELETED: continue
+            if conflict.state == TrajState.DELETED: continue
             frame = conflict.firstframe - 1
             if frame == -1: continue # TODO: so far we do not resolve conflicts on first frame
             chosenindices = algo_barcode.get_chosen_barcode_indices(barcodes[frame])
@@ -168,7 +168,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                     if chosenindices[kk] is None: continue
                     ii = chosenindices[kk]
                     bwith = barcodes[frame][kk][ii]
-                    if not (bwith.mfix & MFIX_SHARESBLOB): continue
+                    if not (bwith.mfix & MFix.SHARESBLOB): continue
                     sharedblobs, sharedpositions = algo_barcode.could_be_sharesblob(
                             barcode, bwith, k, kk, blobs[frame], colorids)
                     if not sharedblobs: continue
@@ -238,12 +238,12 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids):
                 # if all conflicts have been solved or there were no conflicts by now, set resolved state
                 if len(allsharedblobs) == len(allresolvedblobs):
                     resolved += 1
-                    barcode.mfix &= ~MFIX_SHARESBLOB
+                    barcode.mfix &= ~MFix.SHARESBLOB
             # if all frames have been resolved in conflict
             # TODO: this is not accurate because it might happen that
             # in one conflict structure there are conflicts caused by more members simultaneously...
             if resolved - oldresolved == frame - conflict.firstframe + 1:
-                conflict.state = STATE_DELETED
+                conflict.state = TrajState.DELETED
 
     return resolved
 
@@ -267,7 +267,7 @@ def get_nub_conflicts(trajectories, barcodes, blobs, colorids):
         for t in range(len(trajectories[k])):
             traj = trajectories[k][t]
             # skip non-deleted
-            if traj.state != STATE_DELETED: continue
+            if traj.state != TrajState.DELETED: continue
             frame = traj.firstframe - 1
             for i in traj.barcodeindices:
                 frame += 1
@@ -305,7 +305,7 @@ def create_conflict_database_and_try_resolve(trajectories, barcodes, blobs, colo
 
     Conflicts are the following:
 
-*   1. too large gap between trajs --> stamped with MFIX_DEBUG in add_virtual_barcodes_to_gaps()
+*   1. too large gap between trajs --> stamped with MFix.DEBUG in add_virtual_barcodes_to_gaps()
 *   2. sharesblobs between trajs
 *?  3. not used "blob trajectories"
 *   4. not used barcodes during no chosen (or only virtual) periods

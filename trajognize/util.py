@@ -15,7 +15,7 @@ import psutil
 
 # internal imports
 from .project import FPS, get_datetime_from_filename
-from .init import MFIX_STR, MFIX_DUMMY_LAST
+from .init import MFix
 from .version import __version__
 
 
@@ -147,15 +147,13 @@ class phase_t(object):
 
 
 def mfix2str(mfix):
-    """Convert mfix value of MFIX flags to string."""
+    """Convert mfix value of MFix flags to string."""
     i = 1
-    j = 0
     s = []
-    while i < MFIX_DUMMY_LAST:
+    while i < MFix.DUMMY_LAST:
         if mfix & i:
-            s.append(MFIX_STR[j])
+            s.append(MFix(i).name)
         i *= 2
-        j += 1
     if s:
         return "|".join(s)
     else:
@@ -163,15 +161,13 @@ def mfix2str(mfix):
 
 
 def mfix2str_allascomment():
-    """Convert all existing MFIX flags to a multi-line comment string
+    """Convert all existing MFix flags to a multi-line comment string
     used in .barcode output files."""
     i = 1
-    j = 0
     s = ["# mFix value for IDs:"]
-    while i < MFIX_DUMMY_LAST:
-        s.append("#   %d: %s" % (i, MFIX_STR[j]))
+    while i < MFix.DUMMY_LAST:
+        s.append("#   %d: %s" % (i, MFix(i).name))
         i *= 2
-        j += 1
     return "\n".join(s) + "\n"
 
 

@@ -596,7 +596,7 @@ def calculate_sameiddist(barcodes, light_log, entrytimes, starttime):
                 sameiddists.data[light][id_count,0,num] += 1
             # store good ones (excluding deleted)
             for barcode in barcodes[currentframe][k]:
-                if not barcode.mfix or barcode.mfix & trajognize.init.MFIX_DELETED:
+                if not barcode.mfix or barcode.mfix & trajognize.init.MFix.DELETED:
                     num -= 1
             sameiddists.points[light][1] += num
             if num <= sameiddists.max_same_id:
@@ -1712,8 +1712,8 @@ def calculate_accdist(barcodes, light_log, cage_log, entrytimes, starttime,
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
     accdist = init.accdist_t(id_count)
-    prevprevchosens = util.get_chosen_barcodes(barcodes[0]) #, trajognize.init.MFIX_VIRTUAL)
-    prevchosens = util.get_chosen_barcodes(barcodes[1]) #, trajognize.init.MFIX_VIRTUAL)
+    prevprevchosens = util.get_chosen_barcodes(barcodes[0]) #, trajognize.init.MFix.VIRTUAL)
+    prevchosens = util.get_chosen_barcodes(barcodes[1]) #, trajognize.init.MFix.VIRTUAL)
     prevprevframe = 0
     prevframe = 1
     for currentframe in range(2, len(barcodes)):
@@ -1726,7 +1726,7 @@ def calculate_accdist(barcodes, light_log, cage_log, entrytimes, starttime,
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
         if light not in trajognize.project.good_light: continue
-        chosens = util.get_chosen_barcodes(barcodes[currentframe]) #, trajognize.init.MFIX_VIRTUAL)
+        chosens = util.get_chosen_barcodes(barcodes[currentframe]) #, trajognize.init.MFix.VIRTUAL)
         if currentframe == prevframe + 1 and prevframe == prevprevframe + 1:
             for k in range(id_count):
                 if not chosens[k] or not prevchosens[k] or not prevprevchosens[k]: continue
@@ -1816,7 +1816,7 @@ def calculate_basic(barcodes, light_log, cage_log, entrytimes, starttime,
             if chosens[k] is None:
                 basic.mfixcount[light][-1] += 1
                 continue
-            for i in range(len(trajognize.init.MFIX_STR)):
+            for i in range(len(trajognize.init.MFix)):
                 if chosens[k].mfix & (1<<i):
                     basic.mfixcount[light][i] += 1
             for c in colorids[k].strid:
@@ -1846,7 +1846,7 @@ def calculate_basic(barcodes, light_log, cage_log, entrytimes, starttime,
         for k in range(id_count):
             for barcode in barcodes[currentframe][k]:
                 # TODO: this is not accurate, blobs should be checked instead...
-                if barcode.mfix & trajognize.init.MFIX_VIRTUAL: continue
+                if barcode.mfix & trajognize.init.MFix.VIRTUAL: continue
                 for c in colorids[k].strid:
                     basic.colors_all[light][trajognize.init.color2int[c]] += 1
 

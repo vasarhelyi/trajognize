@@ -1136,7 +1136,7 @@ class sameiddist_t(stat_t):
             for deleted in range(2):
                 outputfile.write("# same id distribution of %s barcodes from %d files, %d frames, %d points (%s)\n\n" % \
                         (light.lower(), self.files, self.frames[light], self.points[light][deleted],
-                        "including MFIX_DELETED" if deleted == 0 else "only valid"))
+                        "including MFix.DELETED" if deleted == 0 else "only valid"))
                 # write header
                 names = [colorids[k].strid for k in range(len(colorids))]
                 names.append("all")
@@ -2450,7 +2450,7 @@ class basic_t(stat_t):
             self.cageerror[light] = 0
             self.entrytime[light] = 0
             self.nonvalidcage[light] = 0
-            self.mfixcount[light] = numpy.zeros(len(trajognize.init.MFIX_STR) + 1) # last is for counting not chosens
+            self.mfixcount[light] = numpy.zeros(len(trajognize.init.MFix) + 1) # last is for counting not chosens
             self.colors_all[light] = numpy.zeros(trajognize.init.MBASE)
             self.colors_chosen[light] = numpy.zeros(trajognize.init.MBASE)
 
@@ -2526,9 +2526,9 @@ class basic_t(stat_t):
             outputfile.write("Number of not chosen barcodes:\t%d\t(%1.2f%% of valid)\n" % \
                     (self.mfixcount[light][-1], 100.0*self.mfixcount[light][-1]/(len(colorids)*x)))
             outputfile.write("Number of chosen barcodes with the following flags:\n")
-            for i in range(len(trajognize.init.MFIX_STR)):
+            for i in range(len(trajognize.init.MFix)):
                 outputfile.write("%-22s\t%d\t(%1.2f%% of chosen)\n" % \
-                        (trajognize.init.MFIX_STR[i], self.mfixcount[light][i],
+                        (trajognize.init.MFix(1<<i).name, self.mfixcount[light][i],
                         100.0*self.mfixcount[light][i] / max(1, len(colorids)*x - self.mfixcount[light][-1])))
             outputfile.write("Number of barcodes containing a given color:\tall_novirt\tchosen\n")
             for i in range(trajognize.init.MBASE):

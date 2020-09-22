@@ -5,7 +5,7 @@ Output file generation functions for trajognize.
 from math import degrees
 import os, datetime
 
-from .init import *
+from .init import barcode_index_t
 from .util import mfix2str_allascomment
 from .algo_blob import barcodeindices_not_deleted
 
