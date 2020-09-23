@@ -18,17 +18,18 @@ Point = namedtuple('Point','x y')
 
 
 def import_trajognize_settings_from_file(filename):
-    """Import the first TrajognizeSettingsBase object instantiation found in the
-    given file.
+    """Import the first TrajognizeSettingsBase class found in the given file
+    and return its instantiation.
 
     Parameters:
         filename(Path) - the file that contains preferably one and only
-            instantiation of the TrajectorySettings abstract class. In other
+            subclass of the TrajectorySettingsBase abstract class. In other
             words, this file should contain all your project-specific settings
             in the proper format.
 
     Return:
-        the first proper class found in the file or None if not found.
+        instantiation of first proper class found in the file
+        or None if not found.
     """
     spec = importlib.util.spec_from_file_location("", filename)
     module = importlib.util.module_from_spec(spec)
@@ -46,11 +47,12 @@ class FindBestTrajectoriesSettings():
     """Class containing parameters for find_best_trajectories() in
     algo_trajectory.py"""
     def __init__(self,
-            might_be_bad_score_threshold=100,
-            might_be_bad_sum_good_score_threshold=200,
-            good_for_sure_score_threshold=500,
-            good_score_threshold=100,
-            framelimit=1500):
+        might_be_bad_score_threshold=100,
+        might_be_bad_sum_good_score_threshold=200,
+        good_for_sure_score_threshold=500,
+        good_score_threshold=100,
+        framelimit=1500
+    ):
         self.might_be_bad_score_threshold = might_be_bad_score_threshold
         self.might_be_bad_sum_good_score_threshold = might_be_bad_sum_good_score_threshold
         self.good_for_sure_score_threshold = good_for_sure_score_threshold
