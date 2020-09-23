@@ -18,7 +18,7 @@ Point = namedtuple('Point','x y')
 
 
 def import_trajognize_settings_from_file(filename):
-    """Import the first TrajognizeSettings object instantiation found in the
+    """Import the first TrajognizeSettingsBase object instantiation found in the
     given file.
 
     Parameters:
@@ -34,9 +34,10 @@ def import_trajognize_settings_from_file(filename):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     for name, obj in module.__dict__.items():
-        if type(obj).__name__ == "ABCMeta" and name != "TrajognizeSettings" and \
-                issubclass(obj, TrajognizeSettings):
-            return obj
+        if type(obj).__name__ == "ABCMeta" and \
+                name != "TrajognizeSettingsBase" and \
+                issubclass(obj, TrajognizeSettingsBase):
+            return obj()
 
     return None
 
@@ -57,21 +58,96 @@ class FindBestTrajectoriesSettings():
         self.framelimit = framelimit
 
 
-class TrajognizeSettings(metaclass=ABCMeta):
+class TrajognizeSettingsBase(metaclass=ABCMeta):
     """This class is the main abstract settings class of trajognize that should
     contain all project specific variables and methods that need to be
     instantiated in every single project. See method documentations for details.
     """
 
+    ############################################################################
+    # implemented methods that should NOT be overwritten
+
     def __init__(self):
+        """This is the base class constructor that needs to be called after
+        the instantiated class is initialized."""
+
+        # define number of colors (colorid base) based on color names.
+        self._MBASE = len(self.color_names)
         # define color lookup table (int -> char)
-        self.int2color_lookup = "".join([self.color_names[i].upper()[0]
-            for i in range(self.MBASE)
+        self._int2color_lookup = "".join([self.color_names[i].upper()[0]
+            for i in range(self._MBASE)
         ])
         # define color lookup table (char -> int)
-        self.color2int_lookup = dict([(self.color_names[i].upper()[0], i)
-            for i in range(self.MBASE)
+        self._color2int_lookup = dict([(self.color_names[i].upper()[0], i)
+            for i in range(self._MBASE)
         ])
+
+    def color2int(self, color: str) -> int:
+        """Return the index of the color initial within your color names."""
+        return self._color2int_lookup[color]
+
+    def int2color(self, index) -> str:
+        """Return the first capital letter of the indexed color name."""
+        return self._int2color_lookup[index]
+
+    @property
+    def MBASE(self) -> int:
+        """Number of colors (colorid base) based on color names."""
+        return self._MBASE
+
+    ############################################################################
+    # implemented methods that provide convenient default settings but
+    # might be overwritten if needed. These are mostly related to our first
+    # large-scale rat experiment (2011) and are not relavant in other projects.
+
+    @property
+    def use_cage(self) -> bool:
+        """Define whether you would like to use cage-specific data detected
+        previously by ratognize. This is not needed most of the time as it was
+        introduced for our original project when during 11 months the cage in
+        which we kept the rats to be detected got pushed away several times
+        and we needed to correct for its position automatically."""
+        return False
+
+    @property
+    def cage_center(self) -> Point:
+        """Define the center of the cage in an ideal/averaged case in pixels.
+        If cage-specific code is not used, set it to any value as a placeholder.
+        """
+        return Point(self.image_size.x // 2, self.image_size.y // 2)
+
+    @property
+    def correct_cage(self):
+        """Define, whether we should use dynamic cage correction data for
+        cage center estimation. Normally, you do not need to play with this
+        parameter."""
+        return True
+
+    @property
+    def filter_for_valid_cage(self):
+        """Define, whether we should filter results for valid group cage.
+        Note: if not indicated in results file, no filter was used
+        Normally, you do not need to play with this parameter."""
+        return True
+
+    @property
+    def all_light(self) -> Iterable[str]:
+        """Define the names of all light conditions that are used in the
+        experiments. Usually this should be a single 'NIGHTLIGHT' placeholder
+        for convenience, we used multiple light conditions in our first
+        experiment..."""
+        return ["NIGHTLIGHT"]
+
+    @property
+    def good_light(self) -> Iterable[str]:
+        """Define the names of good light conditions that are used in the
+        experiments. Usually this should be a single 'NIGHTLIGHT' placeholder
+        for convenience, we used multiple light conditions in our first
+        experiment..."""
+        return ["NIGHTLIGHT"]
+
+    ############################################################################
+    # abstract methods that need project-specific instantiation
 
     @property
     @abstractmethod
@@ -94,23 +170,6 @@ class TrajognizeSettings(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def use_cage(self) -> bool:
-        """Define whether you would like to use cage-specific data detected
-        previously by ratognize. This is not needed most of the time as it was
-        introduced for our original project when during 11 months the cage in
-        which we kept the rats to be detected got pushed away several times
-        and we needed to correct for its position automatically."""
-        ...
-
-    @property
-    def cage_center(self) -> Point:
-        """Define the center of the cage in an ideal/averaged case in pixels.
-        If cage-specific code is not used, set it to any value as a placeholder.
-        """
-        return Point(self.image_size.x // 2, self.image_size.y // 2)
-
-    @property
-    @abstractmethod
     def MCHIPS(self) -> int:
         """Define the number of chips / bins / colored blobs in a colorid
         in your barcodes to be detected."""
@@ -123,19 +182,6 @@ class TrajognizeSettings(metaclass=ABCMeta):
         Be careful to have the same order as in ratognize and also be careful
         to define color names with different initials."""
         ...
-
-    @property
-    def MBASE(self) -> int:
-        """Number of colors (base of the colorids) based on the color names."""
-        return len(self.color_names)
-
-    def int2color(self, index) -> str:
-        """Return the first capital letter of the indexed color name."""
-        return self.int2color_lookup[index]
-
-    def color2int(self, color: str) -> int:
-        """Return the index of the color initial within your color names."""
-        return self.color2int_lookup[color]
 
     @property
     @abstractmethod
@@ -199,38 +245,6 @@ class TrajognizeSettings(metaclass=ABCMeta):
         implement more versions based on your project needs.
         Possible values are 1 or 2 currently, see code for details."""
         ...
-
-    @property
-    def all_light(self) -> Iterable[str]:
-        """Define the names of all light conditions that are used in the
-        experiments. Usually this should be a single 'NIGHTLIGHT' placeholder
-        for convenience, we used multiple light conditions in our first
-        experiment..."""
-
-        return ["NIGHTLIGHT"]
-
-    @property
-    def good_light(self) -> Iterable[str]:
-        """Define the names of good light conditions that are used in the
-        experiments. Usually this should be a single 'NIGHTLIGHT' placeholder
-        for convenience, we used multiple light conditions in our first
-        experiment..."""
-
-        return ["NIGHTLIGHT"]
-
-    @property
-    def correct_cage(self):
-        """Define, whether we should use dynamic cage correction data for
-        cage center estimation. Normally, you do not need to play with this
-        parameter."""
-        return True
-
-    @property
-    def filter_for_valid_cage(self):
-        """Define, whether we should filter results for valid group cage.
-        Note: if not indicated in results file, no filter was used
-        Normally, you do not need to play with this parameter."""
-        return True
 
     @property
     @abstractmethod

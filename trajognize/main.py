@@ -480,7 +480,8 @@ def main(argv=[]):
                 # finalize trajectories, juhuuuuuuuu
                 phase.start_phase("Finalize trajectories...")
                 algo_trajectory.finalize_trajectories(
-                        v.trajectories, v.trajsonframe, v.barcodes, v.color_blobs, v.colorids)
+                        v.trajectories, v.trajsonframe, v.barcodes,
+                        v.color_blobs, v.colorids, v.project_settings)
                 phase.end_phase()
             elif options.debugload == 10:
                 phase.start_phase("Reading previously saved debug environment at level %d..." % options.debugload)

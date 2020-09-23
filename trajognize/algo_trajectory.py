@@ -2095,7 +2095,8 @@ def mark_barcodes_from_trajs(trajectories, barcodes, colorids, kkkk=None):
     return (chosen, deleted)
 
 
-def finalize_trajectories(trajectories, trajsonframe, barcodes, blobs, colorids):
+def finalize_trajectories(trajectories, trajsonframe, barcodes, blobs, colorids,
+    project_settings):
     """Finalize trajectories, make them continuous throughout the whole video.
 
     Cleanup algos:
@@ -2117,6 +2118,7 @@ OK  4. Mark barcodes as chosen/deleted and perform basic position and orientatio
     barcodes     -- global list of all barcodes
     blobs        -- global list of all blobs
     colorids     -- global colorid database created by parse_colorid_file()
+    project_settings -- global project-specific settings
 
     Function returns number of (chosen, deleted) barcodes
     and writes to keyword parameters barcodes and trajectories.
