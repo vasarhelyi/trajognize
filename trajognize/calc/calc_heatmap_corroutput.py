@@ -74,7 +74,7 @@ def main(argv=[]):
             continue
         print("gathering info from", tail)
         # initialize empty object
-        heatmaps = trajognize.stat.init.HeatMap(project_settings)
+        heatmaps = trajognize.stat.init.HeatMap(project_settings.good_light, project_settings.image_size)
         # add new object (so that we have latest methods from latest version)
         heatmaps += trajognize.util.load_object(inputfile)
         # calculate simplified statistics (like in dailyoutput)

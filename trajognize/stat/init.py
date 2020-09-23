@@ -47,7 +47,7 @@ class Stat(object):
     definition in stat.py
 
     """
-    def __init__(self, project_settings):
+    def __init__(self, good_light):
         """Initialize an empty class."""
         #: version of the current structure. Change it every time something
         #: changes in the definition of the statistics, to see whether some
@@ -63,10 +63,8 @@ class Stat(object):
         self.points = dict()
         #: the main data of the statistic
         self.data = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     len(mfix_types),
                     1,
@@ -86,7 +84,7 @@ class Stat(object):
 
         """
         self._check_version(X)
-        for light in self.project_settings.good_light:
+        for light in self.data.keys():
             self.data[light] += X.data[light]
             self.frames[light] += X.frames[light]
             self.points[light] += X.points[light]
@@ -114,7 +112,7 @@ class Stat(object):
         No need to overload this function, only use it in print_status() if needed.
 
         """
-        for light in self.project_settings.good_light:
+        for light in self.frames.keys():
             print("  %s statistic is from %d files, %d frames and %d data points" % \
                     (light, self.files, self.frames[light], self.points[light]))
 
@@ -135,7 +133,7 @@ class Stat(object):
         No need to overload this function, only use it in print_status() if needed.
 
         """
-        for light in self.project_settings.good_light:
+        for light in self.frames.keys():
             for mfi in range(len(mfix_types)):
                 mft = mfix_types[mfi]
                 print("  %s %s statistic is from %d files, %d frames and %d data points" % \
@@ -192,7 +190,7 @@ class HeatMap(Stat):
     spatially on the heatmaps.
 
     """
-    def __init__(self, project_settings):
+    def __init__(self, good_light, image_size):
         """Initialize barcode heatmaps with zero elements.
 
         """
@@ -213,8 +211,6 @@ class HeatMap(Stat):
         self.points = dict()
         #: the main data of the statistic: [light][x][y]
         self.data = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: parameter that defines nonzero values in dailyoutput
         self.nonzero_threshold = 0
         #: parameters that define lower/upper thresholds for the intensity
@@ -223,11 +219,9 @@ class HeatMap(Stat):
         self.territory_intensity_per_day_min = 0.5
         self.territory_intensity_per_day_max = 15.0
         # initialize data
-        for light in self.project_settings.good_light:
-            self.data[light] = numpy.zeros(( \
-                    len(mfix_types),
-                    self.project_settings.image_size.x,
-                    self.project_settings.image_size.y),
+        for light in good_light:
+            self.data[light] = numpy.zeros(
+                    (len(mfix_types), image_size.x, image_size.y),
                     dtype=numpy.int)
             self.frames[light] = 0
             self.points[light] = numpy.zeros((len(mfix_types)), dtype=numpy.int)
@@ -236,15 +230,17 @@ class HeatMap(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light_mft()
 
-    def write_results(self, outputfile, substat):
+    def write_results(self, outputfile, project_settings, substat):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param substat: name of the virtual subclass statistics (e.g. heatmap.RPG)
 
         """
         anymft = mfix_types + ["ANY"]
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             for mfi in range(len(anymft)):
                 mft = anymft[mfi]
                 if mft == "ANY":
@@ -254,20 +250,20 @@ class HeatMap(Stat):
                 outputfile.write("# %s of %s %s barcodes from %d files, %d frames, %d points\n" %
                         (substat, light.lower(), mft, self.files, self.frames[light], points))
                 outputfile.write("# image size is %dx%d pixels, bin size is 1x1 pixel.\n" %
-                        (self.project_settings.image_size.x, self.project_settings.image_size.y))
-                outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                        (project_settings.image_size.x, project_settings.image_size.y))
+                outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                 outputfile.write("# (0,0) = (top,left) corner of image.\n\n")
                 outputfile.write("%s_%s_%s" % (substat, light.lower(), mft))
-                for x in range(self.project_settings.image_size.x):
+                for x in range(project_settings.image_size.x):
                     outputfile.write("\t%d" % x)
                 outputfile.write("\n")
                 if mft == "ANY":
                     data = sum(self.data[light])
                 else:
                     data = self.data[light][mfi]
-                for y in range(self.project_settings.image_size.y):
+                for y in range(project_settings.image_size.y):
                     outputfile.write("%d" % y)
-                    for x in range(self.project_settings.image_size.x):
+                    for x in range(project_settings.image_size.x):
                         outputfile.write("\t%d" % data[x, y])
                     outputfile.write("\n")
                 outputfile.write("\n\n")
@@ -285,7 +281,7 @@ class HeatMap(Stat):
         """
         simplified = dict()
         anymft = mfix_types + ["ANY"]
-        for light in self.project_settings.good_light:
+        for light in self.data.keys():
             for mfi in range(len(anymft)):
                 mft = anymft[mfi]
                 if mft == "ANY":
@@ -295,8 +291,8 @@ class HeatMap(Stat):
                 # get binned results
                 if binsize > 1:
                     xbin = numpy.array([[numpy.mean(x[i*binsize:i*binsize+binsize, j*binsize:j*binsize+binsize]) \
-                            for j in range(self.project_settings.image_size.y/binsize)] \
-                            for i in range(self.project_settings.image_size.x/binsize)])
+                            for j in range(project_settings.image_size.y/binsize)] \
+                            for i in range(project_settings.image_size.x/binsize)])
                 else:
                     xbin = x
                 x_nonzero = xbin[xbin > self.nonzero_threshold]
@@ -328,11 +324,16 @@ class HeatMap(Stat):
                     simplified[(light, mft, "std_territory%s" % s[i])] = std_territory/n[i]
         return simplified
 
-    def write_dailyoutput_results(self, outputfile, exps, exp, substat):
+    def write_dailyoutput_results(self, outputfile, project_settings, exps, exp, substat):
         """Saves the contents of self to a file (possibly as a summarized stat
         of extracted statistics of the heatmaps for daily output stat).
 
         :param outputfile: file object where the results are written
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
+        :param exps: experiment database created by
+                trajognize.stat.experiments.get_initialized_experiments()
+        :param exp: name of the current experiment
         :param substat: name of the virtual subclass statistics (e.g. heatmap.RPG)
 
         """
@@ -346,7 +347,7 @@ class HeatMap(Stat):
         simplified = self.get_simplified_statistics(1, area)
         keys = sorted(simplified.keys())
         anymft = mfix_types + ["ANY"]
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             for mfi in range(len(anymft)):
                 mft = anymft[mfi]
                 if mft == "ANY":
@@ -356,9 +357,9 @@ class HeatMap(Stat):
                 outputfile.write("# %s of %s %s barcodes from %d files, %d frames, %d points\n" %
                         (substat, light.lower(), mft, self.files, self.frames[light], points))
                 outputfile.write("# image size is %dx%d pixels, bin size is 1x1 pixel.\n" %
-                        (self.project_settings.image_size.x, self.project_settings.image_size.y))
+                        (project_settings.image_size.x, project_settings.image_size.y))
                 outputfile.write("# this is an extracted statistics of the heatmap to reduce overall size.\n")
-                outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                 outputfile.write("# nonzero threshold is > %d\n" % self.nonzero_threshold)
                 outputfile.write("# territory intensity thresholds (per day): %g <= x <= %g\n\n" %
                         (self.territory_intensity_per_day_min, self.territory_intensity_per_day_max))
@@ -388,7 +389,7 @@ class MotionMap(Stat):
     spatially on the motion heatmaps.
 
     """
-    def __init__(self, project_settings):
+    def __init__(self, good_light, image_size):
         """Initialize barcode motion heatmaps with zero elements.
 
         """
@@ -408,14 +409,12 @@ class MotionMap(Stat):
         self.points = dict()
         #: the main data of the statistic: [light][x][y]
         self.data = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         # initialize data
-        for light in self.project_settings.good_light:
-            self.data[light] = numpy.zeros(( \
-                    self.project_settings.image_size.x,
-                    self.project_settings.image_size.y),
-                    dtype=numpy.int)
+        for light in good_light:
+            self.data[light] = numpy.zeros(
+                (image_size.x, image_size.y),
+                dtype=numpy.int
+            )
             self.frames[light] = 0
             self.points[light] = 0
 
@@ -423,28 +422,30 @@ class MotionMap(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, substat):
+    def write_results(self, outputfile, project_settings, substat):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param substat: name of the virtual subclass statistics (e.g. heatmap.RPG)
 
         """
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             outputfile.write("# %s of %s barcodes from %d files, %d frames, %d points\n" %
                     (substat, light.lower(), self.files, self.frames[light], self.points[light]))
             outputfile.write("# image size is %dx%d pixels, bin size is 1x1 pixel.\n" %
-                    (self.project_settings.image_size.x, self.project_settings.image_size.y))
+                    (project_settings.image_size.x, project_settings.image_size.y))
             outputfile.write("# velocity_threshold=%dpx/frame\n" % self.velocity_threshold)
-            outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+            outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
             outputfile.write("# (0,0) = (top,left) corner of image.\n\n")
             outputfile.write("%s_%s_ANY" % (substat, light.lower()))
-            for x in range(self.project_settings.image_size.x):
+            for x in range(project_settings.image_size.x):
                 outputfile.write("\t%d" % x)
             outputfile.write("\n")
-            for y in range(self.project_settings.image_size.y):
+            for y in range(project_settings.image_size.y):
                 outputfile.write("%d" % y)
-                for x in range(self.project_settings.image_size.x):
+                for x in range(project_settings.image_size.x):
                     outputfile.write("\t%d" % self.data[light][x, y])
                 outputfile.write("\n")
             outputfile.write("\n\n")
@@ -465,7 +466,7 @@ class AAMap(Stat):
     spatially on the motion heatmaps.
 
     """
-    def __init__(self, project_settings):
+    def __init__(self, good_light, image_size):
         """Initialize barcode AA heatmaps with zero elements.
 
         """
@@ -484,14 +485,12 @@ class AAMap(Stat):
         self.points = dict()
         #: the main data of the statistic: [light][x][y]
         self.data = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         # initialize data
-        for light in self.project_settings.good_light:
-            self.data[light] = numpy.zeros(( \
-                    self.project_settings.image_size.x,
-                    self.project_settings.image_size.y),
-                    dtype=numpy.int)
+        for light in good_light:
+            self.data[light] = numpy.zeros(
+                (image_size.x, image_size.y),
+                dtype=numpy.int
+            )
             self.frames[light] = 0
             self.points[light] = 0
 
@@ -499,27 +498,29 @@ class AAMap(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile):
+    def write_results(self, outputfile, project_settings):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
 
         """
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             outputfile.write("# AA heatmap of %s barcodes from %d files, %d frames, %d points\n" %
                     (light.lower(), self.files, self.frames[light], self.points[light]))
             outputfile.write("# image size is %dx%d pixels, bin size is 1x1 pixel.\n" %
-                    (self.project_settings.image_size.x, self.project_settings.image_size.y))
+                    (project_settings.image_size.x, project_settings.image_size.y))
             outputfile.write("# heatmap points are calculated with the 'aa' stat\n")
-            outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+            outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
             outputfile.write("# (0,0) = (top,left) corner of image.\n\n")
             outputfile.write("aamap_%s_ANY" % light.lower())
-            for x in range(self.project_settings.image_size.x):
+            for x in range(project_settings.image_size.x):
                 outputfile.write("\t%d" % x)
             outputfile.write("\n")
-            for y in range(self.project_settings.image_size.y):
+            for y in range(project_settings.image_size.y):
                 outputfile.write("%d" % y)
-                for x in range(self.project_settings.image_size.x):
+                for x in range(project_settings.image_size.x):
                     outputfile.write("\t%d" % self.data[light][x, y])
                 outputfile.write("\n")
             outputfile.write("\n\n")
@@ -559,8 +560,6 @@ class Dist24h(Stat):
         self.frames = 0
         #: number of data points in the statistic
         self.points = numpy.zeros((len(mfix_types)), dtype=numpy.int)
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: number of minutes in a day (data is using minute bins over the day)
         self.minutes_per_day = 1440
         # initialize data
@@ -659,7 +658,7 @@ class Dist24h(Stat):
                 outputfile.write("# 24h time distribution of %s barcodes from %d files, %d frames, %d points\n" %
                         (mft, self.files, self.frames, self.points[mfi]))
                 outputfile.write("# Output bin size is one minute, range is from 00:00:00 to 23:59:59 (24*60 = 1440 bins)\n")
-                outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                 outputfile.write("# IDs are ordered alphabetically.\n\n")
                 # write header
                 s = ["%s_%s" % (substat, mft)]
@@ -690,7 +689,7 @@ class Dist24h(Stat):
                     outputfile.write("# 24h time distribution of %s barcodes from %d files, %d frames, %d points\n" %
                             (mft, self.files, self.frames, self.points[mfi]))
                     outputfile.write("# Output bin size is one minute, range is from 00:00:00 to 23:59:59 (24*60 = 1440 bins)\n")
-                    outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                    outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                     outputfile.write("# IDs are ordered alphabetically.\n")
                     outputfile.write("# this is group %s\n\n" % group)
                     # write header
@@ -724,7 +723,7 @@ class Dist24hObj(Stat):
     .num is the number of frames taken into account in the statistic.
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -743,8 +742,6 @@ class Dist24hObj(Stat):
         self.frames = 0
         #: number of data points in the statistic
         self.points = 0
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: number of minutes in a day (data is using minute bins over the day)
         self.minutes_per_day = 1440
         # initialize data
@@ -816,12 +813,14 @@ class Dist24hObj(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__simple()
 
-    def write_results(self, outputfile, colorids, exps, exp, substat):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp, substat):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -906,7 +905,7 @@ class DailyObj(Stat):
     .num is the number of frames taken into account in the statistic.
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -931,10 +930,8 @@ class DailyObj(Stat):
         self.avg = dict()
         self.stv = dict()
         self.num = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             #: one bin for all days, all objects, all colorids + group sum
             self.avg[light] = numpy.zeros(( \
                     id_count+1,
@@ -969,7 +966,7 @@ class DailyObj(Stat):
 
         """
         self._check_version(X)
-        for light in self.project_settings.good_light:
+        for light in self.num.keys():
             # get combined values
             num = self.num[light] + X.num[light]
             avg = numpy.where(num != 0, (self.num[light] * self.avg[light] + X.num[light] * X.avg[light]) / num, 0)
@@ -988,7 +985,7 @@ class DailyObj(Stat):
 
     def calculate_group_sum(self, klist):
         """Calculate sum for the group and store it in the last k bin."""
-        for light in self.project_settings.good_light:
+        for light in self.num.keys():
             self.num[light][-1][:] = 0
             self.avg[light][-1][:] = 0
             self.stv[light][-1][:] = 0
@@ -1008,12 +1005,14 @@ class DailyObj(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -1025,7 +1024,7 @@ class DailyObj(Stat):
         if exp == "all": return
         # calculate standard deviation from standard variance
         self.std = dict()
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             self.std[light] = numpy.where(self.num[light] != 0, numpy.sqrt(self.stv[light] / self.num[light]), 0)
         # calculate max number of days in the given experiment
         maxday = experiments.get_days_since_start(exps[exp], exps[exp]['stop'])
@@ -1039,7 +1038,7 @@ class DailyObj(Stat):
             # calculate group sum
             self.calculate_group_sum(klist)
             # write results
-            for light in self.project_settings.good_light:
+            for light in project_settings.good_light:
                 for obi in range(len(project.object_types)):
                     obj = project.object_types[obi] # hehe
                     outputfile.write("# Daily amount of time (%s) around '%s' from %d files, %d frames, %d points\n" %
@@ -1081,7 +1080,7 @@ class SameIDDist(Stat):
     deleted barcodes.
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -1103,10 +1102,8 @@ class SameIDDist(Stat):
         self.max_same_id = 200
         #: the main data of the statistic: [light][patek/all][deleted/notdeleted][numsameid]
         self.data = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     id_count+1,
                     2,
@@ -1124,7 +1121,7 @@ class SameIDDist(Stat):
 
         """
         self._check_version(X)
-        for light in self.project_settings.good_light:
+        for light in self.data.keys():
             self.data[light] += X.data[light]
             self.frames[light] += X.frames[light]
             self.points[light][0] += X.points[light][0]
@@ -1135,19 +1132,21 @@ class SameIDDist(Stat):
 
     def print_status(self):
         """Prints status info about the data to standard output."""
-        for light in self.project_settings.good_light:
+        for light in self.points.keys():
             print("  %s statistic is from %d files, %d frames and %d/%d data points (including/excluding deleted)" % \
                     (light, self.files, self.frames[light], self.points[light][0], self.points[light][1]))
 
-    def write_results(self, outputfile, colorids):
+    def write_results(self, outputfile, colorids, project_settings):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
 
         """
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             for deleted in range(2):
                 outputfile.write("# same id distribution of %s barcodes from %d files, %d frames, %d points (%s)\n\n" % \
                         (light.lower(), self.files, self.frames[light], self.points[light][deleted],
@@ -1181,7 +1180,7 @@ class NearestNeighbor(Stat):
     any is when there is no check on real/virtual state
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -1204,10 +1203,8 @@ class NearestNeighbor(Stat):
         self.points = dict()
         #: the main data of the statistic: [light][id_from][id_to]
         self.data = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     3, # bothreal=0/bothvirtual=1/any=2
                     id_count,
@@ -1216,7 +1213,7 @@ class NearestNeighbor(Stat):
             self.frames[light] = 0
             self.points[light] = 0
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
@@ -1225,6 +1222,8 @@ class NearestNeighbor(Stat):
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -1232,13 +1231,13 @@ class NearestNeighbor(Stat):
         """
         realvirtany = ["real", "virtual", "any"]
         if exp == "all":
-            for light in self.project_settings.good_light:
+            for light in project_settings.good_light:
                 for rva in range(len(realvirtany)):
                     outputfile.write("# nearest neighbor distribution of %s barcodes from %d files, %d frames, %d points\n" %
                             (light.lower(), self.files, self.frames[light], self.points[light]))
                     outputfile.write("# X[row][col] = number of frames when patek [col] is the nearest neighbor of patek [row].\n")
                     outputfile.write("# real is when both pateks are real, virtual is when both are virtual, any is when it doesn't matter\n")
-                    outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                    outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
                     names = [colorids[k].strid for k in range(len(colorids))]
@@ -1256,14 +1255,14 @@ class NearestNeighbor(Stat):
                     outputfile.write("\n\n")
             outputfile.flush()
         else:
-            for light in self.project_settings.good_light:
+            for light in project_settings.good_light:
                 for group in exps[exp]['groups']:
                     for rva in range(len(realvirtany)):
                         outputfile.write("# nearest neighbor distribution of %s barcodes from %d files, %d frames, %d points\n" %
                                 (light.lower(), self.files, self.frames[light], self.points[light]))
                         outputfile.write("# X[row][col] = number of frames when patek [col] is the nearest neighbor of patek [row].\n")
                         outputfile.write("# real is when both pateks are real, virtual is when both are virtual, any is when it doesn't matter\n")
-                        outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                        outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                         outputfile.write("# IDs are ordered alphabetically.\n")
                         outputfile.write("# this is group %s\n\n" % group)
                         # write header
@@ -1295,7 +1294,7 @@ class Neighbor(Stat):
     Being a neighbor is defined by a proper distance threshold.
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -1317,10 +1316,8 @@ class Neighbor(Stat):
         self.points = dict()
         #: the main data of the statistic: [light][0/1][day][id_from][id_to / n]
         self.data = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     2, # 0: j (network), 1: n (number)
                     project.max_day,
@@ -1330,7 +1327,7 @@ class Neighbor(Stat):
             self.frames[light] = 0
             self.points[light] = 0
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
@@ -1339,6 +1336,8 @@ class Neighbor(Stat):
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -1347,13 +1346,13 @@ class Neighbor(Stat):
 
         """
         if exp == "all": return
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             outputfile.write("# neighbor networks of %s barcodes from %d files, %d frames, %d points\n" %
                     (light.lower(), self.files, self.frames[light], self.points[light]))
             outputfile.write("# network-type output: X[row][col] = number of frames when patek [col] is neighbor of patek [row].\n")
             outputfile.write("# number-type output: X[row][col] = number of frames when patek [col] has [row] neighbors.\n")
             outputfile.write("# distance threshold for being neighbors: %d pixels\n" % self.distance_threshold)
-            outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+            outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
             outputfile.write("# IDs are ordered alphabetically.\n\n")
             for group in exps[exp]['groups']:
                 for nn, networknumber in enumerate(['network', 'number']):
@@ -1398,9 +1397,10 @@ class FQObj(Stat):
     Queuing is applicable only with orientation towards object center (+- 90 deg)
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
+        :param good_light(List[str]): list of good light types
         :param id_count: Number of IDs (pateks)
 
         """
@@ -1419,13 +1419,11 @@ class FQObj(Stat):
         self.frames = dict()
         #: number of data points in the statistic
         self.points = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: the main data of the statistic: [object][id_from][id_to]
         #: represents number of frames
         self.fandq = dict()
         self.qorq = dict()
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.fandq[light] = numpy.zeros(( \
                     len(project.object_types),
                     id_count,
@@ -1443,7 +1441,7 @@ class FQObj(Stat):
     def __add__(self, X):
         """Add another fqobj object to self with the '+' and '+=' operators."""
         self._check_version(X)
-        for light in self.project_settings.good_light:
+        for light in self.fandq.keys():
             self.fandq[light] += X.fandq[light]
             self.qorq[light] += X.qorq[light]
             self.frames[light] += X.frames[light]
@@ -1455,7 +1453,7 @@ class FQObj(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
@@ -1464,13 +1462,15 @@ class FQObj(Stat):
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
 
         """
         # write it
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             # OR normalize results
             ornormdata = numpy.where(self.qorq[light] > 0, self.fandq[light] / self.qorq[light], 0)
             if exp == "all":
@@ -1545,7 +1545,7 @@ class DailyFQObj(Stat):
     Queuing is applicable only with orientation towards object center (+- 90 deg)
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -1567,13 +1567,11 @@ class DailyFQObj(Stat):
         self.frames = dict()
         #: number of data points in the statistic
         self.points = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: the main data of the statistic: [day][object][id_from][id_to]
         #: represents number of frames
         self.fandq = dict()
         self.qorq = dict()
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.fandq[light] = numpy.zeros(( \
                     len(project.object_types),
                     id_count,
@@ -1593,7 +1591,7 @@ class DailyFQObj(Stat):
     def __add__(self, X):
         """Add another fqobj object to self with the '+' and '+=' operators."""
         self._check_version(X)
-        for light in self.project_settings.good_light:
+        for light in self.fandq.keys():
             self.fandq[light] += X.fandq[light]
             self.qorq[light] += X.qorq[light]
             self.frames[light] += X.frames[light]
@@ -1605,7 +1603,7 @@ class DailyFQObj(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
@@ -1614,6 +1612,8 @@ class DailyFQObj(Stat):
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -1641,7 +1641,7 @@ class DailyFQObj(Stat):
         maxday = experiments.get_days_since_start(exps[exp], exps[exp]['stop'])
         dayoffset = experiments.get_day_offset(exps[exp])
 
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             # calculate cumulative results
             cumulqorq = numpy.copy(self.qorq[light])
             cumulfandq = numpy.copy(self.fandq[light])
@@ -1707,7 +1707,7 @@ class FQFood(Stat):
     Queuing is applicable only with orientation towards object center (+- 90 deg)
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -1727,13 +1727,11 @@ class FQFood(Stat):
         self.frames = dict()
         #: number of data points in the statistic
         self.points = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: the main data of the statistic: [object][id_from][id_to]
         #: represents number of frames
         self.fandq = dict()
         self.qorq = dict()
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.fandq[light] = numpy.zeros(( \
                     id_count,
                     id_count),
@@ -1749,7 +1747,7 @@ class FQFood(Stat):
     def __add__(self, X):
         """Add another fqfood object to self with the '+' and '+=' operators."""
         self._check_version(X)
-        for light in self.project_settings.good_light:
+        for light in self.fandq.keys():
             self.fandq[light] += X.fandq[light]
             self.qorq[light] += X.qorq[light]
             self.frames[light] += X.frames[light]
@@ -1761,7 +1759,7 @@ class FQFood(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
@@ -1770,13 +1768,15 @@ class FQFood(Stat):
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
 
         """
         # write it
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             # OR normalize results
             ornormdata = numpy.where(self.qorq[light] > 0, self.fandq[light] / self.qorq[light], 0)
             if exp == "all":
@@ -1840,7 +1840,7 @@ class FQWhileF(Stat):
     Queuing is applicable only with orientation towards object center (+- 90 deg)
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -1860,12 +1860,10 @@ class FQWhileF(Stat):
         self.frames = dict()
         #: number of data points in the statistic
         self.points = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: the main data of the statistic: [object][id_from][id_to]
         #: represents number of frames
         self.data = dict()
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     len(project.object_types),
                     id_count,   # who is feeding
@@ -1878,7 +1876,7 @@ class FQWhileF(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
@@ -1887,6 +1885,8 @@ class FQWhileF(Stat):
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -1905,7 +1905,7 @@ class FQWhileF(Stat):
             return (average, sqrt(variance))
 
         # write it
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             if exp == "all":
                 for obi in range(len(project.object_types)):
                     obj = project.object_types[obi] # hehe
@@ -2010,7 +2010,7 @@ class AA(Stat):
     TODO: will work better on smoothed velocities, with less false positives.
 
     """
-    def __init__(self, project_settings, id_count, aa_settings):
+    def __init__(self, good_light, id_count, aa_settings):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -2047,12 +2047,10 @@ class AA(Stat):
         self.frames = dict()
         #: number of data points in the statistic
         self.points = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: the main data of the statistic
         self.data = dict()
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     id_count,
                     id_count),
@@ -2064,7 +2062,7 @@ class AA(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
@@ -2073,6 +2071,8 @@ class AA(Stat):
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -2088,11 +2088,11 @@ class AA(Stat):
         outputfile.write("#   min_event_length = %g frames\n" % self.min_event_length)
         outputfile.write("#   min_event_count = %g\n\n\n" % self.min_event_count)
         if exp == "all":
-            for light in self.project_settings.good_light:
+            for light in project_settings.good_light:
                 outputfile.write("# AA (approach-avoidance) distribution of %s barcodes from %d files, %d frames, %d points\n" %
                         (light.lower(), self.files, self.frames[light], self.points[light]))
                 outputfile.write("# X[row][col] = number of frames when [row] was approaching while [col] was avoiding.\n")
-                outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                 outputfile.write("# IDs are ordered alphabetically.\n\n")
                 # write header
                 names = [colorids[k].strid for k in range(len(colorids))]
@@ -2111,11 +2111,11 @@ class AA(Stat):
                 outputfile.flush()
         else:
             for group in exps[exp]['groups']:
-                for light in self.project_settings.good_light:
+                for light in project_settings.good_light:
                     outputfile.write("# AA (approach-avoidance) distribution of %s barcodes from %d files, %d frames, %d points\n" %
                             (light.lower(), self.files, self.frames[light], self.points[light]))
                     outputfile.write("# X[row][col] = number of frames when [row] was approaching while [col] was avoiding.\n")
-                    outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                    outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                     outputfile.write("# IDs are ordered alphabetically.\n")
                     outputfile.write("# this is group %s\n\n" % group)
                     # write header
@@ -2144,7 +2144,7 @@ class ButtHead(Stat):
     in the given light condition.
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -2165,12 +2165,10 @@ class ButtHead(Stat):
         self.frames = dict()
         #: number of data points in the statistic
         self.points = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: the main data of the statistic
         self.data = dict()
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     id_count,
                     id_count),
@@ -2182,7 +2180,7 @@ class ButtHead(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
@@ -2191,18 +2189,20 @@ class ButtHead(Stat):
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
 
         """
         if exp == "all":
-            for light in self.project_settings.good_light:
+            for light in project_settings.good_light:
                 outputfile.write("# butthead distribution of %s barcodes from %d files, %d frames, %d points\n" %
                         (light.lower(), self.files, self.frames[light], self.points[light]))
                 outputfile.write("# X[row][col] = number of frames when butt of patek [col] is close to head of patek [row].\n")
                 outputfile.write("# IDs are ordered alphabetically.\n")
-                outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                 outputfile.write("# patek_length = %g px\n" % self.patek_length)
                 outputfile.write("# cos_approacher_threshold = %g\n\n" % self.cos_approacher_threshold)
                 # write header
@@ -2221,13 +2221,13 @@ class ButtHead(Stat):
                 outputfile.write("\n\n")
             outputfile.flush()
         else:
-            for light in self.project_settings.good_light:
+            for light in project_settings.good_light:
                 for group in exps[exp]['groups']:
                     outputfile.write("# butthead distribution of %s barcodes from %d files, %d frames, %d points\n" %
                             (light.lower(), self.files, self.frames[light], self.points[light]))
                     outputfile.write("# X[row][col] = number of frames when butt of patek [col] is close to head of patek [row].\n")
                     outputfile.write("# IDs are ordered alphabetically.\n")
-                    outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+                    outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                     outputfile.write("# patek_length = %g px\n" % self.patek_length)
                     outputfile.write("# cos_approacher_threshold = %g\n" % self.cos_approacher_threshold)
                     outputfile.write("# this is group %s\n\n" % group)
@@ -2257,7 +2257,7 @@ class SDist(Stat):
     at dist pixels from each other.
 
     """
-    def __init__(self, project_settings):
+    def __init__(self, good_light):
         """Initialize with zero elements."""
         #: version of the current structure. Change it every time something
         #: changes in the definition of the statistics, to see whether some
@@ -2276,27 +2276,27 @@ class SDist(Stat):
         self.points = dict()
         #: maximum distance to detect [pixels]
         self.maxdist = 1000
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: the main data of the statistic: [light][dist]
         self.data = dict()
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     self.maxdist))
             self.frames[light] = 0
             self.points[light] = 0
 
-    def write_results(self, outputfile):
+    def write_results(self, outputfile, project_settings):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
 
         """
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             outputfile.write("# distance distribution [pixel] of %s barcodes from %d files, %d frames, %d points\n" %
                     (light.lower(), self.files, self.frames[light], self.points[light]))
-            outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+            outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
             outputfile.write("# only CHOSEN barcodes are taken into account.\n\n")
             # write header
             outputfile.write("sdist_%s\tnum\n" % (light.lower()))
@@ -2315,7 +2315,7 @@ class VelDist(Stat):
     moving with velocity vel [pixels/frame].
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -2336,12 +2336,10 @@ class VelDist(Stat):
         self.points = dict()
         #: maximum velocity to detect [pixels/frame]
         self.maxvel = 200
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: the main data of the statistic: [light][patek+all][dist]
         self.data = dict()
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     id_count+1,
                     self.maxvel),
@@ -2349,18 +2347,20 @@ class VelDist(Stat):
             self.frames[light] = 0
             self.points[light] = 0
 
-    def write_results(self, outputfile, colorids):
+    def write_results(self, outputfile, colorids, project_settings):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
 
         """
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             outputfile.write("# velocity distribution [pixel/frame] of %s barcodes from %d files, %d frames, %d points\n" %
                     (light.lower(), self.files, self.frames[light], self.points[light]))
-            outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+            outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
             outputfile.write("# only CHOSEN barcodes are taken into account.\n\n")
             # write header
             names = [colorids[k].strid for k in range(len(colorids))]
@@ -2387,7 +2387,7 @@ class AccDist(Stat):
     moving with acceleration acc [pixels/frame^2].
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -2407,12 +2407,10 @@ class AccDist(Stat):
         self.points = dict()
         #: maximum (absolute) acceleration to detect [pixels/frame^2]
         self.maxacc = 200
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: the main data of the statistic: [light][patek+all][dist]
         self.data = dict()
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     id_count+1,
                     self.maxacc),
@@ -2420,18 +2418,20 @@ class AccDist(Stat):
             self.frames[light] = 0
             self.points[light] = 0
 
-    def write_results(self, outputfile, colorids):
+    def write_results(self, outputfile, colorids, project_settings):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
 
         """
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             outputfile.write("# acceleration distribution [pixel/frame^2] of %s barcodes from %d files, %d frames, %d points\n" %
                     (light.lower(), self.files, self.frames[light], self.points[light]))
-            outputfile.write("# filter_for_valid_cage=%s\n" % str(self.project_settings.filter_for_valid_cage))
+            outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
             outputfile.write("# only CHOSEN barcodes are taken into account.\n\n")
             # write header
             names = [colorids[k].strid for k in range(len(colorids))]
@@ -2455,7 +2455,7 @@ class Basic(Stat):
     frame nums in different experiments, number of different errors, etc.
 
     """
-    def __init__(self, project_settings):
+    def __init__(self, all_light, MBASE):
         """Initialize an empty class."""
         #: version of the current structure. Change it every time something
         #: changes in the definition of the statistics, to see whether some
@@ -2470,8 +2470,6 @@ class Basic(Stat):
         self.files = 0
         #: number of frames that were used to gather info for the statistic
         self.frames = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         #: number of frames with cage error (nan in any parameter)
         self.cageerror = dict()
         #: number of frames within entry times
@@ -2484,14 +2482,14 @@ class Basic(Stat):
         self.colors_all = dict()
         self.colors_chosen = dict()
         # initialize data
-        for light in self.project_settings.all_light:
+        for light in all_light:
             self.frames[light] = 0
             self.cageerror[light] = 0
             self.entrytime[light] = 0
             self.nonvalidcage[light] = 0
             self.mfixcount[light] = numpy.zeros(len(trajognize.init.MFix) + 1) # last is for counting not chosens
-            self.colors_all[light] = numpy.zeros(self.project_settings.MBASE)
-            self.colors_chosen[light] = numpy.zeros(self.project_settings.MBASE)
+            self.colors_all[light] = numpy.zeros(MBASE)
+            self.colors_chosen[light] = numpy.zeros(MBASE)
 
     def __add__(self, X):
         """Add another object of the same class to self with the '+' and '+=' operators.
@@ -2500,7 +2498,7 @@ class Basic(Stat):
 
         """
         self._check_version(X)
-        for light in self.project_settings.all_light:
+        for light in self.frames.keys():
             self.frames[light] += X.frames[light]
             self.cageerror[light] += X.cageerror[light]
             self.entrytime[light] += X.entrytime[light]
@@ -2514,16 +2512,18 @@ class Basic(Stat):
 
     def print_status(self):
         """Prints status info about the data to standard output."""
-        for light in self.project_settings.all_light:
+        for light in self.frames.keys():
             print("  %s statistic is from %d files and %d frames" % \
                     (light, self.files, self.frames[light]))
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -2533,18 +2533,18 @@ class Basic(Stat):
         if exp != "all":
             dt = exps[exp]['stop'] - exps[exp]['start']
             if sys.hexversion < 0x02070000:
-                totalframes = int(dt.seconds + dt.microseconds / 1E6 + dt.days * 86400 * self.project_settings.FPS)
+                totalframes = int(dt.seconds + dt.microseconds / 1E6 + dt.days * 86400 * project_settings.FPS)
             else:
-                totalframes = int(dt.total_seconds() * self.project_settings.FPS)
+                totalframes = int(dt.total_seconds() * project_settings.FPS)
             outputfile.write("Number of frames in %s experiment:\t%d\n" % (exp, totalframes))
             processedframes = 0
-            for light in self.project_settings.all_light:
+            for light in project_settings.all_light:
                 processedframes += self.frames[light]
             outputfile.write("Number of not processed frames in %s experiment:\t%d\t(%1.2f%% of experiment)\n" %
                     (exp, totalframes - processedframes, 100.0*(totalframes-processedframes)/totalframes))
             outputfile.write("\n\n")
 
-        for light in self.project_settings.all_light:
+        for light in project_settings.all_light:
             outputfile.write("# Basic statistics for %s light condition\n" % light)
             outputfile.write("Total number of processed frames:\t%d" % self.frames[light])
             if exp == "all":
@@ -2570,8 +2570,8 @@ class Basic(Stat):
                         (trajognize.init.MFix(1<<i).name, self.mfixcount[light][i],
                         100.0*self.mfixcount[light][i] / max(1, len(colorids)*x - self.mfixcount[light][-1])))
             outputfile.write("Number of barcodes containing a given color:\tall_novirt\tchosen\n")
-            for i in range(self.project_settings.MBASE):
-                outputfile.write("%-6s\t%d\t%d\n" % (self.project_settings.color_names[i],
+            for i in range(project_settings.MBASE):
+                outputfile.write("%-6s\t%d\t%d\n" % (project_settings.color_names[i],
                         self.colors_all[light][i],
                         self.colors_chosen[light][i]))
             outputfile.write("Number of chosen barcodes with position in non valid cage:\n")
@@ -2594,7 +2594,7 @@ class DistFromWall(Stat):
     same amount of memory than one subclass of a HeatMap object.
 
     """
-    def __init__(self, project_settings, id_count):
+    def __init__(self, good_light, image_size, id_count):
         """Initialize distfromwall distributions with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -2620,16 +2620,14 @@ class DistFromWall(Stat):
         self.points = dict()
         #: the main data of the statistic: [light][x][y]
         self.data = dict()
-        #: the main project-specific settings class instance
-        self.project_settings = project_settings
         # initialize data
-        for light in self.project_settings.good_light:
+        for light in good_light:
             self.data[light] = numpy.zeros(( \
                     id_count,
                     len(self.motion_types),
                     len(mfix_types),
                     project.max_day,
-                    self.project_settings.image_size.y/4),
+                    int(image_size.y / 4)),
                     dtype=numpy.int)
             self.frames[light] = 0
             self.points[light] = 0
@@ -2638,12 +2636,14 @@ class DistFromWall(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, exps, exp):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -2669,7 +2669,7 @@ class DistFromWall(Stat):
         dayoffset = experiments.get_day_offset(exps[exp])
         dayrange = experiments.get_dayrange_of_experiment(exps[exp])
         anymft = mfix_types + ["ANY"]
-        for light in self.project_settings.good_light:
+        for light in project_settings.good_light:
             for group in exps[exp]['groups']:
                 # get sorted names and colorid indices
                 allnames = [colorids[k].strid for k in range(len(colorids))]

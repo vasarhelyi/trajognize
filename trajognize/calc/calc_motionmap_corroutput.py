@@ -74,12 +74,12 @@ def main(argv=[]):
             continue
         print("gathering info from", tail)
         # initialize empty object
-        motionmaps = trajognize.stat.init.MotionMap(project_settings)
+        motionmaps = trajognize.stat.init.MotionMap(project_settings.good_light, project_settings.image_size)
         # add new object (so that we have latest methods from latest version)
         motionmaps += trajognize.util.load_object(inputfile)
         # calculate simplified statistics (like in dailyoutput)
         # but first we need to copy data to a heatmap stat to use its built-in stat functions:
-        heatmaps = trajognize.stat.init.HeatMap(project_settings)
+        heatmaps = trajognize.stat.init.HeatMap(project_settings.good_light, project_settings.image_size)
         for light in project_settings.good_light:
             heatmaps.data[light][0] = motionmaps.data[light]
             heatmaps.frames[light] = motionmaps.frames[light]

@@ -88,9 +88,9 @@ def main(argv=[]):
         experiment = exps[exp[4:]]
         # caculate average
         if stat == "heatmap":
-            avgobj = trajognize.stat.init.HeatMap(project_settings)
+            avgobj = trajognize.stat.init.HeatMap(project_settings.good_light, project_settings.image_size)
         elif stat == "motionmap":
-            avgobj = trajognize.stat.init.MotionMap(project_settings)
+            avgobj = trajognize.stat.init.MotionMap(project_settings.good_light, project_settings.image_size)
         else:
             raise NotImplementedError("unhandled stat: {}".format(stat))
         for inputfile in filedict[key]:

@@ -79,12 +79,15 @@ def calculate_heatmap(barcodes, light_log, cage_log, entrytimes, starttime,
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     day = 0
     if dailyoutput:
-        heatmaps = [init.HeatMap(project_settings), init.HeatMap(project_settings)]
+        heatmaps = [
+            init.HeatMap(project_settings.good_light, project_settings.image_size),
+            init.HeatMap(project_settings.good_light, project_settings.image_size)
+        ]
         # do not calculate anything if we are not part of an experiment
         if experiment is None:
             return heatmaps
     else:
-        heatmaps = [init.HeatMap(project_settings)]
+        heatmaps = [init.HeatMap(project_settings.good_light, project_settings.image_size)]
         # do not calculate anything if we are not part of an experiment
         if experiment is None:
             return heatmaps[0]
@@ -182,7 +185,7 @@ def calculate_motionmap(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
-    motionmaps = init.MotionMap(project_settings)
+    motionmaps = init.MotionMap(project_settings.good_light, project_settings.image_size)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return motionmaps
@@ -331,7 +334,7 @@ def calculate_dist24h(barcodes, light_log, cage_log, entrytimes, starttime,
         light = light_at_frame(currentframe)
         if light not in project_settings.good_light: continue
         # get current frame in min (TODO: use datetime_at_frame instead)
-        bin = ((secofday + currentframe/project_settings.FPS) % 86400 ) / 60
+        bin = int(((secofday + currentframe/project_settings.FPS) % 86400 ) / 60)
         # get chosen barcodes
         chosens = util.get_chosen_barcodes(barcodes[currentframe])
         # store number of barcodes in the proper time bin
@@ -356,16 +359,16 @@ def calculate_dist24h(barcodes, light_log, cage_log, entrytimes, starttime,
                 else:
                     continue
             # no errors, store data
-            num = [0]*len(init.mfix_types)
+            num = [0] * len(init.mfix_types)
             mfi = util.get_mfi(chosens[k])
             num[mfi] = 1
             # calculate new avg, std, num based on this method:
             # http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
             for i in range(len(init.mfix_types)):
-                prev_avg = dist24h.avg[k,i,bin]
-                dist24h.num[k,i,bin] += 1
-                dist24h.avg[k,i,bin] += (num[i] - prev_avg) / dist24h.num[k,i,bin]
-                dist24h.stv[k,i,bin] += (num[i] - prev_avg) * (num[i] - dist24h.avg[k,i,bin])
+                prev_avg = dist24h.avg[k, i, bin]
+                dist24h.num[k, i, bin] += 1
+                dist24h.avg[k, i, bin] += (num[i] - prev_avg) / dist24h.num[k, i, bin]
+                dist24h.stv[k, i, bin] += (num[i] - prev_avg) * (num[i] - dist24h.avg[k, i, bin])
                 dist24h.points[i] += 1
         dist24h.frames += 1
     dist24h.files = 1
@@ -413,7 +416,7 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     # initialize object
     id_count = len(barcodes[0])
-    dist24hobj = init.Dist24hObj(project_settings, id_count)
+    dist24hobj = init.Dist24hObj(id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return dist24hobj
@@ -513,7 +516,7 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     # initialize object
     id_count = len(barcodes[0])
-    dailyobj = init.DailyObj(project_settings, id_count)
+    dailyobj = init.DailyObj(project_settings.good_light, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return dailyobj
@@ -597,7 +600,7 @@ def calculate_sameiddist(barcodes, light_log, entrytimes, starttime,
     """
     light_at_frame = trajognize.util.param_at_frame(light_log)
     id_count = len(barcodes[0])
-    sameiddists = init.SameIDDist(project_settings, id_count)
+    sameiddists = init.SameIDDist(project_settings.good_light, id_count)
     for currentframe in range(len(barcodes)):
         # check entry times and skip current frame if not valid
         if trajognize.util.is_entry_time(entrytimes,
@@ -660,7 +663,7 @@ def calculate_nearestneighbor(barcodes, light_log, cage_log, entrytimes, startti
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    nearestneighbors = init.NearestNeighbor(project_settings, id_count)
+    nearestneighbors = init.NearestNeighbor(project_settings.good_light, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return nearestneighbors
@@ -782,7 +785,7 @@ def calculate_neighbor(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    neighbors = init.Neighbor(project_settings, id_count)
+    neighbors = init.Neighbor(project_settings.good_light, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return neighbors
@@ -890,7 +893,7 @@ def calculate_dailyfqobj(barcodes, light_log, cage_log, entrytimes, starttime,
     fqobj stat.
 
     """
-    dailyfqobj = init.DailyFQObj(project_settings, len(colorids))
+    dailyfqobj = init.DailyFQObj(project_settings.good_light, len(colorids))
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
             colorids, project_settings, experiment, dailyfqobj)
     return dailyfqobj
@@ -922,7 +925,7 @@ def calculate_fqfood(barcodes, light_log, cage_log, entrytimes, starttime,
     extra parameter. For more details see fqobj stat.
 
     """
-    fqfood = init.FQFood(project_settings, len(colorids))
+    fqfood = init.FQFood(project_settings.good_light, len(colorids))
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
             colorids, project_settings, experiment, None, fqfood)
     return fqfood
@@ -954,7 +957,7 @@ def calculate_fqwhilef(barcodes, light_log, cage_log, entrytimes, starttime,
     extra parameter. For more details see fqobj stat.
 
     """
-    fqwhilef = init.FQWhileF(project_settings, len(colorids))
+    fqwhilef = init.FQWhileF(project_settings.good_light, len(colorids))
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
             colorids, project_settings, experiment, None, None, fqwhilef)
     return fqwhilef
@@ -1002,7 +1005,7 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    fqobj = init.FQObj(project_settings, id_count)
+    fqobj = init.FQObj(project_settings.good_light, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return fqobj
@@ -1183,7 +1186,7 @@ def calculate_aamap(barcodes, light_log, cage_log, entrytimes, starttime,
     WARNING: no cage correction is defined on aamap yet
 
     """
-    aamap = init.AAMap(project_settings)
+    aamap = init.AAMap(project_settings.good_light, project_settings.image_size)
     calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
         colorids, project_settings, experiment, subtitlefile, aa_settings, aamap)
     return aamap
@@ -1228,7 +1231,7 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    aa = init.AA(project_settings, id_count, aa_settings)
+    aa = init.AA(project_settings.good_light, id_count, aa_settings)
     history = [[[-aa.min_event_length]*aa.min_event_length for i in range(id_count)] for j in range(id_count)]
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
@@ -1433,7 +1436,7 @@ def calculate_butthead(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    butthead = init.ButtHead(project_settings, id_count)
+    butthead = init.ButtHead(project_settings.good_light, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return butthead
@@ -1579,7 +1582,7 @@ def calculate_sdist(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    sdist = init.SDist(project_settings)
+    sdist = init.SDist(project_settings.good_light)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return sdist
@@ -1687,7 +1690,7 @@ def calculate_veldist(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    veldist = init.VelDist(project_settings, id_count)
+    veldist = init.VelDist(project_settings.good_light, id_count)
     prevchosens = util.get_chosen_barcodes(barcodes[0])
     prevframe = 0
     for currentframe in range(1, len(barcodes)):
@@ -1767,7 +1770,7 @@ def calculate_accdist(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    accdist = init.AccDist(project_settings, id_count)
+    accdist = init.AccDist(project_settings.good_light, id_count)
     prevprevchosens = util.get_chosen_barcodes(barcodes[0]) #, trajognize.init.MFix.VIRTUAL)
     prevchosens = util.get_chosen_barcodes(barcodes[1]) #, trajognize.init.MFix.VIRTUAL)
     prevprevframe = 0
@@ -1848,7 +1851,7 @@ def calculate_basic(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
-    basic = init.Basic(project_settings)
+    basic = init.Basic(project_settings.all_light, project_settings.MBASE)
     id_count = len(barcodes[0])
     for currentframe in range(len(barcodes)):
         # get light condition
@@ -1938,7 +1941,7 @@ def calculate_distfromwall(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     # initialize object
     id_count = len(barcodes[0])
-    distfromwall = init.DistFromWall(project_settings, id_count)
+    distfromwall = init.DistFromWall(project_settings.good_light, project_settings.image_size, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return distfromwall
@@ -1995,7 +1998,7 @@ def calculate_distfromwall(barcodes, light_log, cage_log, entrytimes, starttime,
             mindist = maxdist
             for poly in experiment['wall'][group]:
                 if not util.is_inside_polygon(pos, poly): continue
-                dist = util.distance_from_polygon(pos, poly)
+                dist = int(util.distance_from_polygon(pos, poly))
                 if dist < mindist: mindist = dist
             if mindist < maxdist:
                 distfromwall.data[light][k][0][mfi][day][mindist] += 1 # 0=allspeed
