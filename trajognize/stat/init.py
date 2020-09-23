@@ -26,7 +26,6 @@ from math import sqrt
 import trajognize.init
 
 from . import experiments
-from . import project
 
 #: generally used mfix values to differentiate in the stat outputs
 #: for more info see trajognize.stat.util.get_mfi()
@@ -335,8 +334,7 @@ class HeatMap(Stat):
         :param outputfile: file object where the results are written
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
         :param substat: name of the virtual subclass statistics (e.g. heatmap.RPG)
 
@@ -643,8 +641,7 @@ class Dist24h(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
         :param substat: name of the virtual subclass statistics (e.g. dist24h.monday)
 
@@ -729,7 +726,7 @@ class Dist24hObj(Stat):
     .num is the number of frames taken into account in the statistic.
 
     """
-    def __init__(self, id_count):
+    def __init__(self, object_types, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -754,19 +751,19 @@ class Dist24hObj(Stat):
         #: one bin for all minutes, all objects, all colorids + sum
         self.avg = numpy.zeros(( \
                 id_count+1,
-                len(project.object_types),
+                len(object_types),
                 self.minutes_per_day),
                 dtype=numpy.float)
         #: one bin for all minutes, all objects, all colorids + sum
         self.stv = numpy.zeros(( \
                 id_count+1,
-                len(project.object_types),
+                len(object_types),
                 self.minutes_per_day),
                 dtype=numpy.float)
         #: one bin for all minutes, all objects, all colorids + sum
         self.num = numpy.zeros(( \
                 id_count+1, # note that num is the same for all IDs, but matrix manipulation is simpler like this.
-                len(project.object_types),
+                len(object_types),
                 self.minutes_per_day),
                 dtype=numpy.int)
 
@@ -827,8 +824,7 @@ class Dist24hObj(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
         :param substat: name of the virtual subclass statistics (e.g. dist24h.monday)
 
@@ -843,8 +839,8 @@ class Dist24hObj(Stat):
             # calculate group sum
             self.calculate_group_sum(klist)
             # write results
-            for obi in range(len(project.object_types)):
-                obj = project.object_types[obi] # hehe
+            for obi in range(len(project_settings.object_types)):
+                obj = project_settings.object_types[obi] # hehe
                 outputfile.write("# 24h time distribution of barcodes around '%s' from %d files, %d frames, %d points\n" %
                         (obj, self.files, self.frames, self.points))
                 outputfile.write("# Output bin size is one minute, range is from 00:00:00 to 23:59:59 (24*60 = 1440 bins)\n")
@@ -873,8 +869,8 @@ class Dist24hObj(Stat):
                 # calculate group sum
                 self.calculate_group_sum(klist)
                 # write results
-                for obi in range(len(project.object_types)):
-                    obj = project.object_types[obi] # hehe
+                for obi in range(len(project_settings.object_types)):
+                    obj = project_settings.object_types[obi] # hehe
                     outputfile.write("# 24h time distribution of barcodes around '%s' from %d files, %d frames, %d points\n" %
                             (obj, self.files, self.frames, self.points))
                     outputfile.write("# Output bin size is one minute, range is from 00:00:00 to 23:59:59 (24*60 = 1440 bins)\n")
@@ -911,7 +907,7 @@ class DailyObj(Stat):
     .num is the number of frames taken into account in the statistic.
 
     """
-    def __init__(self, good_light, id_count):
+    def __init__(self, good_light, object_types, max_day, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -941,20 +937,20 @@ class DailyObj(Stat):
             #: one bin for all days, all objects, all colorids + group sum
             self.avg[light] = numpy.zeros(( \
                     id_count+1,
-                    len(project.object_types),
-                    project.max_day),
+                    len(object_types),
+                    max_day),
                     dtype=numpy.float)
             #: one bin for all days, all objects, all colorids + group sum
             self.stv[light] = numpy.zeros(( \
                     id_count+1,
-                    len(project.object_types),
-                    project.max_day),
+                    len(object_types),
+                    max_day),
                     dtype=numpy.float)
             #: one bin for all days, all objects, all colorids + group sum
             self.num[light] = numpy.zeros(( \
                     id_count+1, # note that num is the same for all IDs, but matrix manipulation is simpler like this.
-                    len(project.object_types),
-                    project.max_day),
+                    len(object_types),
+                    max_day),
                     dtype=numpy.int)
             self.frames[light] = 0
             self.points[light] = 0
@@ -1019,8 +1015,7 @@ class DailyObj(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
@@ -1045,8 +1040,8 @@ class DailyObj(Stat):
             self.calculate_group_sum(klist)
             # write results
             for light in project_settings.good_light:
-                for obi in range(len(project.object_types)):
-                    obj = project.object_types[obi] # hehe
+                for obi in range(len(project_settings.object_types)):
+                    obj = project_settings.object_types[obi] # hehe
                     outputfile.write("# Daily amount of time (%s) around '%s' from %d files, %d frames, %d points\n" %
                             (light.lower(), obj, self.files, self.frames[light], self.points[light]))
                     outputfile.write("# Day number is calculated from the beginning of the given experiment.\n")
@@ -1230,8 +1225,7 @@ class NearestNeighbor(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
@@ -1300,7 +1294,7 @@ class Neighbor(Stat):
     Being a neighbor is defined by a proper distance threshold.
 
     """
-    def __init__(self, good_light, id_count):
+    def __init__(self, good_light, max_day, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -1326,7 +1320,7 @@ class Neighbor(Stat):
         for light in good_light:
             self.data[light] = numpy.zeros(( \
                     2, # 0: j (network), 1: n (number)
-                    project.max_day,
+                    max_day,
                     id_count,
                     id_count),
                     dtype=numpy.int)
@@ -1344,8 +1338,7 @@ class Neighbor(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         TODO: save results on a daily basis
@@ -1403,7 +1396,7 @@ class FQObj(Stat):
     Queuing is applicable only with orientation towards object center (+- 90 deg)
 
     """
-    def __init__(self, good_light, id_count):
+    def __init__(self, good_light, object_types, id_count):
         """Initialize with zero elements.
 
         :param good_light(List[str]): list of good light types
@@ -1431,13 +1424,13 @@ class FQObj(Stat):
         self.qorq = dict()
         for light in good_light:
             self.fandq[light] = numpy.zeros(( \
-                    len(project.object_types),
+                    len(object_types),
                     id_count,
                     id_count),
                     dtype=numpy.float)
             #: represents number of frames when i or j was queuing (or feeding)
             self.qorq[light] = numpy.zeros(( \
-                    len(project.object_types),
+                    len(object_types),
                     id_count,
                     id_count),
                     dtype=numpy.float)
@@ -1470,8 +1463,7 @@ class FQObj(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
@@ -1480,10 +1472,10 @@ class FQObj(Stat):
             # OR normalize results
             ornormdata = numpy.where(self.qorq[light] > 0, self.fandq[light] / self.qorq[light], 0)
             if exp == "all":
-                for obi in range(len(project.object_types)):
-                    obj = project.object_types[obi] # hehe
+                for obi in range(len(project_settings.object_types)):
+                    obj = project_settings.object_types[obi] # hehe
                     # skip not queueable objects
-                    if not experiments.is_object_queueable(obj): continue
+                    if not experiments.is_object_queueable(project_settings.object_queuing_areas[obj]): continue
                     outputfile.write("# FQ_%s distribution of %s barcodes from %d files, %d frames, %d points\n" %
                             (obj, light.lower(), self.files, self.frames[light], sum(sum(self.fandq[light][obi]))))
                     outputfile.write("# X[row][col] = OR normalized generalized FQ value of patek [row] and [col],\n")
@@ -1506,10 +1498,10 @@ class FQObj(Stat):
                     outputfile.write("\n\n")
                 outputfile.flush()
             else:
-                for obi in range(len(project.object_types)):
-                    obj = project.object_types[obi] # hehe
+                for obi in range(len(project_settings.object_types)):
+                    obj = project_settings.object_types[obi] # hehe
                     # skip not relevant and not queueable objects
-                    if not experiments.is_object_queueable(obj): continue
+                    if not experiments.is_object_queueable(project_settings.object_queuing_areas[obj]): continue
                     if obj not in exps[exp].keys(): continue
                     for group in exps[exp]['groups']:
                         outputfile.write("# FQ_%s distribution of %s barcodes from %d files, %d frames, %d points (including all groups)\n" %
@@ -1551,7 +1543,7 @@ class DailyFQObj(Stat):
     Queuing is applicable only with orientation towards object center (+- 90 deg)
 
     """
-    def __init__(self, good_light, id_count):
+    def __init__(self, good_light, object_types, max_day, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -1579,17 +1571,17 @@ class DailyFQObj(Stat):
         self.qorq = dict()
         for light in good_light:
             self.fandq[light] = numpy.zeros(( \
-                    len(project.object_types),
+                    len(object_types),
                     id_count,
                     id_count,
-                    project.max_day),
+                    max_day),
                     dtype=numpy.float)
             #: represents number of frames when i or j was queuing (or feeding)
             self.qorq[light] = numpy.zeros(( \
-                    len(project.object_types),
+                    len(object_types),
                     id_count,
                     id_count,
-                    project.max_day),
+                    max_day),
                     dtype=numpy.float)
             self.frames[light] = 0
             self.points[light] = 0
@@ -1620,8 +1612,7 @@ class DailyFQObj(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
@@ -1655,7 +1646,7 @@ class DailyFQObj(Stat):
             movavgfandq = numpy.copy(self.fandq[light])
 
             # calculate cumulative and moving average data
-            for obi in range(len(project.object_types)):
+            for obi in range(len(project_settings.object_types)):
                 for i in range(len(colorids)):
                     for j in range(len(colorids)):
                         for day in range(1, maxday + 1):
@@ -1670,10 +1661,10 @@ class DailyFQObj(Stat):
             movavgdata = numpy.where(movavgqorq > 0, movavgfandq / movavgqorq, 0)
 
             # write it
-            for obi in range(len(project.object_types)):
-                obj = project.object_types[obi] # hehe
+            for obi in range(len(project_settings.object_types)):
+                obj = project_settings.object_types[obi] # hehe
                 # skip not relevant and not queueable objects
-                if not experiments.is_object_queueable(obj): continue
+                if not experiments.is_object_queueable(project_settings.object_queuing_areas[obj]): continue
                 if obj not in exps[exp].keys(): continue
                 for group in exps[exp]['groups']:
                     outputfile.write("# Daily FQ_%s distribution of %s barcodes from %d files, %d frames, %d points (including all groups and all days)\n" %
@@ -1776,8 +1767,7 @@ class FQFood(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
@@ -1846,7 +1836,7 @@ class FQWhileF(Stat):
     Queuing is applicable only with orientation towards object center (+- 90 deg)
 
     """
-    def __init__(self, good_light, id_count):
+    def __init__(self, good_light, object_types, id_count):
         """Initialize with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -1871,7 +1861,7 @@ class FQWhileF(Stat):
         self.data = dict()
         for light in good_light:
             self.data[light] = numpy.zeros(( \
-                    len(project.object_types),
+                    len(object_types),
                     id_count,   # who is feeding
                     id_count),  # how many others are feeding or queuing
                     dtype=numpy.float)
@@ -1893,8 +1883,7 @@ class FQWhileF(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
@@ -1913,10 +1902,10 @@ class FQWhileF(Stat):
         # write it
         for light in project_settings.good_light:
             if exp == "all":
-                for obi in range(len(project.object_types)):
-                    obj = project.object_types[obi] # hehe
+                for obi in range(len(project_settings.object_types)):
+                    obj = project_settings.object_types[obi] # hehe
                     # skip not queueable objects
-                    if not experiments.is_object_queueable(obj): continue
+                    if not experiments.is_object_queueable(project_settings.object_queuing_areas[obj]): continue
                     outputfile.write("# FQWhileF_%s distribution of %s barcodes from %d files, %d frames, %d points\n" %
                             (obj, light.lower(), self.files, self.frames[light], sum(sum(self.data[light][obi]))))
                     outputfile.write("# X[row][col] = number of frames when patek [col] is over %s obj and [row] pateks are ForQ-ing,\n" % obj)
@@ -1956,10 +1945,10 @@ class FQWhileF(Stat):
                         outputfile.write("\t%g" % numpy.sum(self.data[light][obi,si[i]]))
                     outputfile.write("\n\n")
             else:
-                for obi in range(len(project.object_types)):
-                    obj = project.object_types[obi] # hehe
+                for obi in range(len(project_settings.object_types)):
+                    obj = project_settings.object_types[obi] # hehe
                     # skip non relevant and not queueable objects
-                    if not experiments.is_object_queueable(obj): continue
+                    if not experiments.is_object_queueable(project_settings.object_queuing_areas[obj]): continue
                     if obj not in exps[exp].keys(): continue
                     for group in exps[exp]['groups']:
                         outputfile.write("# FQWhileF_%s distribution of %s barcodes from %d files, %d frames, %d points (including all groups)\n" %
@@ -2079,8 +2068,7 @@ class AA(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
@@ -2197,8 +2185,7 @@ class ButtHead(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
@@ -2530,8 +2517,7 @@ class Basic(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
@@ -2600,7 +2586,7 @@ class DistFromWall(Stat):
     same amount of memory than one subclass of a HeatMap object.
 
     """
-    def __init__(self, good_light, image_size, id_count):
+    def __init__(self, good_light, image_size, max_day, id_count):
         """Initialize distfromwall distributions with zero elements.
 
         :param id_count: Number of IDs (pateks)
@@ -2632,7 +2618,7 @@ class DistFromWall(Stat):
                     id_count,
                     len(self.motion_types),
                     len(mfix_types),
-                    project.max_day,
+                    max_day,
                     int(image_size.y / 4)),
                     dtype=numpy.int)
             self.frames[light] = 0
@@ -2650,8 +2636,7 @@ class DistFromWall(Stat):
                 trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """

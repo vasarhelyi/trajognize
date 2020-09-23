@@ -1,5 +1,7 @@
 """
 This script outputs weekdays for all days for all experiments.
+
+Usage: __file__ projectfile
 """
 
 # external imports
@@ -18,7 +20,6 @@ except ImportError:
 
 def days_since_last_paint(paintdates, sometime):
     """Get number of days since last paint."""
-
     tt = paintdates[0]
     for t in paintdates:
         if t.date() > sometime.date():
@@ -29,8 +30,18 @@ def days_since_last_paint(paintdates, sometime):
 
 def main(argv=[]):
     """Main entry point of the script."""
+    if len(argv) < 1:
+        print(__doc__)
+        return
+    projectfile = argv[0]
+
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
+
     # initialize objects
-    exps = trajognize.stat.experiments.get_initialized_experiments()
     expnames = sorted(exps.keys(), lambda a,b: exps[a]['number'] - exps[b]['number'])
     expnames = [exp for exp in expnames if exps[exp]['number'] < 10]
     paintdates = trajognize.parse.parse_paintdates(os.path.join(

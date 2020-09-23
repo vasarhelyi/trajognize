@@ -1,6 +1,6 @@
 """This script generates plots for 'dist24h' type trajognize.stat outputs.
 
-Usage: plot_dist24h.py inputfile(s)
+Usage: plot_dist24h.py projectfile inputfile(s)
 
 where inputfile(s) is/are the output of trajognize.stat Dist24h object (.txt)
 
@@ -19,12 +19,12 @@ from . import spgm
 
 try:
     import trajognize.stat.experiments
-    import trajognize.stat.project
+    import trajognize.settings
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
     import trajognize.stat.experiments
-    import trajognize.stat.project
+    import trajognize.settings
 
 
 GNUPLOT_FEEDINGRECT_TEMPLATE = """set obj rect from "%02d:00:00", graph 0 to "%02d:00:00", graph 1 fc lt -1 fs transparent pattern 2 bo
@@ -60,7 +60,7 @@ plot "%(inputfile)s" index %(index)d u 1:(column(%(maxcol)d+1)*100.0) title colu
 
 
 def get_gnuplot_script(inputfile, outputfile, outputfileall, name, index, maxcol,
-        exp, weekday):
+        exp, weekday, project_settings):
     """Return .gnu script body as string."""
     data = {
         "inputfile": inputfile,
@@ -72,8 +72,8 @@ def get_gnuplot_script(inputfile, outputfile, outputfileall, name, index, maxcol
         "exp": exp,
         "feedingrect": "",
     }
-    if weekday in trajognize.stat.project.weekly_feeding_times:
-        for (start, duration) in trajognize.stat.project.weekly_feeding_times[weekday]:
+    if weekday in project_settings.weekly_feeding_times:
+        for (start, duration) in project_settings.weekly_feeding_times[weekday]:
             data['feedingrect'] += GNUPLOT_FEEDINGRECT_TEMPLATE % (start, start + duration)
     return GNUPLOT_TEMPLATE % data
 
@@ -98,14 +98,19 @@ def get_categories_from_name(name):
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if not argv:
+    if len(argv) < 2:
         print(__doc__)
         return
+    projectfile = argv[0]
     if sys.platform.startswith('win'):
-        inputfiles = glob.glob(argv[0])
+        inputfiles = glob.glob(argv[1])
     else:
-        inputfiles = argv
+        inputfiles = argv[1:]
     outdirs = []
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
     for inputfile in inputfiles:
         print("parsing", os.path.split(inputfile)[1])
         headers = plot.grep_headers_from_file(inputfile, "dist24h")
@@ -133,7 +138,7 @@ def main(argv=[]):
             outputfile = outputfilecommon + ".indiv.png"
             outputfileall = outputfilecommon + ".all.png"
             script = get_gnuplot_script(inputfile, outputfile, outputfileall,
-                    name, index, maxcol, exp, weekday)
+                    name, index, maxcol, exp, weekday, project_settings)
             with open(gnufile, 'w') as f:
                 f.write(script)
             try:

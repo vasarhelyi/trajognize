@@ -4,7 +4,7 @@ trajognize.stat (reordered) outputs in the following formats:
     - daily ranks
     - dominance scores (LDI, BBS, normDS) TODO: more?
 
-Usage: plot_dailyranks.py inputfile(s)
+Usage: plot_dailyranks.py projectfile inputfile(s)
 
 where inputfile(s) is/are the output of trajognize.stat DailyFQObj object (.txt),
 containing all dailyfqobj, cumulfqobj and movavgfqobj type results.
@@ -137,15 +137,21 @@ def main(argv=[]):
                 [name, "absgrad data", exp], txtfile, gnufile)
 
 
-
-    if not argv:
+    if len(argv) < 2:
         print(__doc__)
         return
+    projectfile = argv[0]
     if sys.platform.startswith('win'):
-        inputfiles = glob.glob(argv[0])
+        inputfiles = glob.glob(argv[1])
     else:
-        inputfiles = argv
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+        inputfiles = argv[1:]
+
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
+
     paintdates = trajognize.parse.parse_paintdates(os.path.join(
         os.path.dirname(trajognize.__file__), '../misc/paintdates.dat'))
     for inputfile in inputfiles:

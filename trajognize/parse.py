@@ -12,7 +12,7 @@ from .util import exit, strid2coloridindex
 
 
 
-def parse_paintdates(inputfile='misc/paintdates.dat'):
+def parse_paintdates(inputfile):
     """Parse paint date file and return list of paint dates."""
     linenum = 0
     paintdates = []
@@ -36,7 +36,7 @@ def parse_paintdates(inputfile='misc/paintdates.dat'):
     return paintdates
 
 
-def parse_entry_times(inputfile='misc/entrytimes.dat'):
+def parse_entry_times(inputfile):
     """Parse text file containing entry times to be skipped during analysis.
 
     Keyword arguments:
@@ -87,7 +87,7 @@ def parse_entry_times(inputfile='misc/entrytimes.dat'):
     return entrytimes
 
 
-def parse_colorid_file(inputfile='misc/5-3_28patek.xml'):
+def parse_colorid_file(inputfile):
     """Parse a full .xml file containing patek colorids and return database.
 
     Keyword arguments:

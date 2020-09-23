@@ -21,17 +21,23 @@ except ImportError:
 def main(argv=[]):
     """Main entry point of the script."""
 
-    basedir = input("Get base directory of statsum correlation outputs: ")
+    basedir = input("Enter base directory of statsum correlation outputs: ")
+    projectfile = input("Enter the project settings file: ")
 
     corrfile = os.path.join(basedir, 'collected_good_params.txt')
     corrfileall = os.path.join(basedir, 'collected_all_params.txt')
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
 
     if os.path.isfile(corrfile):
-        print("Correlation file already exists, remove it first:", corrfile)
+        print("Correlation file already exists, I remove it first:", corrfile)
         os.remove(corrfile)
     if os.path.isfile(corrfileall):
-        print("Correlation file already exists, remove it first:", corrfileall)
+        print("Correlation file already exists, I remove it first:", corrfileall)
         os.remove(corrfileall)
     # parse all data first
     print("\nParsing all corr files to collect data...\n")

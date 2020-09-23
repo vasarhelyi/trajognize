@@ -6,15 +6,15 @@ project, then these methods have to be added to this abstract class and all
 project instances.
 """
 
+
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from datetime import datetime
 import importlib.util
-from typing import Iterable
+from typing import Iterable, Dict, List, Tuple, Union
+import os
 
-
-# TODO: this is redundant with init.py but otherwise we have circular imports
-Point = namedtuple('Point','x y')
+from trajognize.init import Point, Circle, Rectangle
 
 
 def import_trajognize_settings_from_file(filename):
@@ -45,6 +45,26 @@ def import_trajognize_settings_from_file(filename):
     return None
 
 
+class AASettings():
+    """Class containing parameters of the approach-avoidance statistic."""
+    def __init__(self,
+        distance_threshold=400, #200 # [px]
+        approacher_velocity_threshold=3, # [px/frame]
+        avoider_velocity_threshold=3, # [px/frame]
+        min_event_count=3, # 1 <= min_event_count <= min_event_length
+        cos_approacher_threshold=0.8,
+        cos_avoider_threshold=0.5,
+        min_event_length=10
+    ):
+        self.distance_threshold = distance_threshold
+        self.approacher_velocity_threshold = approacher_velocity_threshold
+        self.avoider_velocity_threshold = avoider_velocity_threshold
+        self.min_event_count = min_event_count
+        self.cos_approacher_threshold = cos_approacher_threshold
+        self.cos_avoider_threshold = cos_avoider_threshold
+        self.min_event_length = min_event_length
+
+
 class FindBestTrajectoriesSettings():
     """Class containing parameters for find_best_trajectories() in
     algo_trajectory.py"""
@@ -60,6 +80,62 @@ class FindBestTrajectoriesSettings():
         self.good_for_sure_score_threshold = good_for_sure_score_threshold
         self.good_score_threshold = good_score_threshold
         self.framelimit = framelimit
+
+
+class ExperimentInitializer():
+    """Class for initializing experiments."""
+
+    def __init__(self, experiments, get_wall_polygons):
+        """Constructor. Experiments is a dict defined as in
+        TrajognizeSettingsBase.experiment."""
+        self._experiments = self._initialize_experiments(
+            experiments, get_wall_polygons
+        )
+
+    def _initialize_experiments(self, experiments, get_wall_polygons):
+        """This functions should be called once on init to add some important
+        automatically calculated parameters to the experiments dictionary.
+        """
+        # add lookup table to get group identifiers for strids quickly
+        for name in experiments:
+            experiment = experiments[name]
+            experiment['name'] = name
+            experiment['groupid'] = dict()
+            experiment['wall'] = dict() # flat ground territory without cage + home
+            experiment['wallall'] = dict() # full territory including cage + home
+            experiment['area'] = dict() # flat ground territory without cage + home
+            experiment['areaall'] = dict() # full territory including cage + home
+            for group in experiment['groups']:
+                for strid in experiment['groups'][group]:
+                    experiment['groupid'][strid] = group
+                (experiment['wall'][group], experiment['wallall'][group]) = \
+                    get_wall_polygons(experiments[name], group)
+                experiment['area'][group] = self._get_polygonlist_area(experiment['wall'][group])
+                experiment['areaall'][group] = self._get_polygonlist_area(experiment['wallall'][group])
+
+        # TODO: add anything else that is useful to have in the experiments dict itself
+
+        return experiments
+
+    def _get_polygonlist_area(self, polys):
+        """Return the summarized area of the polygon list.
+
+        Parameters:
+            polys - polys returned by get_wall_polygons()
+
+        Return:
+            summarized area of all polys in list
+
+        """
+        return sum(0.5 * abs(sum(x0 * y1 - x1 * y0
+            for ((x0, y0), (x1, y1)) in zip(p, p[1:] + [p[0]])))
+            for p in polys
+        )
+
+    def asdict(self):
+        """Return the experiments (which is the core of this class)
+        as a dictionary."""
+        return self._experiments
 
 
 class TrajognizeSettingsBase(metaclass=ABCMeta):
@@ -85,6 +161,9 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         self._color2int_lookup = dict([(self.color_names[i].upper()[0], i)
             for i in range(self._MBASE)
         ])
+        # initialize experiments
+        self.experiments = ExperimentInitializer(self.experiments,
+            self.get_wall_polygons).asdict()
 
     def color2int(self, color: str) -> int:
         """Return the index of the color initial within your color names."""
@@ -135,6 +214,12 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         return True
 
     @property
+    def get_exp_from_colorid_filename(self):
+        """This is an ugly hack for one specific experiment. Do NOT look into
+        the code please, it is a shame :)"""
+        return False
+
+    @property
     def all_light(self) -> Iterable[str]:
         """Define the names of all light conditions that are used in the
         experiments. Usually this should be a single 'NIGHTLIGHT' placeholder
@@ -149,6 +234,105 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         for convenience, we used multiple light conditions in our first
         experiment..."""
         return ["NIGHTLIGHT"]
+
+    @property
+    def weekly_feeding_times(self) -> dict:
+        """Weekly feeding times in long experiments. Dict keys should be days.
+        The value for each day should be a list containing a list of tuples
+        of (start, duration) expressed in hours. Day is same as
+        datetime.weekday(), 0 is Monday, 6 is Sunday.
+        list imported (but reformatted) from
+        SVN: rat-project/hdpvr_recorder/feeder_daemon.py
+
+        Leave it empty like below if you do not know why this is relevant.
+        """
+        return {
+            'monday':    [],
+            'tuesday':   [],
+            'wednesday': [],
+            'thursday':  [],
+            'friday':    [],
+            'saturday':  [],
+            'sunday':    [],
+        }
+
+    @property
+    def object_types(self) -> Iterable[str]:
+        """Define names of interesting fixed objects on the scene."""
+        return []
+
+    @property
+    def object_areas(self) -> dict:
+        """Define areas of objects. Dictionary keys should be the object names,
+        their area should be defined as dict values using Rectangle or Circle
+        namedtuples/dataclasses. Center (and arc) is defined in the experiment,
+        these objects should be placed on those centers concentrically.
+        """
+        return {}
+
+    @property
+    def object_queuing_areas(self) -> dict:
+        """Define queuing areas of objects similarly to object_areas.
+        Center is defined in the experiment, object areas are defined above.
+        These objects should be placed on these concentrically, except when
+        center (offset) is defined here.
+        If so, it is - if above midline, + if below
+        if queuing is not used, all params are zero.
+        """
+        return {}
+
+    def get_unique_output_filename(self, outputpath: str, inputfile: str) -> str:
+        """Get unique output filename for statsum if '-u' is specified, meaning
+        that daily results will be written to this filename returned.
+
+        Parameters:
+            outputpath(Path) - the path where the file will be written
+            inputfile(Path) - the trajognize stat .zip output file from which
+                we are going to create a unique output
+
+        Return:
+            filename with full path pointing to unique output to be created
+        """
+        return os.path.join(outputpath,
+            os.path.split(os.path.split(os.path.split(inputfile)[0])[0])[1] + "__" +
+            os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt"
+        )
+
+    def get_wall_polygons(self, experiment: dict, group: str):
+        """Get two wall polygons for a given experiment, possibly using
+        object definitions. This needed to be automated in our first long-term
+        rat experiment, since then it is not really used...
+
+        Parameters:
+            experiment(dict) - an experiment from self.experiments
+            group - the name of a group within the given experiment
+
+        Return:
+            The first poly, 'wall'/'area' will be the flat territory enabled
+            for the animals to move on, for distance from wall stat
+            The second poly, 'wallall'/'areaall' will be the full territory
+        """
+        polys = [[]]
+        polysall = [[]]
+        i = 0
+
+        # define better if needed, this is the full image frame
+
+        # top left
+        polys[i].append(Point(0,0))
+        polysall[i].append(Point(0,0))
+        # top right
+        polys[i].append(Point(self.image_size.x, 0))
+        polysall[i].append(Point(self.image_size.x, 0))
+        # bottom right
+        polys[i].append(Point(self.image_size.x, self.image_size.y))
+        polysall[i].append(Point(self.image_size.x, self.image_size.y))
+        # bottom left
+        polys[i].append(Point(0, self.image_size.y))
+        polysall[i].append(Point(0, self.image_size.y))
+
+        return (polys, polysall)
+
 
     ############################################################################
     # abstract methods that need project-specific instantiation
@@ -252,6 +436,12 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
 
     @property
     @abstractmethod
+    def stat_aa_settings(self) -> AASettings:
+        """Define parameters for the AA() approach-avoidance stat class."""
+        ...
+
+    @property
+    @abstractmethod
     def find_best_trajectories_settings(self) -> FindBestTrajectoriesSettings:
         """Define parameters for the find_best_trajectories() function in
         algo_trajectory.py using the FindBestTrajectoriesSettings class.
@@ -259,7 +449,7 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def get_datetime_from_filename(self, filename):
+    def get_datetime_from_filename(self, filename) -> datetime:
         """Return datetime object parsed from input video file names.
 
         It is useful only if you have multiple input files.
@@ -268,5 +458,41 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         Parameters:
             filename(Path): input file name that contains date and time, e.g. using
                 format YYYY-MM-DD_HH-MM-SS.SSSSSS
+
+        Return:
+            datetime object parsed from the file, corresponding to video start
         """
         ...
+
+    @property
+    @abstractmethod
+    def max_day(self) -> int:
+        """Define maximum number of days in an experiment."""
+        ...
+
+    @property
+    @abstractmethod
+    def experiments(self) -> dict:
+        """Experiment dictionary. Each key should be the name of the given
+        experiment, each value is a sub-dictionary, containing the following
+        required string key descriptors for each experiment:
+
+            'number' (int) - the number of the experiment
+            'description' (str) - a long description of the experiment
+            'start' (datetime) - the starting time of the experiment
+            'stop'  (datetime) - the ending time of the experiment
+            'groups' (Dict[List[str]]) - colorids according to barcode subgroups
+                if no subgroups are used, all colorids should be placed in one
+                group
+
+        Any other string key description is treated as an object:
+
+            'object' (List[Union[Circle, Point]]) - any object, where
+                Points and Circle origins define object center coordinates
+                in a top-left = 0,0 , x --> right, y --> down coordinate system,
+                angles for Circle are defined along --> CW [deg],
+                i.e. >0, v90, <180, ^270. Object areas and queuing areas are
+                defined separately, with the same object names as defined here.
+        """
+        ...
+

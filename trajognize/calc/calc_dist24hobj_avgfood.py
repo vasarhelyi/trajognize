@@ -2,7 +2,7 @@
 an average presence before and during feeding times. It also exports 'alldays'
 results into correlation files.
 
-Usage: calc_dist24hobj_feeding_avg.py inputdir [experiment]
+Usage: calc_dist24hobj_feeding_avg.py projectfile inputdir [experiment]
 
 where inputdir is/are the location where the .zipped python object outputs of
 trajognize.statsum with options "-s dist24hobj" are located
@@ -21,7 +21,7 @@ import numpy
 from collections import defaultdict
 
 try:
-    import trajognize.stat.project
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.util
@@ -29,7 +29,7 @@ try:
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
-    import trajognize.stat.project
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.util
@@ -134,8 +134,7 @@ class AvgDist24hObj():
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
         :param substat: name of the virtual subclass statistics (e.g. dist24h.monday)
 
@@ -180,8 +179,7 @@ class AvgDist24hObj():
                 according to different statistics
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
-        :param exps: experiment database created by
-                trajognize.stat.experiments.get_initialized_experiments()
+        :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
         :param corrfiles: name of corr files created already by the script
         :param substat: name of the virtual subclass statistics (e.g. avgfooddist24hobj.alldays)
@@ -222,18 +220,23 @@ class AvgDist24hObj():
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if not argv:
+    if len(argv) < 2:
         print(__doc__)
         return
-    inputdir = argv[0]
+    projectfile = argv[0]
+    inputdir = argv[1]
     statsum_basedir = os.path.split(inputdir)[0]
-    if len(argv) == 2:
-        experiment = argv[1]
+    if len(argv) == 3:
+        experiment = argv[2]
     else:
         experiment = '*'
 #    inputfiles = glob.glob(os.path.join(inputdir, "statsum_dist24hobj.*", "stat_dist24hobj.*__exp_%s.zip" % experiment))
     inputfiles = glob.glob(os.path.join(inputdir, "stat_dist24hobj.*__exp_%s.zip" % experiment))
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
     colorids = trajognize.parse.parse_colorid_file('../../misc/5-3_28patek.xml')
     id_count = len(colorids)
     # create full database of all data
@@ -249,7 +252,7 @@ def main(argv=[]):
             continue
         print("  gathering info from", tail)
         # initialize empty object
-        dist24hobj = trajognize.stat.init.Dist24hObj(id_count)
+        dist24hobj = trajognize.stat.init.Dist24hObj(project_settings.object_types, id_count)
         # add new object (so that we have latest methods from latest version)
         dist24hobj += trajognize.util.load_object(inputfile)
         database[exp][weekday] = dist24hobj
@@ -259,7 +262,7 @@ def main(argv=[]):
         return
     outputdir = os.path.join(inputdir, os.path.splitext(os.path.split(__file__)[1])[0])
     print("Writing results to .txt files in", outputdir)
-    food_index = trajognize.stat.project.object_types.index('food')
+    food_index = project_settings.object_types.index('food')
     if not os.path.isdir(outputdir):
         os.makedirs(outputdir)
     for exp in database:
@@ -268,7 +271,7 @@ def main(argv=[]):
         for weekday in database[exp]:
             print('   ', weekday)
             data = database[exp][weekday]
-            wft = trajognize.stat.project.weekly_feeding_times[weekday]
+            wft = project_settings.weekly_feeding_times[weekday]
             temp = AvgDist24hObj(id_count)
             temp2 = AvgDist24hObj(id_count)
             outputfile = open(os.path.join(outputdir,

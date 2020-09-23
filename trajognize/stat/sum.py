@@ -16,7 +16,6 @@ import trajognize
 from . import init
 from . import util
 from . import experiments
-from .project import stat_aa_settings, get_unique_output_filename
 
 
 def write_results(outputfilename, stats, stat, substat, statobject, exps, exp,
@@ -64,11 +63,9 @@ def main(argv=[]):
     phase = trajognize.util.Phase()
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
-    # initialize experiments dictionary
-    exps = experiments.get_initialized_experiments()
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
-    argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["exps", "stats"] + sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["exps", "stats"] + sorted(stats.keys())))
+    argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["stats"] + sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["stats"] + sorted(stats.keys())))
     argparser.add_argument("-i", "--inputpath", metavar="PATH", required=False, dest="inputpath", help="define input path to have stat files at [PATH]/*/OUT/*.blobs.barcodes.stat_*.zip")
     argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=False, dest="coloridfile", help="define colorid input file name (.xml)")
     argparser.add_argument("-p", "--projectfile", metavar="FILE", required=False, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
@@ -76,8 +73,8 @@ def main(argv=[]):
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for summarized results")
     argparser.add_argument("-s", "--statistics", metavar="stat", dest="statistics", nargs="+", choices=sorted(stats.keys()), default=sorted(stats.keys()), help="Define only some of the statistics to run. Possible values: %s" % sorted(stats.keys()))
     argparser.add_argument("-ns", "--nostatistics", metavar="stat", dest="nostatistics", nargs="+", choices=sorted(stats.keys()), default=[], help="Define some of the statistics not to run. Possible values: %s" % sorted(stats.keys()))
-    argparser.add_argument("-e", "--experiments", metavar="exp", dest="experiments", nargs="+", choices=sorted(exps.keys()) + [str(exps[exp]['number']) for exp in exps], default=sorted(exps.keys()), help="Define only some of the experiments to process. Possible values are experiment numbers or names: %s" % sorted(exps.keys()))
-    argparser.add_argument("-ne", "--noexperiments", metavar="exp", dest="noexperiments", nargs="+", choices=sorted(exps.keys()) + [str(exps[exp]['number']) for exp in exps], default=[], help="Define some of the experiments not to process. Possible values are experiment numbers or names: %s" % sorted(exps.keys()))
+    argparser.add_argument("-e", "--experiments", metavar="exp", dest="experiments", nargs="+", help="Define only some of the experiments to process.")
+    argparser.add_argument("-ne", "--noexperiments", metavar="exp", dest="noexperiments", nargs="+", default=[], help="Define some of the experiments not to process.")
     argparser.add_argument("-sci", "--subclassindex", metavar="INDEX", dest="subclassindex", nargs='+', type=int, help="Define only some of the stat subclasses to run. Works bugfree only if a single stat is selected.")
     argparser.add_argument("-d", "--dailyoutput", dest="dailyoutput", action="store_true", default=False, help="Write results separated for days. This is kind of a hack and should be used only with heatmaps so far.")
     argparser.add_argument("-u", "--uniqueoutput", dest="uniqueoutput", action="store_true", default=False, help="Write results separated for each input file uniquely.")
@@ -95,11 +92,6 @@ def main(argv=[]):
     elif options.help == "stats":
         print("\n")
         util.print_stats_help(stats)
-        return
-    elif options.help == "exps":
-        for exp in exps:
-            print("\n")
-            print(experiments.get_formatted_description(exps[exp]))
         return
     elif options.help:
         print("\n")
@@ -157,19 +149,27 @@ def main(argv=[]):
     # parse project settings file
     phase.start_phase("Reading project settings file...")
     project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
-    if project_settings is None: return
+    if project_settings is None:
+        print("  ERROR: Could not load project settings.")
+        return
     # define some variables directly to be present in caller namespace for stats
     good_light = project_settings.good_light
     all_light = project_settings.all_light
     image_size = project_settings.image_size
     MBASE = project_settings.MBASE
+    exps = project_settings.experiments
+    aa_settings = project_settings.stat_aa_settings
+    object_types = project_settings.object_types
+    max_day = project_settings.max_day
     print("  Current project is: %s" % project_settings.project_name)
     phase.end_phase()
 
     # parse colorid file
     phase.start_phase("Reading colorid file...")
     colorids = trajognize.parse.parse_colorid_file(options.coloridfile)
-    if colorids is None: return
+    if colorids is None:
+        print("  ERROR: Could not read colorids.")
+        return
     id_count = len(colorids)
     print("  %d colorids read, e.g. first is (%s,%s)" % (id_count, colorids[0].strid, colorids[0].symbol))
     phase.end_phase()
@@ -181,19 +181,27 @@ def main(argv=[]):
 
     # experiments and statistics
     phase.start_phase("Initializing statistics for all experiments...")
+    if options.experiments is None:
+        options.experiments = list(exps.keys())
     # replace number to experiment name
     for i, exp in enumerate(options.experiments):
         if exp not in exps:
             for e in exps:
-                if exps[e]['number'] == int(exp):
+                if exp.isdigit() and exps[e]['number'] == int(exp):
                     options.experiments[i] = e
                     break
+            else:
+                print("  ERROR: invalid experiment '{}'".format(exp))
+                return
     for i, exp in enumerate(options.noexperiments):
         if exp not in exps:
             for e in exps:
-                if exps[e]['number'] == int(exp):
+                if exp.isdigit() and exps[e]['number'] == int(exp):
                     options.noexperiments[i] = e
                     break
+            else:
+                print("  ERROR: invalid experiment '{}'".format(exp))
+                return
     # get difference of exp and noexp
     options.experiments = sorted(list(set(options.experiments).difference(set(options.noexperiments))))
     if len(options.experiments) == len(exps):
@@ -208,12 +216,8 @@ def main(argv=[]):
     phase.end_phase()
 
     ############################################################################
-    # initialize (sub)stat settings
-    aa_settings = stat_aa_settings
-
-    ############################################################################
     # parse (sub)stats
-    for day in experiments.get_dayrange_of_all_experiments() if dailyoutput else [None]:
+    for day in experiments.get_dayrange_of_all_experiments(exps) if dailyoutput else [None]:
         inputfiles = glob.glob(os.path.join(options.inputpath, "*", "OUT",
                 '%s*.blobs.barcodes.stat_*.zip' % ("%s/" % day if day else "")))
         print("  %sparsing %d input .zip files from %d directories" % \
@@ -273,7 +277,7 @@ def main(argv=[]):
                     if uniqueoutput:
                         # print results to stdout
                         print("  writing unique output...")
-                        uniqueoutputfilename = get_unique_output_filename(
+                        uniqueoutputfilename = project_settings.get_unique_output_filename(
                             options.outputpath, inputfile
                         )
                         write_results(uniqueoutputfilename, stats, stat, substat, newobj,

@@ -62,7 +62,7 @@ def main(argv=[]):
     if project_settings is None:
         print("Could not load project settings.")
         return
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+    exps = project_settings.experiments
     corrfiles = []
 
     # create full database of all data

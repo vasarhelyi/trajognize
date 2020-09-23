@@ -1,6 +1,6 @@
 """This script generates plots for '-s distfromwall' type trajognize.stat outputs.
 
-Usage: plot_distfromwall.py inputfile(s)
+Usage: plot_distfromwall.py projectfile inputfile(s)
 
 where inputfile(s) is/are the output of trajognize.statsum
 
@@ -121,16 +121,23 @@ def get_categories_from_name(name):
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if not argv:
+    if len(argv) < 2:
         print(__doc__)
         return
+    projectfile = argv[0]
     if sys.platform.startswith('win'):
-        inputfiles = glob.glob(argv[0])
+        inputfiles = glob.glob(argv[1])
     else:
-        inputfiles = argv
+        inputfiles = argv[1:]
+
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
+
     outdirs = []
     corrfiles = []
-    exps = trajognize.stat.experiments.get_initialized_experiments()
     paintdates = trajognize.parse.parse_paintdates(os.path.join(
         os.path.dirname(trajognize.__file__), '../misc/paintdates.dat'))
     for inputfile in inputfiles:

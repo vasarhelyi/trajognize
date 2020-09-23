@@ -11,8 +11,6 @@ import datetime
 import trajognize
 
 # imports from self subclass
-from .project import stat_aa_settings, get_exp_from_colorid_filename
-
 from . import util
 from . import experiments
 
@@ -47,8 +45,6 @@ def main(argv=[]):
     phase = trajognize.util.Phase()
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
-    # initialize experiments dictionary
-    exps = experiments.get_initialized_experiments()
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
     argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["stats"]+sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["stats"]+sorted(stats.keys())))
@@ -105,8 +101,7 @@ def main(argv=[]):
     print("  Using project settings file: '%s'" % options.projectfile)
     # entrytimes file
     if options.entrytimesfile is None:
-        options.entrytimesfile = 'misc/entrytimes.dat'
-        print("  WARNING! No entrytimes file is specified! Default is: '%s'" % options.entrytimesfile)
+        print("  Not using entrytimes file.")
     else:
         print("  Using entrytimes file: '%s'" % options.entrytimesfile)
     # output path
@@ -144,6 +139,7 @@ def main(argv=[]):
         print("  ERROR parsing project settings file")
         return
     print("  Current project is: %s" % project_settings.project_name)
+    exps = project_settings.experiments
     phase.end_phase()
 
     # parse colorid file
@@ -156,11 +152,14 @@ def main(argv=[]):
     phase.end_phase()
 
     # parse entrytimes file
-    phase.start_phase("Reading entrytimes file...")
-    entrytimes = trajognize.parse.parse_entry_times(options.entrytimesfile)
-    if entrytimes is None:
-        print("  ERROR parsing entrytimes file")
-        return
+    phase.start_phase("Parsing entrytimes...")
+    if options.entrytimesfile is None:
+        entrytimes = {}
+    else:
+        entrytimes = trajognize.parse.parse_entry_times(options.entrytimesfile)
+        if entrytimes is None:
+            print("  ERROR parsing entrytimes file")
+            return
     if entrytimes:
         print("  %d entrytime dates read, e.g. first is (%s)" % (len(entrytimes), next(iter(entrytimes.values()))))
     else:
@@ -214,7 +213,7 @@ def main(argv=[]):
         exp = None
         experiment = None
     else:
-        if get_exp_from_colorid_filename:
+        if project_settings.get_exp_from_colorid_filename:
             # sorry, this is a project-specific ugly hack...
             tag = os.path.splitext(os.path.split(options.coloridfile)[1])[0].split("_")[-1]
             tag = "male" if tag.startswith('M') else "female" if tag.startswith('F') else "unisex"
@@ -230,10 +229,6 @@ def main(argv=[]):
         experiment = exps[exp]
     print("  current experiment is '%s'" % exp)
     phase.end_phase()
-
-    ############################################################################
-    # stat settings initialization
-    aa_settings = stat_aa_settings
 
     ############################################################################
     # stats

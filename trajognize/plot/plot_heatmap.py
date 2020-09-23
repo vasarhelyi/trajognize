@@ -1,6 +1,6 @@
 """This script generates plots for 'heatmap'/'motionmap'/'aamap' type trajognize.stat outputs.
 
-Usage: plot_heatmap.py inputfile(s)
+Usage: plot_heatmap.py projectfile inputfile(s)
 
 where inputfile(s) is/are the output of trajognize.stat HeatMap, MotionMap or AAMap objects (.txt)
 
@@ -23,14 +23,14 @@ from . import spgm
 try:
     import trajognize.stat.init
     import trajognize.stat.experiments
-    import trajognize.stat.project
+    import trajognize.settings
     from trajognize.init import Rectangle, Circle
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
     import trajognize.stat.init
     import trajognize.stat.experiments
-    import trajognize.stat.project
+    import trajognize.settings
     from trajognize.init import Rectangle, Circle, Point
 
 
@@ -98,7 +98,7 @@ plot \\
 
 
 def get_gnuplot_script(inputfile, outputfile, name, index, exp, experiment,
-        group, maxvalue, image_size):
+        group, maxvalue, image_size, project_settings):
     """Return .gnu script body as string."""
     data = {
         "inputfile": inputfile,
@@ -112,9 +112,9 @@ def get_gnuplot_script(inputfile, outputfile, name, index, exp, experiment,
     objectmarkers = []
     # add queuing object markers (rectangles and circles)
     if experiment is not None:
-        for object in trajognize.stat.project.object_types:
+        for object in project_settings.object_types:
             if object not in experiment: continue
-            objobj = trajognize.stat.project.object_queuing_areas[object]
+            objobj = project_settings.object_queuing_areas[object]
             if group == "all":
                 grouplist = experiment[object].keys()
             else:
@@ -142,9 +142,9 @@ def get_gnuplot_script(inputfile, outputfile, name, index, exp, experiment,
 
     # add object markers (rectangles and circles)
     if experiment is not None:
-        for object in trajognize.stat.project.object_types:
+        for object in project_settings.object_types:
             if object not in experiment: continue
-            objobj = trajognize.stat.project.object_areas[object]
+            objobj = project_settings.object_areas[object]
             if group == "all":
                 grouplist = experiment[object].keys()
             else:
@@ -233,15 +233,20 @@ def get_minmax_from_file(inputfile):
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if not argv:
+    if len(argv) < 2:
         print(__doc__)
         return
+    projectfile = argv[0]
     if sys.platform.startswith('win'):
-        inputfiles = glob.glob(argv[0])
+        inputfiles = glob.glob(argv[1])
     else:
-        inputfiles = argv
+        inputfiles = argv[1:]
     outdirs = []
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
 
     intdistdata = [] # (outdir, name(common), input, strid, exp)
     for inputfile in inputfiles:
@@ -288,7 +293,7 @@ def main(argv=[]):
             # plot
             image_size = Point(1920, 1080) # TODO: get from project_settings somehow
             script = get_gnuplot_script(inputfile, outputfile, name, index, exp,
-                    experiment, group, maxvalue, image_size)
+                    experiment, group, maxvalue, image_size, project_settings)
             with open(gnufile, 'w') as f:
                 f.write(script)
             try:

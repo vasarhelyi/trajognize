@@ -1,6 +1,6 @@
 """This script calculates total length of valid time periods for all days and all experiments.
 
-Usage: calc_dailyvalidtime.py
+Usage: calc_dailyvalidtime.py projectfile
 
 Output is written to calc_dailyvalidtime.txt
 
@@ -26,7 +26,17 @@ except ImportError:
 
 def main(argv=[]):
     """Main entry point of the script."""
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+    if len(argv) < 1:
+        print(__doc__)
+        return
+    projectfile = argv[0]
+
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
+
     entrytimes = trajognize.parse.parse_entry_times("../../misc/entrytimes.dat")
     f = open(__file__ + ".txt", 'w')
     for exp in exps:

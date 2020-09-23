@@ -9,38 +9,8 @@ import math
 
 from trajognize.init import Point, Circle, Ellipse, Rectangle
 
-from .project import *
-
 #: index for weekdays starting from saturday
 ordered_weekdays = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']
-
-def get_initialized_experiments(experiments=experiments):
-    """This functions should be called once on init to add some important
-    automatically calculated parameters to the experiments dictionary.
-
-    :param experiments: the global experiments dictionary (defaults to project.experiments)
-
-    """
-    # add lookup table to get group identifiers for strids quickly
-    for name in experiments:
-        experiment = experiments[name]
-        experiment['name'] = name
-        experiment['groupid'] = dict()
-        experiment['wall'] = dict() # flat ground territory without cage + home
-        experiment['wallall'] = dict() # full territory including cage + home
-        experiment['area'] = dict() # flat ground territory without cage + home
-        experiment['areaall'] = dict() # full territory including cage + home
-        for group in experiment['groups']:
-            for strid in experiment['groups'][group]:
-                experiment['groupid'][strid] = group
-            (experiment['wall'][group], experiment['wallall'][group]) = get_wall_polygons(experiments[name], group)
-            experiment['area'][group] = get_polygonlist_area(experiment['wall'][group])
-            experiment['areaall'][group] = get_polygonlist_area(experiment['wallall'][group])
-            #print name, group, experiment['area'][group]
-
-        # TODO: add anything else that is useful to have in the experiments dict itself
-    return experiments
-
 
 def get_experiment(experiments, sometime, allonday=False):
     """Return the name of the experiments that were running at a given moment,
@@ -292,7 +262,7 @@ def get_dayrange_of_experiment(experiment):
     return dayrange
 
 
-def get_dayrange_of_all_experiments(experiments=experiments):
+def get_dayrange_of_all_experiments(experiments):
     """Return a list of strings containing all days through all experiments."""
     firstday = None
     lastday = None
@@ -308,7 +278,7 @@ def get_dayrange_of_all_experiments(experiments=experiments):
     return dayrange
 
 
-def is_weekly_feeding_time(date, exclude_fridays=False):
+def is_weekly_feeding_time(date, weekly_feeding_times, exclude_fridays=False):
     """Check whether a given datetime is part of the weekly feeding time
     schedule."""
 
@@ -328,27 +298,19 @@ def is_weekly_feeding_time(date, exclude_fridays=False):
     return False
 
 
-def is_object_queueable(object):
-    """Return true if there is queuing area is defined for the given object."""
-    objectarea = object_queuing_areas[object]
+def is_object_queueable(object_queuing_area):
+    """Return true if there is queuing area defined for the given object.
+
+    Parameters:
+        object_queuing_area - should be project_settings.object_queuing_areas[object]
+    """
     # check for rectangles
-    if isinstance(objectarea, Rectangle):
-        if objectarea.w or objectarea.h:
+    if isinstance(object_queuing_area, Rectangle):
+        if object_queuing_area.w or object_queuing_area.h:
             return True
     # check for circles
-    elif isinstance(objectarea, Circle):
-        if objectarea.r:
+    elif isinstance(object_queuing_area, Circle):
+        if object_queuing_area.r:
             return True
     # not queueable
     return False
-
-
-def get_polygonlist_area(polys):
-    """Return the summarized area of the polygon list.
-
-    Hint: use 'polys' created by get_wall_polygons().
-
-    """
-    return sum(0.5 * abs(sum(x0*y1 - x1*y0
-            for ((x0, y0), (x1, y1)) in zip(p, p[1:] + [p[0]])))
-            for p in polys)

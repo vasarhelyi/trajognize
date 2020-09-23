@@ -60,7 +60,7 @@ def main(argv=[]):
     if project_settings is None:
         print("Could not load project settings.")
         return
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+    exps = project_settings.experiments
     outdirs = []
 
     # gather info for main data dictionary to know what to average

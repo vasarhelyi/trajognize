@@ -20,14 +20,12 @@ try:
     import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
-    import trajognize.stat.project
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
     import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
-    import trajognize.stat.project
 
 # dirs to exclude from search
 ignoredirs = ['corr']
@@ -52,11 +50,12 @@ def main(argv=[]):
     print("Input dir:", inputdir)
     print("Output dir:", outputdir)
 
-    exps = trajognize.stat.experiments.get_initialized_experiments()
     project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
     if project_settings is None:
         print("Could not load project settings.")
         return
+    exps = project_settings.experiments
+
     for root, subfolders, files in os.walk(inputdir):
         x = root[len(inputdir)+1:]
         # ignore symlink dirs
@@ -113,7 +112,7 @@ def main(argv=[]):
             found_realvirt = 'ANY'
 
         # check object:
-        for obj in trajognize.stat.project.object_areas.keys():
+        for obj in project_settings.object_areas.keys():
             if obj in subs:
                 found_obj = obj
                 break

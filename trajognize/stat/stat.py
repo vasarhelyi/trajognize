@@ -35,7 +35,6 @@ import trajognize.algo
 from . import init
 from . import util
 from . import experiments
-from . import project
 
 
 def subclasses_heatmap(colorids):
@@ -416,7 +415,7 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     # initialize object
     id_count = len(barcodes[0])
-    dist24hobj = init.Dist24hObj(id_count)
+    dist24hobj = init.Dist24hObj(project_settings.object_types, id_count)
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return dist24hobj
@@ -460,14 +459,14 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
             if tempbarcode.centerx != tempbarcode.centerx or tempbarcode.centerx >= project_settings.image_size.x or tempbarcode.centerx < 0: continue
             if tempbarcode.centery != tempbarcode.centery or tempbarcode.centery >= project_settings.image_size.y or tempbarcode.centery < 0: continue
             # check if barcode is under any object of the group
-            num = [0]*len(project.object_types)
+            num = [0]*len(project_settings.object_types)
             group = experiment['groupid'][strid]
-            for i in range(len(project.object_types)):
-                object = project.object_types[i]
+            for i in range(len(project_settings.object_types)):
+                object = project_settings.object_types[i]
                 if object not in experiment.keys(): continue
                 for objectcenter in experiment[object][group]:
                     if experiments.is_barcode_under_object(tempbarcode, objectcenter,
-                            project.object_areas[object], project_settings.image_size):
+                            project_settings.object_areas[object], project_settings.image_size):
                         num[i] = 1
                         break
                 else:
@@ -475,7 +474,7 @@ def calculate_dist24hobj(barcodes, light_log, cage_log, entrytimes, starttime,
                 break
             # calculate new avg, std, num based on this method:
             # http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
-            for i in range(len(project.object_types)):
+            for i in range(len(project_settings.object_types)):
                 prev_avg = dist24hobj.avg[k,i,bin]
                 dist24hobj.num[k,i,bin] += 1
                 dist24hobj.avg[k,i,bin] += (num[i] - prev_avg) / dist24hobj.num[k,i,bin]
@@ -516,7 +515,9 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     # initialize object
     id_count = len(barcodes[0])
-    dailyobj = init.DailyObj(project_settings.good_light, id_count)
+    dailyobj = init.DailyObj(project_settings.good_light,
+        project_settings.object_types, project_settings.max_day, id_count
+    )
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return dailyobj
@@ -555,14 +556,14 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
             if tempbarcode.centerx != tempbarcode.centerx or tempbarcode.centerx >= project_settings.image_size.x or tempbarcode.centerx < 0: continue
             if tempbarcode.centery != tempbarcode.centery or tempbarcode.centery >= project_settings.image_size.y or tempbarcode.centery < 0: continue
             # check if barcode is under any object of the group
-            num = [0]*len(project.object_types)
+            num = [0]*len(project_settings.object_types)
             group = experiment['groupid'][strid]
-            for i in range(len(project.object_types)):
-                object = project.object_types[i]
+            for i in range(len(project_settings.object_types)):
+                object = project_settings.object_types[i]
                 if object not in experiment.keys(): continue
                 for objectcenter in experiment[object][group]:
                     if experiments.is_barcode_under_object(tempbarcode, objectcenter,
-                            project.object_areas[object], project_settings.image_size):
+                            project_settings.object_areas[object], project_settings.image_size):
                         num[i] = 1
                         break
                 else:
@@ -570,7 +571,7 @@ def calculate_dailyobj(barcodes, light_log, cage_log, entrytimes, starttime,
                 break
             # calculate new avg, std, num based on this method:
             # http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
-            for i in range(len(project.object_types)):
+            for i in range(len(project_settings.object_types)):
                 prev_avg = dailyobj.avg[light][k,i,day]
                 dailyobj.num[light][k,i,day] += 1
                 dailyobj.avg[light][k,i,day] += (num[i] - prev_avg) / dailyobj.num[light][k,i,day]
@@ -785,7 +786,9 @@ def calculate_neighbor(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    neighbors = init.Neighbor(project_settings.good_light, id_count)
+    neighbors = init.Neighbor(project_settings.good_light,
+        project_settings.max_day, id_count
+    )
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return neighbors
@@ -893,7 +896,9 @@ def calculate_dailyfqobj(barcodes, light_log, cage_log, entrytimes, starttime,
     fqobj stat.
 
     """
-    dailyfqobj = init.DailyFQObj(project_settings.good_light, len(colorids))
+    dailyfqobj = init.DailyFQObj(project_settings.good_light,
+        project_settings.object_types, project_settings.max_day, len(colorids)
+    )
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
             colorids, project_settings, experiment, dailyfqobj)
     return dailyfqobj
@@ -957,7 +962,9 @@ def calculate_fqwhilef(barcodes, light_log, cage_log, entrytimes, starttime,
     extra parameter. For more details see fqobj stat.
 
     """
-    fqwhilef = init.FQWhileF(project_settings.good_light, len(colorids))
+    fqwhilef = init.FQWhileF(project_settings.good_light,
+        project_settings.object_types, len(colorids)
+    )
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
             colorids, project_settings, experiment, None, None, fqwhilef)
     return fqwhilef
@@ -1005,7 +1012,9 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    fqobj = init.FQObj(project_settings.good_light, id_count)
+    fqobj = init.FQObj(project_settings.good_light,
+        project_settings.object_types, id_count
+    )
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return fqobj
@@ -1023,7 +1032,8 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
         # restrict stat to feeding time (-friday) for fqfood
         if fqfood is not None:
             # we exclude fridays (True) and non-feeding times in general
-            if not experiments.is_weekly_feeding_time(datetime_at_frame, True):
+            if not experiments.is_weekly_feeding_time(datetime_at_frame,
+                    project_settings.weekly_feeding_times, True):
                 continue
         # get light and skip bad lighting conditions
         light = light_at_frame(currentframe)
@@ -1033,8 +1043,8 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
         # get chosen barcodes for current frame
         chosens = util.get_chosen_barcodes(barcodes[currentframe])
         if fqwhilef is not None:
-            who_is_f =  [[0]*id_count for i in range(len(project.object_types))] # who is feeding
-            who_is_fq = [[0]*id_count for i in range(len(project.object_types))] # who is feeding or queuing?
+            who_is_f =  [[0]*id_count for i in range(len(project_settings.object_types))] # who is feeding
+            who_is_fq = [[0]*id_count for i in range(len(project_settings.object_types))] # who is feeding or queuing?
         # iterate colorids i
         for i in range(id_count):
             if not chosens[i]: continue
@@ -1068,17 +1078,18 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
                 # TODO: check if they are nearest neighbours or not!
 
                 # iterate all objects
-                for obi in range(len(project.object_types)):
-                    obj = project.object_types[obi]
+                for obi in range(len(project_settings.object_types)):
+                    obj = project_settings.object_types[obi]
                     if obj not in experiment.keys(): continue
-                    if not experiments.is_object_queueable(obj): continue
+                    if not experiments.is_object_queueable(project_settings.object_queuing_areas[obj]): continue
                     # fqfood is only calculated for 'food' object
                     if fqfood is not None:
                         if obj != 'food': continue
                     # fqwhilef is calculated for all objects, but for food only for feeding times
                     elif fqwhilef is not None:
                         # we exclude fridays (True) and non-feeding times in general
-                        if obj == 'food' and not experiments.is_weekly_feeding_time(datetime_at_frame, True):
+                        if obj == 'food' and not experiments.is_weekly_feeding_time(
+                                datetime_at_frame, project_settings.weekly_feeding_times, True):
                             continue
                     for objectcenter in experiment[obj][group]:
                         # check angle, skip if not pointing towards object center +- 90deg
@@ -1086,22 +1097,22 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
                         if cos(bangle - b.orientation) < 0: continue
                         # check F and Q states
                         if experiments.is_barcode_under_object(a, objectcenter,
-                                project.object_areas[obj], project_settings.image_size):
+                                project_settings.object_areas[obj], project_settings.image_size):
                             fa = True
                         else:
                             fa = False
                         if experiments.is_barcode_under_object(b, objectcenter,
-                                project.object_areas[obj], project_settings.image_size):
+                                project_settings.object_areas[obj], project_settings.image_size):
                             fb = True
                         else:
                             fb = False
                         if experiments.is_barcode_under_object(a, objectcenter,
-                                project.object_queuing_areas[obj], project_settings.image_size):
+                                project_settings.object_queuing_areas[obj], project_settings.image_size):
                             qa = True
                         else:
                             qa = False
                         if experiments.is_barcode_under_object(b, objectcenter,
-                                project.object_queuing_areas[obj], project_settings.image_size):
+                                project_settings.object_queuing_areas[obj], project_settings.image_size):
                             qb = True
                         else:
                             qb = False
@@ -1130,7 +1141,7 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
                                     fqobj.fandq[light][obi,i,j] += 1
                                     fqobj.points[light] += 1
         if fqwhilef is not None:
-            for obi in range(len(project.object_types)):
+            for obi in range(len(project_settings.object_types)):
                 for i in range(id_count):
                     if who_is_f[obi][i]:
                         # count number of ForQ-ing others
@@ -1158,7 +1169,7 @@ def calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
 
 
 def calculate_aamap(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, project_settings, experiment, subtitlefile, aa_settings):
+        colorids, project_settings, experiment, subtitlefile):
     """Calculate AA (approach-avoidance) heatmap.
 
     :param barcodes: global list of barcodes (Barcode)
@@ -1178,7 +1189,6 @@ def calculate_aamap(barcodes, light_log, cage_log, entrytimes, starttime,
             interesting object centers. If experiment is None,
             we do not calculate anything.
     :param subtitlefile: write subtitles to this file (None if not applicable)
-    :param aa_settings: AASettings settings used for aa detection
 
     This stat is special in the way that it calls calculate_aa() with an extra
     parameter to plot data to heatmap. For more details see aa stat.
@@ -1188,13 +1198,12 @@ def calculate_aamap(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     aamap = init.AAMap(project_settings.good_light, project_settings.image_size)
     calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, project_settings, experiment, subtitlefile, aa_settings, aamap)
+        colorids, project_settings, experiment, subtitlefile, aamap)
     return aamap
 
 
 def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, project_settings, experiment, subtitlefile, aa_settings,
-        aamap=None):
+        colorids, project_settings, experiment, subtitlefile, aamap=None):
     """Calculate AA (approach-avoidance) matrix.
 
     :param barcodes: global list of barcodes (Barcode)
@@ -1214,7 +1223,6 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
             interesting object centers. If experiment is None,
             we do not calculate anything.
     :param subtitlefile: write subtitles to this file (None if not applicable)
-    :param aa_settings: AASettings settings used for aa detection
     :param aamap: optional 'hack' parameter to output results to a map
             instead of the standard AA statistics. It is used by stat aamap.
 
@@ -1231,7 +1239,7 @@ def calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
     light_at_frame = trajognize.util.param_at_frame(light_log)
     cage_at_frame = trajognize.util.param_at_frame(cage_log)
     id_count = len(barcodes[0])
-    aa = init.AA(project_settings.good_light, id_count, aa_settings)
+    aa = init.AA(project_settings.good_light, id_count, project_settings.stat_aa_settings)
     history = [[[-aa.min_event_length]*aa.min_event_length for i in range(id_count)] for j in range(id_count)]
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
@@ -1941,7 +1949,9 @@ def calculate_distfromwall(barcodes, light_log, cage_log, entrytimes, starttime,
     """
     # initialize object
     id_count = len(barcodes[0])
-    distfromwall = init.DistFromWall(project_settings.good_light, project_settings.image_size, id_count)
+    distfromwall = init.DistFromWall(project_settings.good_light,
+        project_settings.image_size, project_settings.max_day, id_count
+    )
     # do not calculate anything if we are not part of an experiment
     if experiment is None:
         return distfromwall

@@ -58,11 +58,11 @@ def main(argv=[]):
     else:
         experiment = '*'
     inputfiles = glob.glob(os.path.join(inputdir, "stat_heatmap.*__exp_%s.zip" % experiment))
-    exps = trajognize.stat.experiments.get_initialized_experiments()
     project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
     if project_settings is None:
         print("Could not load project settings.")
         return
+    exps = project_settings.experiments
     corrfiles = []
 
     # create full database of all data

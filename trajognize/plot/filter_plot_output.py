@@ -24,14 +24,14 @@ Note 2:
 
 import glob, os, sys, argparse, socket
 try:
-    import trajognize.stat.project
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.stat.util
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
-    import trajognize.stat.project
+    import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.stat.util
@@ -41,27 +41,6 @@ ignoredirs = ['corr', 'SYMLINK__', 'dailyoutput', 'dist24h']
 gooddirs = ['statsum', 'meassum']
 goodexts = ['.png']
 linkdirprefix = 'SYMLINK__FILTER/SYMLINK__'
-
-# create stat dictionary from implemented stat functions and classes
-stats = trajognize.stat.util.get_stat_dict()
-# initialize experiments dictionary
-exps = trajognize.stat.experiments.get_initialized_experiments()
-
-# collect all possible values for each filter
-allexps = sorted(exps.keys())
-allstats = sorted(stats.keys() + ['bodymass', 'wounds'])
-alllights = sorted(list(["DAYLIGHT", "NIGHTLIGHT"]))
-allrealvirts = sorted(list(trajognize.stat.init.mfix_types) + ['ANY'])
-allobjects = sorted(trajognize.stat.project.object_areas.keys())
-allgroups = set()
-allnames = set()
-for exp in exps:
-    for group in exps[exp]['groups']:
-        allgroups.add(group)
-        allnames.update(exps[exp]['groups'][group])
-allgroups = sorted(list(allgroups))
-allnames = sorted(list(allnames))
-
 
 def lower(list):
     return [x.lower() for x in list]
@@ -93,7 +72,7 @@ def is_filter_exclusive(filters, subs, strcontains=False, allfilters=[]):
                 return False
 
 
-def create_symlink_name(name):
+def create_symlink_name(allexps, allgroups, alllights, allrealvirts, name):
     """Create a short version of the filename for symlink name."""
     for exp in allexps:
         name = name.replace("exp_%s" % exp, "e%d" % exps[exp]['number'])
@@ -113,9 +92,22 @@ def main(argv=[]):
     """Main entry point of the script."""
     # print help if no arguments given
     if not argv and len(sys.argv) <= 1: argv.append('-h')
+
+    # create stat dictionary from implemented stat functions and classes
+    stats = trajognize.stat.util.get_stat_dict()
+    # collect all possible values for each filter
+    allstats = sorted(stats.keys() + ['bodymass', 'wounds'])
+    alllights = sorted(list(["DAYLIGHT", "NIGHTLIGHT"]))
+    allrealvirts = sorted(list(trajognize.stat.init.mfix_types) + ['ANY'])
+
+    # TODO: this script does not work now as we cannot get exps, obj, etc
+    # choices before we know what the project settings will be...
+    # rewrite next time we need it
+
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
-    argparser.add_argument("-p", "--inputpath", metavar="PATH", required=True, dest="inputpath", default='', help="define input path with statsum output")
+    argparser.add_argument("-i", "--inputpath", metavar="PATH", required=True, dest="inputpath", default='', help="define input path with statsum output")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
     argparser.add_argument("-v", "--verboseonly", dest="verbose_only", action="store_true", default=False, help="Do not create real symlinks, only print output.")
     argparser.add_argument("-m", "--maxsymlinks", metavar="num", dest="max_symlinks", type=int, default=100, help="Maximum number of symlinks to create.")
     # filters
@@ -127,7 +119,7 @@ def main(argv=[]):
     argparser.add_argument("-o", "--objects", metavar="object", dest="objects", nargs="+", choices=allobjects, default=[], help="Filter for objects. Possible values: %s" % allobjects)
     argparser.add_argument("-n", "--names", metavar="name", dest="names", nargs="+", choices=allnames, default=[], help="Filter for names. Possible values: %s" % allnames)
     # any further filter that should be or should not be part of the results
-    argparser.add_argument("-i", "--include", dest="include", nargs="+", default=[], help="List any further words that should be part of the results")
+    argparser.add_argument("-d", "--include", dest="include", nargs="+", default=[], help="List any further words that should be part of the results")
     argparser.add_argument("-x", "--exclude", dest="exclude", nargs="+", default=[], help="List any further words that should NOT be part of the results")
 
 
@@ -137,6 +129,24 @@ def main(argv=[]):
     # else if called from command line or no arguments are passed to main, parse default argument list
     else:
         options = argparser.parse_args()
+
+    # get project settings
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
+    # collect all possible values for each filter
+    allexps = sorted(exps.keys())
+    allobjects = sorted(project_settings.object_areas.keys())
+    allgroups = set()
+    allnames = set()
+    for exp in exps:
+        for group in exps[exp]['groups']:
+            allgroups.add(group)
+            allnames.update(exps[exp]['groups'][group])
+    allgroups = sorted(list(allgroups))
+    allnames = sorted(list(allnames))
 
     # if names are specified, insert groups that contain those names
     if options.names:
@@ -151,6 +161,7 @@ def main(argv=[]):
     outdir = os.path.join(options.inputpath, linkdirprefix + "_".join(argv))
     print("Using input path: '%s'" % options.inputpath)
     print("Using output path: '%s'\n" % outdir)
+
 
     print("Finding matches for the given filter...", end=" ")
     symlinks = []

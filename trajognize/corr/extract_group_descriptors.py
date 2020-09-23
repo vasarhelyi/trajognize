@@ -22,12 +22,17 @@ except ImportError:
 def main(argv=[]):
     """Main entry point of the script."""
 
-    basedir = input("Get base directory of statsum correlation outputs: ")
+    basedir = input("Enter base directory of statsum correlation outputs: ")
+    projectfile = input("Enter the project settings file: ")
 
     # initialize some variables
     corrfile = os.path.join(basedir, 'collected_good_params.txt')
     outfile = os.path.splitext(corrfile)[0] + '__groupified.txt'
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
     expnames = sorted(exps.keys(), lambda a,b: exps[a]['number'] - exps[b]['number'])
 
     # parse all data first

@@ -1,6 +1,6 @@
 """This script summarizes heatmap dailyoutput results in one file.
 
-Usage: calc_heatmap_dailyoutput.py inputdir
+Usage: calc_heatmap_dailyoutput.py projectfile inputdir
 
 where inputdir is the output of trajognize.statsum with options "-s heatmap -d"
 
@@ -11,6 +11,7 @@ Output is written in a subdirectory of input dir.
 import os, subprocess, sys, glob, re, itertools, numpy
 
 try:
+    import trajognize.settings
     import trajognize.parse
     import trajognize.stat.init
     import trajognize.stat.experiments
@@ -19,6 +20,7 @@ try:
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    import trajognize.settings
     import trajognize.parse
     import trajognize.stat.init
     import trajognize.stat.experiments
@@ -44,12 +46,17 @@ def get_categories_from_name(name):
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if not argv:
+    if len(argv) < 2:
         print(__doc__)
         return
-    inputdir = argv[0]
+    projectfile = argv[0]
+    inputdir = argv[1]
     inputfiles = glob.glob(os.path.join(inputdir, "*/stat_heatmap.*__day_*.txt"))
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
     outdirs = []
 
     # create full database of all data

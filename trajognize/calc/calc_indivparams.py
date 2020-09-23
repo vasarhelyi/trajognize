@@ -1,6 +1,6 @@
 """This script separates individual parameters to experiments and groups.
 
-Usage: calc_indivparams.py inputfile(s)
+Usage: calc_indivparams.py projectfile inputfile(s)
 
 Output is written in a subdirectory of input dir.
 
@@ -9,6 +9,7 @@ Output is written in a subdirectory of input dir.
 import os, subprocess, sys, glob, itertools, datetime
 
 try:
+    import trajognize.settings
     import trajognize.parse
     import trajognize.stat.init
     import trajognize.stat.experiments
@@ -17,6 +18,7 @@ try:
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    import trajognize.settings
     import trajognize.parse
     import trajognize.stat.init
     import trajognize.stat.experiments
@@ -27,14 +29,19 @@ nogroup = False
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if not argv:
+    if len(argv) < 2:
         print(__doc__)
         return
+    projectfile = argv[0]
     if sys.platform.startswith('win'):
-        inputfiles = glob.glob(argv[0])
+        inputfiles = glob.glob(argv[1])
     else:
-        inputfiles = argv
-    exps = trajognize.stat.experiments.get_initialized_experiments()
+        inputfiles = argv[1:]
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
+    exps = project_settings.experiments
     # parse files
     for inputfile in inputfiles:
         print("parsing", os.path.split(inputfile)[1])
