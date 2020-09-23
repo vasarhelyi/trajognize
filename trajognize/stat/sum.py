@@ -20,7 +20,7 @@ from .project import stat_aa_settings, get_unique_output_filename
 
 
 def write_results(outputfilename, stats, stat, substat, statobject, exps, exp,
-        day, dailyoutput, colorids):
+        day, dailyoutput, colorids, project_settings):
     """Helper function to write results to file."""
     outputfile = open(outputfilename, 'w')
     # print other parameters to file
@@ -71,7 +71,7 @@ def main(argv=[]):
     argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["exps", "stats"]+sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["exps", "stats"]+sorted(stats.keys())))
     argparser.add_argument("-i", "--inputpath", metavar="PATH", required=True, dest="inputpath", help="define input path to have stat files at [PATH]/*/OUT/*.blobs.barcodes.stat_*.zip")
     argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=True, dest="coloridfile", help="define colorid input file name (.xml)")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for summarized results")
     argparser.add_argument("-s", "--statistics", metavar="stat", dest="statistics", nargs="+", choices=sorted(stats.keys()), default=sorted(stats.keys()), help="Define only some of the statistics to run. Possible values: %s" % sorted(stats.keys()))
@@ -145,7 +145,12 @@ def main(argv=[]):
     # parse project settings file
     phase.start_phase("Reading project settings file...")
     project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
-    print("  Current project is: %s\n" % v.project_settings.project_name)
+    # define some variables directly to be present in caller namespace for stats
+    good_light = project_settings.good_light
+    all_light = project_settings.all_light
+    image_size = project_settings.image_size
+    MBASE = project_settings.MBASE
+    print("  Current project is: %s\n" % project_settings.project_name)
     phase.end_phase()
 
     # parse colorid file
@@ -259,7 +264,7 @@ def main(argv=[]):
                             options.outputpath, inputfile
                         )
                         write_results(uniqueoutputfilename, stats, stat, substat, newobj,
-                                exps, exp, day, dailyoutput, colorids)
+                                exps, exp, day, dailyoutput, colorids, project_settings)
 
                 phase.end_phase()
 
@@ -291,7 +296,7 @@ def main(argv=[]):
                 outputfilecommon = os.path.join(options.outputpath, tailcommon)
                 outputfilename = outputfilecommon + ".txt"
                 write_results(outputfilename, stats, stat, substat, statobject,
-                        exps, exp, day, dailyoutput, colorids)
+                        exps, exp, day, dailyoutput, colorids, project_settings)
                 # save output in object format as well for later analysis, post processing, etc.
                 trajognize.util.save_object(statobject, outputfilecommon + ".zip")
         phase.end_phase("\n")

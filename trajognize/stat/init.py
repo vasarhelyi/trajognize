@@ -282,6 +282,7 @@ class HeatMap(Stat):
         simplified = dict()
         anymft = mfix_types + ["ANY"]
         for light in self.data.keys():
+            image_size = trajognize.init.Point(*self.data[light].shape[1:])
             for mfi in range(len(anymft)):
                 mft = anymft[mfi]
                 if mft == "ANY":
@@ -290,9 +291,12 @@ class HeatMap(Stat):
                     x = self.data[light][mfi]
                 # get binned results
                 if binsize > 1:
-                    xbin = numpy.array([[numpy.mean(x[i*binsize:i*binsize+binsize, j*binsize:j*binsize+binsize]) \
-                            for j in range(project_settings.image_size.y/binsize)] \
-                            for i in range(project_settings.image_size.x/binsize)])
+                    xbin = numpy.array([[numpy.mean(x[
+                        i * binsize : i * binsize + binsize,
+                        j * binsize : j * binsize + binsize])
+                        for j in range(image_size.y / binsize)]
+                        for i in range(image_size.x / binsize)
+                    ])
                 else:
                     xbin = x
                 x_nonzero = xbin[xbin > self.nonzero_threshold]
@@ -631,12 +635,14 @@ class Dist24h(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__mft()
 
-    def write_results(self, outputfile, colorids, exps, exp, substat):
+    def write_results(self, outputfile, colorids, project_settings, exps, exp, substat):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
         :param colorids: global colorid database created by
                 trajognize.parse.parse_colorid_file()
+        :param project_settings: global project settings imported by
+                trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by
                 trajognize.stat.experiments.get_initialized_experiments()
         :param exp: name of the current experiment
@@ -2688,11 +2694,11 @@ class DistFromWall(Stat):
                             outputfile.write("\t%s.avg\t%s.std\t%s.num" % (name, name, name))
                         outputfile.write("\tabsgrad_avg\tabsgrad_std\n")
                         # data
-                        lastdayavg = [0]*len(klist)
+                        lastdayavg = [0] * len(klist)
                         for day in range(maxday + 1):
                             absgrad = []
                             outputfile.write(dayrange[day])
-                            for i,k in enumerate(klist):
+                            for i, k in enumerate(klist):
                                 if mft == "ANY":
                                     x = sum(self.data[light][k][moi])
                                 else:

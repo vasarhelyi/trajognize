@@ -251,6 +251,7 @@ def write_stat(stats, stat, object, f_back=1):
     caller_namespace = inspect.stack()[f_back][0].f_locals
     try:
         real_params = [caller_namespace[param_name] for param_name in stats[stat]['write'][1]]
+
     except KeyError:
         print("TODO: define parameters passed to %s in caller namespace with the same name as in function def!" % stats[stat]['write'][0])
         raise
