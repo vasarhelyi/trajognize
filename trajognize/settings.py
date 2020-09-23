@@ -29,9 +29,11 @@ def import_trajognize_settings_from_file(filename):
 
     Return:
         instantiation of first proper class found in the file
-        or None if not found.
+        or None if file or class not found.
     """
     spec = importlib.util.spec_from_file_location("", filename)
+    if spec is None:
+        return None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     for name, obj in module.__dict__.items():

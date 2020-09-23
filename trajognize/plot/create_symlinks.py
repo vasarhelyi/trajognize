@@ -54,6 +54,9 @@ def main(argv=[]):
 
     exps = trajognize.stat.experiments.get_initialized_experiments()
     project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
     for root, subfolders, files in os.walk(inputdir):
         x = root[len(inputdir)+1:]
         # ignore symlink dirs

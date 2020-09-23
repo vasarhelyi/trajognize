@@ -53,9 +53,9 @@ def main(argv=[]):
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
     argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["stats"]+sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["stats"]+sorted(stats.keys())))
     argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output files")
-    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", required=True, help="define barcode input file name (.blobs.barcodes)")
-    argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", required=True, help="define colorid input file name (.xml)")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
+    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", required=False, help="define barcode input file name (.blobs.barcodes)")
+    argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", required=False, help="define colorid input file name (.xml)")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", dest="projectfile", required=False, help="define project settings file that contains a single TrajectorySettings class instantiation.")
     argparser.add_argument("-e", "--entrytimesfile", metavar="FILE", dest="entrytimesfile", help="define entry times input file name (.dat, .txt)")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for .barcodes.stat_*.zip output files")
@@ -65,7 +65,6 @@ def main(argv=[]):
     argparser.add_argument("-sci", "--subclassindex", metavar="INDEX", dest="subclassindex", nargs='+', type=int, help="Define only some of the stat subclasses to run. Works bugfree only if a single stat is selected.")
     argparser.add_argument("-d", "--dailyoutput", dest="dailyoutput", action="store_true", default=False, help="Store output separated for days. This is kind of a hack and should be used only with heatmaps.")
     argparser.add_argument("-sub", "--subtitle", dest="subtitle", action="store_true", default=False, help="create subtitle output")
-
 
     # if arguments are passed to main(argv), parse them
     if argv:
@@ -90,66 +89,78 @@ def main(argv=[]):
     # check arguments
     phase.start_phase("Checking command line arguments...")
     # inputfile
+    if not options.inputfile:
+        print("  ERROR: inputfile not specified. Use the '-i' option")
+        return
     print("  Using inputfile: '%s'" % options.inputfile)
     # colorid file
+    if not options.coloridfile:
+        print("  ERROR: coloridfile not specified. Use the '-c' option.")
+        return
     print("  Using colorid file: '%s'" % options.coloridfile)
     # project settings
+    if not options.projectfile:
+        print("  ERROR: projectfile not specified. Use the '-p' option.")
+        return
     print("  Using project settings file: '%s'" % options.projectfile)
-    project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
-    print("  Current project is: %s\n" % project_settings.project_name)
     # entrytimes file
     if options.entrytimesfile is None:
         options.entrytimesfile = 'misc/entrytimes.dat'
         print("  WARNING! No entrytimes file is specified! Default is: '%s'" % options.entrytimesfile)
     else:
         print("  Using entrytimes file: '%s'" % options.entrytimesfile)
-
     # output path
     if options.outputpath is None:
         (options.outputpath, tail) = os.path.split(options.inputfile)
         print("  WARNING! No output path is specified! Default is input file directory: '%s'" % options.outputpath)
     else:
         print("  Using output path: '%s'" % options.outputpath)
-
     # dailyoutput
     if options.dailyoutput:
         print("  WARNING: option '-d' specified, output is written on a daily basis. Use -d in statsum also to parse daily output data.")
-
     # check output file
     outputfilecommon = os.path.join(options.outputpath, os.path.split(options.inputfile)[1])
     if options.force:
         print("  WARNING: option '-f' specified, forcing overwrite of output files.")
-
     # frame num
     if options.framenum is not None:
         options.framenum = int(options.framenum)
         print("  WARNING: debug option '-n' specified, reading only %d frames." % options.framenum)
-
     # subtitles
     if options.subtitle:
         if options.dailyoutput:
             print("  ERROR:  dailyoutput and subtitle params cannot be specified at the same time!")
             return
         print("  option -sub specified, creating subtitle files.")
-
-    # statistics
-    # get difference of stat and nostat
+    # statistics - get difference of stat and nostat
     options.statistics = sorted(list(set(options.statistics).difference(set(options.nostatistics))))
     print("  Calculating statistics:", options.statistics)
     # TODO: maybe check subclassindex
     phase.end_phase()
 
+    phase.start_phase("Reading project settings file...")
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
+    if project_settings is None:
+        print("  ERROR parsing project settings file")
+        return
+    print("  Current project is: %s" % project_settings.project_name)
+    phase.end_phase()
+
     # parse colorid file
     phase.start_phase("Reading colorid file...")
     colorids = trajognize.parse.parse_colorid_file(options.coloridfile)
-    if not colorids: return
+    if not colorids:
+        print("  ERROR parsing colorid file")
+        return
     print("  %d colorids read, e.g. first is (%s,%s)" % (len(colorids), colorids[0].strid, colorids[0].symbol))
     phase.end_phase()
 
     # parse entrytimes file
     phase.start_phase("Reading entrytimes file...")
     entrytimes = trajognize.parse.parse_entry_times(options.entrytimesfile)
-    if entrytimes is None: return
+    if entrytimes is None:
+        print("  ERROR parsing entrytimes file")
+        return
     if entrytimes:
         print("  %d entrytime dates read, e.g. first is (%s)" % (len(entrytimes), next(iter(entrytimes.values()))))
     else:

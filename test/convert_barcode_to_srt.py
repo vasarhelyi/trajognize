@@ -46,6 +46,8 @@ def main(argv=[]):
 
     print("\nParsing project settings file...")
     project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        return
     print("Project: %s" % project_settings.project_name)
     print("Image size: %gx%g" % project_settings.image_size)
     print("FPS: %g" % project_settings.FPS)

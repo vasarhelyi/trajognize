@@ -79,7 +79,6 @@ def main(argv=[]):
     else:
         options = argparser.parse_args()
 
-
     # check arguments
     phase.start_phase("Checking command line arguments...")
     # inputfile
@@ -88,8 +87,6 @@ def main(argv=[]):
     print("  Using colorid file: '%s'" % options.coloridfile)
     # project settings
     print("  Using project settings file: '%s'" % options.projectfile)
-    v.project_settings = import_trajognize_settings_from_file(options.projectfile)
-    print("  Current project is: %s\n" % v.project_settings.project_name)
     # output path
     if options.outputpath is None:
         (options.outputpath, tail) = os.path.split(options.inputfile)
@@ -121,6 +118,13 @@ def main(argv=[]):
     ############################################################################
 
     if options.debugload < 1:
+        # parse project settings file
+        phase.start_phase("Reading project settings file...")
+        v.project_settings = import_trajognize_settings_from_file(options.projectfile)
+        if v.project_settings is None: return
+        print("  Current project is: %s" % v.project_settings.project_name)
+        phase.end_phase()
+
         # parse colorid file
         phase.start_phase("Reading colorid file...")
         v.colorids = parse.parse_colorid_file(options.coloridfile)

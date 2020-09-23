@@ -68,10 +68,10 @@ def main(argv=[]):
     exps = experiments.get_initialized_experiments()
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
-    argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["exps", "stats"]+sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["exps", "stats"]+sorted(stats.keys())))
-    argparser.add_argument("-i", "--inputpath", metavar="PATH", required=True, dest="inputpath", help="define input path to have stat files at [PATH]/*/OUT/*.blobs.barcodes.stat_*.zip")
-    argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=True, dest="coloridfile", help="define colorid input file name (.xml)")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
+    argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["exps", "stats"] + sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["exps", "stats"] + sorted(stats.keys())))
+    argparser.add_argument("-i", "--inputpath", metavar="PATH", required=False, dest="inputpath", help="define input path to have stat files at [PATH]/*/OUT/*.blobs.barcodes.stat_*.zip")
+    argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=False, dest="coloridfile", help="define colorid input file name (.xml)")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=False, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for summarized results")
     argparser.add_argument("-s", "--statistics", metavar="stat", dest="statistics", nargs="+", choices=sorted(stats.keys()), default=sorted(stats.keys()), help="Define only some of the statistics to run. Possible values: %s" % sorted(stats.keys()))
@@ -109,11 +109,23 @@ def main(argv=[]):
     # check arguments
     phase.start_phase("Checking command line arguments...")
     # input path
+    if not options.inputpath:
+        print("  ERROR: inputpath not specified. Use the '-i' option")
+        return
     print("  Using input path: '%s'" % options.inputpath)
     inputdirs = glob.glob(os.path.join(options.inputpath, '*' + os.sep))
 
     # colorid file
+    if not options.coloridfile:
+        print("  ERROR: coloridfile not specified. Use the '-c' option.")
+        return
     print("  Using colorid file: '%s'" % options.coloridfile)
+
+    # project settings file
+    if not options.projectfile:
+        print("  ERROR: projectfile not specified. Use the '-p' option.")
+        return
+    print("  Using project file: '%s'" % options.projectfile)
 
     # output path
     if options.outputpath is None:
@@ -145,12 +157,13 @@ def main(argv=[]):
     # parse project settings file
     phase.start_phase("Reading project settings file...")
     project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
+    if project_settings is None: return
     # define some variables directly to be present in caller namespace for stats
     good_light = project_settings.good_light
     all_light = project_settings.all_light
     image_size = project_settings.image_size
     MBASE = project_settings.MBASE
-    print("  Current project is: %s\n" % project_settings.project_name)
+    print("  Current project is: %s" % project_settings.project_name)
     phase.end_phase()
 
     # parse colorid file
@@ -227,7 +240,7 @@ def main(argv=[]):
                     substat = util.get_substat(stat, subclassdict[stat], subclassindex)
                     statobjects[exp][substat] = util.init_stat(stats, stat)
                     print("    %s" % substat)
-
+        print()
         # parse files
         for filenum in range(len(inputfiles)):
             inputfile = inputfiles[filenum]

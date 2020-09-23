@@ -46,7 +46,10 @@ args = argparser.parse_args()
 
 # project settings
 project_settings = trajognize.settings.import_trajognize_settings_from_file(args.projectfile)
-print("Current project is: %s\n" % project_settings.project_name)
+if project_settings is None:
+    print("Could not parse project settings file")
+    sys.exit(1)
+print("Current project is: %s" % project_settings.project_name)
 
 # init distance distribution matrices
 max_sdist = 150 # [pixel]

@@ -57,6 +57,9 @@ def main(argv=[]):
         inputfiles = argv[1:]
 
     project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
     exps = trajognize.stat.experiments.get_initialized_experiments()
     outdirs = []
 

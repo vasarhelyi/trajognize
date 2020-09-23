@@ -59,6 +59,9 @@ def main(argv=[]):
         experiment = '*'
     inputfiles = glob.glob(os.path.join(inputdir, "stat_motionmap.*__exp_%s.zip" % experiment))
     project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    if project_settings is None:
+        print("Could not load project settings.")
+        return
     exps = trajognize.stat.experiments.get_initialized_experiments()
     corrfiles = []
 
