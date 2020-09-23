@@ -1,0 +1,12 @@
+################################################################################
+# list the barcode painting dates in this file to correct for paint-faint      #
+# first column should be 'PAINT', second in 'YYYY-MM-DD_hh-mm-ss' format.      #
+# list all entries in increasing order                                         #
+# add as much comments as possible to avoid later confusion                    #
+################################################################################
+
+PAINT 2011-05-24_17-00-00 # 0. day, tuesday, first paint
+
+# as you have probably noticed, all lines starting with '#' are treated as comment
+
+PAINT 2011-06-02_18-00-00 # 9 days since last paint, thursday

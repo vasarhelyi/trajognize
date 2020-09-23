@@ -1,0 +1,3 @@
+2011.05.24	15:00	19:32  This is an example for an entry times file, containing dates and hours of lab assistants visiting and thus disturbing the experiment
+2011.05.25	12:13	12:24  There should be four rows, first is date, second is time of entry, third is time of exit, fourth is optional comment, like this one.
+2011.05.25	13:26	13:36  In most project you will not need to use entrytimes so just ignore it.

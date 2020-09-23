@@ -4,9 +4,23 @@ Trajognize is a set of python tools developed for the automated tracking of
 objects with colored barcodes and additional statistical analysis tools for
 high-throughput ethology.
 
+
+## history
+
 It was developed at Eötvös University, Department of Biological Physics,
 throughout the [EU ERC COLLMOT Research Grant](https://hal.elte.hu/flocking)
 for tracking painted animals for several hours, days or even months.
+
+It got public on GitHub in line with open-access efforts after our
+publication of the following article (please cite it if you use this repo):
+
+Synergistic benefits of group search in rats. (2020).
+Máté Nagy, Attila Horicsányi, Enikő Kubinyi, Iain D. Couzin,
+Gábor Vásárhelyi, Andrea Flack, Tamás Vicsek.
+Current Biology. DOI: https://doi.org/10.1016/j.cub.2020.08.079
+
+
+## quick introduction
 
 Trajognize uses [ratognize](https://github.com/vasarhelyi/ratognize) output
 as input, i.e., lists of individually colored blobs identified on each frame
@@ -19,6 +33,7 @@ trajognize toolset.
 Trajognize is designed to be efficient on computer clusters if multiple videos
 are to be analyzed in parallel. The only inherently non-parallel step is the
 statistical summary 'statsum', but it should be very fast.
+
 
 # install
 
@@ -37,9 +52,10 @@ pip install -r requirements.txt
 There are not too many non-trivil package dependencies, but it is still
 recommended to install into a virtual environment with e.g. `pipenv`.
 
+
 # usage
 
-The final workflow of trajognize should be something like this below in order:
+The full workflow of trajognize should be something like this below in order:
 
 | **command**                  | **description**                                    | **related `queue_jobs` script on atlasz (ELTE)** |
 |------------------------------|----------------------------------------------------|--------------------------------------------------|
@@ -52,12 +68,30 @@ The final workflow of trajognize should be something like this below in order:
 | collect_good_params.py       | collect all correlation outputs                    | manual work needed                               |
 | extract_group_descriptors.py | groupify correlation outputs                       | manual work needed                               |
 
-Detailed help on usage is available for all python commands with '-h' or '--help'.
-
 **Note**: In case of ELTE-specific usage, 'queue_jobs' scripts at
 [hal.elte.hu/flocking](https://hal.elte.hu/flocking) are
 available for those with access right to run everything parallely on
 [atlasz](https://hpc.iig.elte.hu/dokuwiki/doku.php).
+
+Detailed help on usage is available for all python commands with '-h' or '--help'.
+
+The 'examples' directory contains some example settings for the different
+features of trajognize. Note that the code was developed for scientific purposes,
+to assist a very large project first, so many of the possible parameters will
+be probably not relevant for your case. I tried to separate these as much as
+possible.
+
+Anyhow, to setup trajognize properly, you need two main settings file:
+
+  * the **colorid** file is an .xml (in a very bad format inherited from a very
+    old but at that time very nice project - SwissTrack) containing the barcode
+    color definitions, such as 'RGB' meaning red-green-blue for example.
+  * the **project_settings** file is a .py python file that should contain a
+    single class definition that is the child of
+    `trajognize.settings.TrajognizeSettingsBase`. This contains most of the
+    project-specific settings. Documentation is available in the implementation
+    of the base class in `trajognize/settings.py`.
+
 
 ## List of statistics implemented
 
@@ -83,6 +117,7 @@ available for those with access right to run everything parallely on
 | sameiddist      | debug stat for counting false positive barcodes     |
 | sdist           | distance distribution between barcodes              |
 | veldist         | distribution of velocities                          |
+
 
 ## static pairwise parameters
 
@@ -127,6 +162,7 @@ The following outputs are available as dynamic output, i.e as time evolution:
 | plot_heatmap_dailyoutput.py | allday average is calculated only so far    |
 | aa, nearestneighbor         | daily stat probably contains too few events |
 
+
 ## outputs that cannot really be used in correlation analysis
 
 * plot_veldist.py
@@ -138,3 +174,10 @@ The following outputs are available as dynamic output, i.e as time evolution:
 * heatmapdiffs
 * aamap
 * basic
+
+
+# contact
+
+Feel free to ask or contribute, and do not forget to cite! Thanks!
+
+My webpage with contact info: https://hal.elte.hu/~vasarhelyi
