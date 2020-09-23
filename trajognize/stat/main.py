@@ -176,7 +176,7 @@ def main(argv=[]):
     head, tail = os.path.split(inputfile)
     inputfile_log = inputfile[:-15] # remove '.blobs.barcodes'
     inputfile_log += '.log'
-    if len(all_light) > 1:
+    if len(project_settings.all_light) > 1:
         (light_log, cage_log) = trajognize.parse.parse_log_file(inputfile_log)
     else:
         # in most projects we use only a single lighting condition, let it be NIGHTLIGHT
