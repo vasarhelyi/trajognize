@@ -2,7 +2,7 @@
 an average presence before and during feeding times. It also exports 'alldays'
 results into correlation files.
 
-Usage: calc_dist24hobj_feeding_avg.py projectfile inputdir [experiment]
+Usage: calc_dist24hobj_feeding_avg.py projectfile coloridfile inputdir [experiment]
 
 where inputdir is/are the location where the .zipped python object outputs of
 trajognize.statsum with options "-s dist24hobj" are located
@@ -220,14 +220,15 @@ class AvgDist24hObj():
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if len(argv) < 2:
+    if len(argv) < 3:
         print(__doc__)
         return
     projectfile = argv[0]
-    inputdir = argv[1]
+    coloridfile = argv[1]
+    inputdir = argv[2]
     statsum_basedir = os.path.split(inputdir)[0]
-    if len(argv) == 3:
-        experiment = argv[2]
+    if len(argv) == 4:
+        experiment = argv[3]
     else:
         experiment = '*'
 #    inputfiles = glob.glob(os.path.join(inputdir, "statsum_dist24hobj.*", "stat_dist24hobj.*__exp_%s.zip" % experiment))
@@ -237,7 +238,7 @@ def main(argv=[]):
         print("Could not load project settings.")
         return
     exps = project_settings.experiments
-    colorids = trajognize.parse.parse_colorid_file('../../misc/5-3_28patek.xml')
+    colorids = trajognize.parse.parse_colorid_file(coloridfile)
     id_count = len(colorids)
     # create full database of all data
     database = defaultdict(defaultdict)
