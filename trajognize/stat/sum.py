@@ -67,8 +67,7 @@ def main(argv=[]):
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
     argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["stats"] + sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["stats"] + sorted(stats.keys())))
     argparser.add_argument("-i", "--inputpath", metavar="PATH", required=False, dest="inputpath", help="define input path to have stat files at [PATH]/*/OUT/*.blobs.barcodes.stat_*.zip")
-    argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=False, dest="coloridfile", help="define colorid input file name (.xml)")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=False, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=False, dest="projectfile", help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for summarized results")
     argparser.add_argument("-s", "--statistics", metavar="stat", dest="statistics", nargs="+", choices=sorted(stats.keys()), default=sorted(stats.keys()), help="Define only some of the statistics to run. Possible values: %s" % sorted(stats.keys()))
@@ -106,12 +105,6 @@ def main(argv=[]):
         return
     print("  Using input path: '%s'" % options.inputpath)
     inputdirs = glob.glob(os.path.join(options.inputpath, '*' + os.sep))
-
-    # colorid file
-    if not options.coloridfile:
-        print("  ERROR: coloridfile not specified. Use the '-c' option.")
-        return
-    print("  Using colorid file: '%s'" % options.coloridfile)
 
     # project settings file
     if not options.projectfile:
@@ -165,13 +158,13 @@ def main(argv=[]):
     phase.end_phase()
 
     # parse colorid file
-    phase.start_phase("Reading colorid file...")
-    colorids = trajognize.parse.parse_colorid_file(options.coloridfile)
-    if colorids is None:
-        print("  ERROR: Could not read colorids.")
+    phase.start_phase("Checking colorids...")
+    colorids = project_settings.colorids
+    if not colorids:
+        print("  ERROR: Could not get colorids.")
         return
     id_count = len(colorids)
-    print("  %d colorids read, e.g. first is (%s,%s)" % (id_count, colorids[0].strid, colorids[0].symbol))
+    print("  %d colorids read, e.g. first is '%s'" % (id_count, colorids[0]))
     phase.end_phase()
 
     # parse calibration file

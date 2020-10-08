@@ -36,21 +36,15 @@ argparser.add_argument("-nh", "--noheatmap", dest="noheatmap", action="store_tru
 argparser.add_argument("-nt", "--notimedist", dest="notimedist", action="store_true", default=False, help="do not calculate 24h time distribution")
 argparser.add_argument("-cc", "--correctcage", dest="correctcage", action="store_true", default=False, help="correct for cage center dislocations")
 argparser.add_argument("-i", "--inputpath", required=True, dest="inputpath", help="define barcode input path to have barcode files at [PATH]*/OUT/*.blobs.barcodes", metavar="PATH")
-argparser.add_argument("-c", "--coloridfile", required=True, metavar="FILE", dest="coloridfile", help="define colorid input file name (.xml)")
-argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
+argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
 args = argparser.parse_args()
-
-# parse colorid file
-colorids = trajognize.parse.parse_colorid_file(args.coloridfile)
-if colorids is None:
-    print("could not parse colorid file")
-    sys.exit(1)
 
 # project settings
 project_settings = trajognize.settings.import_trajognize_settings_from_file(args.projectfile)
 if project_settings is None:
     print("Could not parse project settings file")
     sys.exit(1)
+colorids = project_settings.colorids
 print("Current project is: %s" % project_settings.project_name)
 
 
@@ -178,10 +172,10 @@ for inputfile in files:
                     # clamp number of same ids to max
                     num = len(barcodes[currentframe][k])
                     if num > MAX_SAME_ID_WARN and not max_sameid_warning[k]:
-                        print("  WARNING: there seems to be a lot of %s barcodes (%d) at frame %d." % (colorids[k].strid, num, currentframe))
+                        print("  WARNING: there seems to be a lot of %s barcodes (%d) at frame %d." % (colorids[k], num, currentframe))
                         max_sameid_warning[k] = 1
                     if num > MAX_SAME_ID:
-                        print("  ERROR: too many %s barcodes (%d) at frame %d. TODO: increase MAX_SAME_ID." % (colorids[k].strid, num, currentframe))
+                        print("  ERROR: too many %s barcodes (%d) at frame %d. TODO: increase MAX_SAME_ID." % (colorids[k], num, currentframe))
                         num = MAX_SAME_ID
                     # store all (including deleted)
                     sameiddists[light][k][0][num] += 1
@@ -269,7 +263,7 @@ if not args.nosameiddist:
             print("\n\n# same id distribution of %s barcodes (%s)" % (project_settings.good_light[light], "including MFix.DELETED" if deleted == 0 else "only valid"))
             print("sameiddists_%s_%s" % (project_settings.good_light[light], "withdeleted" if deleted == 0 else "onlyvalid"), end="")
             for j in range(PATEK_COUNT):
-                print("\t%s" % colorids[j].strid, end=" ")
+                print("\t%s" % colorids[j], end=" ")
             print("\tALL")
             for i in range(MAX_SAME_ID+1):
                 print("%d" %i, end=" ")
@@ -279,7 +273,7 @@ if not args.nosameiddist:
 
 # print 24h time distributions
 if not args.notimedist:
-    name = [colorids[k].strid for k in range(len(colorids))]
+    name = [colorids[k] for k in range(len(colorids))]
     name.append("all")
     print("\n\n# 24h time distribution of barcodes")
     print("# Input is read from %d files from %s" % (len(files), path))

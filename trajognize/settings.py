@@ -11,6 +11,7 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from datetime import datetime
 import importlib.util
+from itertools import chain
 from typing import Iterable, Dict, List, Tuple, Union
 import os
 
@@ -105,13 +106,16 @@ class ExperimentInitializer():
             experiment['wallall'] = dict() # full territory including cage + home
             experiment['area'] = dict() # flat ground territory without cage + home
             experiment['areaall'] = dict() # full territory including cage + home
+            colorids = []
             for group in experiment['groups']:
+                colorids += experiment['groups'][group]
                 for strid in experiment['groups'][group]:
                     experiment['groupid'][strid] = group
                 (experiment['wall'][group], experiment['wallall'][group]) = \
                     get_wall_polygons(experiments[name], group)
                 experiment['area'][group] = self._get_polygonlist_area(experiment['wall'][group])
                 experiment['areaall'][group] = self._get_polygonlist_area(experiment['wallall'][group])
+            experiment['colorids'] = sorted(list(set(colorids)))
 
         # TODO: add anything else that is useful to have in the experiments dict itself
 
@@ -164,6 +168,10 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         # initialize experiments
         self.experiments = ExperimentInitializer(self.experiments,
             self.get_wall_polygons).asdict()
+        # initialize colorids
+        self._colorids = sorted(list(set(chain.from_iterable(
+            exp['colorids'] for exp in self.experiments.values()
+        ))))
 
     def color2int(self, color: str) -> int:
         """Return the index of the color initial within your color names."""
@@ -182,6 +190,19 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
     # implemented methods that provide convenient default settings but
     # might be overwritten if needed. These are mostly related to our first
     # large-scale rat experiment (2011) and are not relavant in other projects.
+
+    @property
+    def colorids(self) -> Iterable[str]:
+        """Define the colorids of your project as a list of barcode color
+        abbreviations (first capital letter of each color in proper order).
+        Example: ["RGB", "GRB"], if you are about to recognize two barcodes,
+        one as Red-Green-Blue, the other one as Green-Red-Blue. Be careful to
+        avoid definitions that result in existing colorids if read backwards.
+
+        By default, colorids is initialized automatically as a union of all
+        colorids defined in the experiment database (value of self._colorids).
+        """
+        return self._colorids
 
     @property
     def use_cage(self) -> bool:
@@ -212,12 +233,6 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         Note: if not indicated in results file, no filter was used
         Normally, you do not need to play with this parameter."""
         return True
-
-    @property
-    def get_exp_from_colorid_filename(self):
-        """This is an ugly hack for one specific experiment. Do NOT look into
-        the code please, it is a shame :)"""
-        return False
 
     @property
     def all_light(self) -> Iterable[str]:
@@ -483,7 +498,7 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
             'stop'  (datetime) - the ending time of the experiment
             'groups' (Dict[List[str]]) - colorids according to barcode subgroups
                 if no subgroups are used, all colorids should be placed in one
-                group
+                group.
 
         Any other string key description is treated as an object:
 

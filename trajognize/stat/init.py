@@ -633,12 +633,10 @@ class Dist24h(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__mft()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp, substat):
+    def write_results(self, outputfile, project_settings, exps, exp, substat):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
@@ -646,12 +644,13 @@ class Dist24h(Stat):
         :param substat: name of the virtual subclass statistics (e.g. dist24h.monday)
 
         """
+        colorids = project_settings.colorids
         # calculate standard deviation from standard variance
         self.std = numpy.where(self.num != 0, numpy.sqrt(self.stv / self.num), 0)
         # write results
         if exp == "all":
             # get sorted names and colorid indices
-            names = sorted([colorids[k].strid for k in range(len(colorids))])
+            names = sorted([colorids[k] for k in range(len(colorids))])
             klist = range(len(colorids))
             # calculate group sum
             self.calculate_group_sum(klist)
@@ -681,7 +680,7 @@ class Dist24h(Stat):
         else:
             for group in exps[exp]['groups']:
                 # get sorted names and colorid indices
-                allnames = [colorids[k].strid for k in range(len(colorids))]
+                allnames = [colorids[k] for k in range(len(colorids))]
                 names = sorted(exps[exp]['groups'][group])
                 klist = [allnames.index(name) for name in names]
                 # calculate group sum
@@ -816,12 +815,10 @@ class Dist24hObj(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__simple()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp, substat):
+    def write_results(self, outputfile, project_settings, exps, exp, substat):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
@@ -829,12 +826,13 @@ class Dist24hObj(Stat):
         :param substat: name of the virtual subclass statistics (e.g. dist24h.monday)
 
         """
+        colorids = project_settings.colorids
         # calculate standard deviation from standard variance
         self.std = numpy.where(self.num != 0, numpy.sqrt(self.stv / self.num), 0)
         # write results
         if exp == "all":
             # get sorted names and colorid indices
-            names = sorted([colorids[k].strid for k in range(len(colorids))])
+            names = sorted([colorids[k] for k in range(len(colorids))])
             klist = range(len(colorids))
             # calculate group sum
             self.calculate_group_sum(klist)
@@ -863,7 +861,7 @@ class Dist24hObj(Stat):
         else:
             for group in exps[exp]['groups']:
                 # get sorted names and colorid indices
-                allnames = [colorids[k].strid for k in range(len(colorids))]
+                allnames = [colorids[k] for k in range(len(colorids))]
                 names = sorted(exps[exp]['groups'][group])
                 klist = [allnames.index(name) for name in names]
                 # calculate group sum
@@ -1007,12 +1005,10 @@ class DailyObj(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
@@ -1020,6 +1016,7 @@ class DailyObj(Stat):
 
         """
 
+        colorids = project_settings.colorids
         # do not save common results for all experiments,
         # since day is calculated from the beginning of each experiment...
         if exp == "all": return
@@ -1033,7 +1030,7 @@ class DailyObj(Stat):
         # write results
         for group in exps[exp]['groups']:
             # get sorted names and colorid indices
-            allnames = [colorids[k].strid for k in range(len(colorids))]
+            allnames = [colorids[k] for k in range(len(colorids))]
             names = sorted(exps[exp]['groups'][group])
             klist = [allnames.index(name) for name in names]
             # calculate group sum
@@ -1137,23 +1134,22 @@ class SameIDDist(Stat):
             print("  %s statistic is from %d files, %d frames and %d/%d data points (including/excluding deleted)" % \
                     (light, self.files, self.frames[light], self.points[light][0], self.points[light][1]))
 
-    def write_results(self, outputfile, colorids, project_settings):
+    def write_results(self, outputfile, project_settings):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
 
         """
+        colorids = project_settings.colorids
         for light in project_settings.good_light:
             for deleted in range(2):
                 outputfile.write("# same id distribution of %s barcodes from %d files, %d frames, %d points (%s)\n\n" % \
                         (light.lower(), self.files, self.frames[light], self.points[light][deleted],
                         "including MFix.DELETED" if deleted == 0 else "only valid"))
                 # write header
-                names = [colorids[k].strid for k in range(len(colorids))]
+                names = [colorids[k] for k in range(len(colorids))]
                 names.append("all")
                 outputfile.write("sameiddists_%s_%s" % (light.lower(),
                         "withdeleted" if deleted == 0 else "onlyvalid"))
@@ -1214,21 +1210,20 @@ class NearestNeighbor(Stat):
             self.frames[light] = 0
             self.points[light] = 0
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
         Other orders should be calculated with the plot/calc submodules.
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
+        colorids = project_settings.colorids
         realvirtany = ["real", "virtual", "any"]
         if exp == "all":
             for light in project_settings.good_light:
@@ -1240,7 +1235,7 @@ class NearestNeighbor(Stat):
                     outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
-                    names = [colorids[k].strid for k in range(len(colorids))]
+                    names = [colorids[k] for k in range(len(colorids))]
                     si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
                     outputfile.write("nearestneighbor_%s_%s" % (light.lower(), realvirtany[rva]))
                     for i in range(len(si)):
@@ -1268,7 +1263,7 @@ class NearestNeighbor(Stat):
                         # write header
                         names = exps[exp]['groups'][group]
                         si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
-                        allnames = [colorids[k].strid for k in range(len(colorids))]
+                        allnames = [colorids[k] for k in range(len(colorids))]
                         outputfile.write("nearestneighbor_%s_%s_group_%s" % (light.lower(), realvirtany[rva], group))
                         for i in range(len(si)):
                             outputfile.write("\t%s" % names[si[i]])
@@ -1327,15 +1322,13 @@ class Neighbor(Stat):
             self.frames[light] = 0
             self.points[light] = 0
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
         Other orders should be calculated with the plot/calc submodules.
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
@@ -1344,6 +1337,7 @@ class Neighbor(Stat):
         TODO: save results on a daily basis
 
         """
+        colorids = project_settings.colorids
         if exp == "all": return
         for light in project_settings.good_light:
             outputfile.write("# neighbor networks of %s barcodes from %d files, %d frames, %d points\n" %
@@ -1358,7 +1352,7 @@ class Neighbor(Stat):
                     # write header
                     names = exps[exp]['groups'][group]
                     si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
-                    allnames = [colorids[k].strid for k in range(len(colorids))]
+                    allnames = [colorids[k] for k in range(len(colorids))]
                     outputfile.write("neighbor_%s_%s_group_%s" % (networknumber, light.lower(), group))
                     for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
@@ -1452,21 +1446,20 @@ class FQObj(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
         Other orders should be calculated with the plot/calc submodules.
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
+        colorids = project_settings.colorids
         # write it
         for light in project_settings.good_light:
             # OR normalize results
@@ -1483,7 +1476,7 @@ class FQObj(Stat):
                     outputfile.write("# Queuing is applicable only with orientation towards %s obj center (+- 90 deg)\n" % obj)
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
-                    names = [colorids[k].strid for k in range(len(colorids))]
+                    names = [colorids[k] for k in range(len(colorids))]
                     si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
                     outputfile.write("fqobj_%s_%s" % (light.lower(), obj))
                     for i in range(len(si)):
@@ -1514,7 +1507,7 @@ class FQObj(Stat):
                         # write header
                         names = exps[exp]['groups'][group]
                         si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
-                        allnames = [colorids[k].strid for k in range(len(colorids))]
+                        allnames = [colorids[k] for k in range(len(colorids))]
                         outputfile.write("fqobj_%s_%s_group_%s" % (light.lower(), obj, group))
                         for i in range(len(si)):
                             outputfile.write("\t%s" % names[si[i]])
@@ -1601,21 +1594,20 @@ class DailyFQObj(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
         Other orders should be calculated with the plot/calc submodules.
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
+        colorids = project_settings.colorids
         def writedata(datatype, data):
             """Helper function."""
             # write header
@@ -1679,7 +1671,7 @@ class DailyFQObj(Stat):
                     # prepare IDs and header
                     names = exps[exp]['groups'][group]
                     si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
-                    allnames = [colorids[k].strid for k in range(len(colorids))]
+                    allnames = [colorids[k] for k in range(len(colorids))]
                     for day in range(maxday + 1):
                         # daily results
                         writedata("dailyfqobj", ornormdata)
@@ -1756,21 +1748,20 @@ class FQFood(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
         Other orders should be calculated with the plot/calc submodules.
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
+        colorids = project_settings.colorids
         # write it
         for light in project_settings.good_light:
             # OR normalize results
@@ -1784,7 +1775,7 @@ class FQFood(Stat):
                 outputfile.write("# Statistic is restricted to real feeding times, no friday\n")
                 outputfile.write("# IDs are ordered alphabetically.\n\n")
                 # write header
-                names = [colorids[k].strid for k in range(len(colorids))]
+                names = [colorids[k] for k in range(len(colorids))]
                 si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
                 outputfile.write("fqfood_%s" % light.lower())
                 for i in range(len(si)):
@@ -1810,7 +1801,7 @@ class FQFood(Stat):
                     # write header
                     names = exps[exp]['groups'][group]
                     si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
-                    allnames = [colorids[k].strid for k in range(len(colorids))]
+                    allnames = [colorids[k] for k in range(len(colorids))]
                     outputfile.write("fqfood_%s_group_%s" % (light.lower(), group))
                     for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
@@ -1872,21 +1863,20 @@ class FQWhileF(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
         Other orders should be calculated with the plot/calc submodules.
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
+        colorids = project_settings.colorids
         def weighted_avg_and_std(values, weights):
             """
             Return the weighted average and standard deviation.
@@ -1913,7 +1903,7 @@ class FQWhileF(Stat):
                     outputfile.write("# In case of food, statistic is restricted to real feeding times, no friday\n")
                     outputfile.write("# IDs are ordered alphabetically.\n\n")
                     # write header
-                    names = [colorids[k].strid for k in range(len(colorids))]
+                    names = [colorids[k] for k in range(len(colorids))]
                     si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
                     outputfile.write("fqwhilef_%s_%s" % (light.lower(), obj))
                     for i in range(len(si)):
@@ -1961,7 +1951,7 @@ class FQWhileF(Stat):
                         # write header
                         names = exps[exp]['groups'][group]
                         si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
-                        allnames = [colorids[k].strid for k in range(len(colorids))]
+                        allnames = [colorids[k] for k in range(len(colorids))]
                         outputfile.write("fqwhilef_%s_%s_group_%s" % (light.lower(), obj, group))
                         for i in range(len(si)):
                             outputfile.write("\t%s" % names[si[i]])
@@ -2057,21 +2047,20 @@ class AA(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
         Other orders should be calculated with the plot/calc submodules.
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
+        colorids = project_settings.colorids
         # write output
         outputfile.write("# AA = <v_i(t)*d_ij(t)>_t, with the following threshold parameters:\n")
         outputfile.write("#   distance_threshold = %g px\n" % self.distance_threshold)
@@ -2089,7 +2078,7 @@ class AA(Stat):
                 outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
                 outputfile.write("# IDs are ordered alphabetically.\n\n")
                 # write header
-                names = [colorids[k].strid for k in range(len(colorids))]
+                names = [colorids[k] for k in range(len(colorids))]
                 si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
                 outputfile.write("aa_%s" % light.lower())
                 for i in range(len(si)):
@@ -2115,7 +2104,7 @@ class AA(Stat):
                     # write header
                     names = exps[exp]['groups'][group]
                     si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
-                    allnames = [colorids[k].strid for k in range(len(colorids))]
+                    allnames = [colorids[k] for k in range(len(colorids))]
                     outputfile.write("aa_%s_group_%s" % (light.lower(), group))
                     for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
@@ -2174,21 +2163,20 @@ class ButtHead(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         String IDs are ordered alphabetically.
         Other orders should be calculated with the plot/calc submodules.
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
+        colorids = project_settings.colorids
         if exp == "all":
             for light in project_settings.good_light:
                 outputfile.write("# butthead distribution of %s barcodes from %d files, %d frames, %d points\n" %
@@ -2199,7 +2187,7 @@ class ButtHead(Stat):
                 outputfile.write("# patek_length = %g px\n" % self.patek_length)
                 outputfile.write("# cos_approacher_threshold = %g\n\n" % self.cos_approacher_threshold)
                 # write header
-                names = [colorids[k].strid for k in range(len(colorids))]
+                names = [colorids[k] for k in range(len(colorids))]
                 si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
                 outputfile.write("butthead_%s" % light.lower())
                 for i in range(len(si)):
@@ -2227,7 +2215,7 @@ class ButtHead(Stat):
                     # write header
                     names = exps[exp]['groups'][group]
                     si = sorted(list(range(len(names))), key=cmp_to_key(lambda x, y: -1 if names[x] < names[y] else 1 if names[x] > names[y] else 0))
-                    allnames = [colorids[k].strid for k in range(len(colorids))]
+                    allnames = [colorids[k] for k in range(len(colorids))]
                     outputfile.write("butthead_%s_group_%s" % (light.lower(), group))
                     for i in range(len(si)):
                         outputfile.write("\t%s" % names[si[i]])
@@ -2340,23 +2328,22 @@ class VelDist(Stat):
             self.frames[light] = 0
             self.points[light] = 0
 
-    def write_results(self, outputfile, colorids, project_settings):
+    def write_results(self, outputfile, project_settings):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
 
         """
+        colorids = project_settings.colorids
         for light in project_settings.good_light:
             outputfile.write("# velocity distribution [pixel/frame] of %s barcodes from %d files, %d frames, %d points\n" %
                     (light.lower(), self.files, self.frames[light], self.points[light]))
             outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
             outputfile.write("# only CHOSEN barcodes are taken into account.\n\n")
             # write header
-            names = [colorids[k].strid for k in range(len(colorids))]
+            names = [colorids[k] for k in range(len(colorids))]
             names.append("all")
             outputfile.write("veldist_%s" % (light.lower()))
             for name in names:
@@ -2411,23 +2398,22 @@ class AccDist(Stat):
             self.frames[light] = 0
             self.points[light] = 0
 
-    def write_results(self, outputfile, colorids, project_settings):
+    def write_results(self, outputfile, project_settings):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
 
         """
+        colorids = project_settings.colorids
         for light in project_settings.good_light:
             outputfile.write("# acceleration distribution [pixel/frame^2] of %s barcodes from %d files, %d frames, %d points\n" %
                     (light.lower(), self.files, self.frames[light], self.points[light]))
             outputfile.write("# filter_for_valid_cage=%s\n" % str(project_settings.filter_for_valid_cage))
             outputfile.write("# only CHOSEN barcodes are taken into account.\n\n")
             # write header
-            names = [colorids[k].strid for k in range(len(colorids))]
+            names = [colorids[k] for k in range(len(colorids))]
             names.append("all")
             outputfile.write("accdist_%s" % (light.lower()))
             for name in names:
@@ -2509,18 +2495,17 @@ class Basic(Stat):
             print("  %s statistic is from %d files and %d frames" % \
                     (light, self.files, self.frames[light]))
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
+        colorids = project_settings.colorids
         outputfile.write("# Basic statistics on video files and errors from %d files\n\n" % self.files)
         if exp != "all":
             dt = exps[exp]['stop'] - exps[exp]['start']
@@ -2628,18 +2613,17 @@ class DistFromWall(Stat):
         """Prints status info about the data to standard output."""
         self._print_status__light()
 
-    def write_results(self, outputfile, colorids, project_settings, exps, exp):
+    def write_results(self, outputfile, project_settings, exps, exp):
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
         :param project_settings: global project settings imported by
                 trajognize.settings.import_trajognize_settings_from_file()
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
 
         """
+        colorids = project_settings.colorids
         def weighted_avg_and_std(values, weights):
             """
             Return the weighted average and standard deviation.
@@ -2663,7 +2647,7 @@ class DistFromWall(Stat):
         for light in project_settings.good_light:
             for group in exps[exp]['groups']:
                 # get sorted names and colorid indices
-                allnames = [colorids[k].strid for k in range(len(colorids))]
+                allnames = [colorids[k] for k in range(len(colorids))]
                 names = sorted(exps[exp]['groups'][group])
                 klist = [allnames.index(name) for name in names]
                 outputfile.write("# daily distance-from-wall distribution of %s barcodes of group %s from %d files, %d frames, %d points\n" %
@@ -2698,7 +2682,7 @@ class DistFromWall(Stat):
 
                         # write the whole distribution for all IDs
                         for k in klist:
-                            name = colorids[k].strid
+                            name = colorids[k]
                             outputfile.write("distfromwall_dist_%s_%s_%s_patek_%s\t%s\n" % \
                                     (light.lower(), mot, mft, name, "\t".join(dayrange)))
                             if mft == "ANY":

@@ -6,7 +6,9 @@ This file is just an example for you to see how to fill the
 
 trajognize.settings.TrajognizeSettingsBase
 
-class with proper values. Descriptions can be found in the base class.
+class with proper values to setup trajognize specifically to your project.
+Detailed help and description about each setting can be found in the base class
+definition in trajognize/settings.py
 
 Good luck!
 """
@@ -19,16 +21,6 @@ from trajognize.settings import AASettings, FindBestTrajectoriesSettings, \
 
 experiments = dict()
 
-experiments['pure_single']={ \
-    'number': 1,
-    'description': """The first part of the ratmaze experiments
-    with only single male and female measurements
-    """,
-    'start': datetime.datetime(2015,8,17,00,00),
-    'stop': datetime.datetime(2015,8,30,23,59),
-    'groups': {},
-}
-
 experiments['group_and_single_male']={ \
     'number': 2,
     'description': """Second phase with group measurements (along with some
@@ -40,17 +32,6 @@ experiments['group_and_single_male']={ \
         'M34': "ORP OBP OPG OPB GOB GOP GBP BOP".split()},
 }
 
-experiments['group_and_single_female']={ \
-    'number': 3,
-    'description': """Second phase with group measurements (along with some
-    more single measurements""",
-    'start': datetime.datetime(2015,9,1,0,0),
-    'stop': datetime.datetime(2015,9,13,23,59),
-    'groups': { \
-        'F12': "ROG ROB RGO RGB RGP ORB OGP GRB".split(),
-        'F34': "ROP RBO RBG RBP RPO RPG RPB ORG".split()},
-}
-
 experiments['learn_male']={ \
     'number': 4,
     'description': """Learning phase with single and group measurements""",
@@ -60,17 +41,6 @@ experiments['learn_male']={ \
         'M12': "ORB OGB OBG GRB GRP GPB BRP BGP".split(),
         'M34': "ORP OBP OPG OPB GOB GOP GBP BOP".split()},
 }
-
-experiments['learn_female']={ \
-    'number': 5,
-    'description': """Learning phase with single and group measurements""",
-    'start': datetime.datetime(2015,9,14,0,0),
-    'stop': datetime.datetime(2015,9,17,23,59),
-    'groups': { \
-        'F12': "ROG ROB RGO RGB RGP ORB OGP GRB".split(),
-        'F34': "ROP RBO RBG RBP RPO RPG RPB ORG".split()},
-}
-
 
 class SettingsForRatMaze(TrajognizeSettingsBase):
     project_name = "PROJECT_MAZE"
@@ -111,7 +81,5 @@ class SettingsForRatMaze(TrajognizeSettingsBase):
         )
 
     max_day = 35
-
-    get_exp_from_colorid_filename = True
 
     experiments = experiments

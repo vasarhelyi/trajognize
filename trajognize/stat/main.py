@@ -50,8 +50,7 @@ def main(argv=[]):
     argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["stats"]+sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["stats"]+sorted(stats.keys())))
     argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output files")
     argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", required=False, help="define barcode input file name (.blobs.barcodes)")
-    argparser.add_argument("-c", "--coloridfile", metavar="FILE", dest="coloridfile", required=False, help="define colorid input file name (.xml)")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", dest="projectfile", required=False, help="define project settings file that contains a single TrajectorySettings class instantiation.")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", dest="projectfile", required=False, help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
     argparser.add_argument("-e", "--entrytimesfile", metavar="FILE", dest="entrytimesfile", help="define entry times input file name (.dat, .txt)")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for .barcodes.stat_*.zip output files")
@@ -89,11 +88,6 @@ def main(argv=[]):
         print("  ERROR: inputfile not specified. Use the '-i' option")
         return
     print("  Using inputfile: '%s'" % options.inputfile)
-    # colorid file
-    if not options.coloridfile:
-        print("  ERROR: coloridfile not specified. Use the '-c' option.")
-        return
-    print("  Using colorid file: '%s'" % options.coloridfile)
     # project settings
     if not options.projectfile:
         print("  ERROR: projectfile not specified. Use the '-p' option.")
@@ -143,12 +137,12 @@ def main(argv=[]):
     phase.end_phase()
 
     # parse colorid file
-    phase.start_phase("Reading colorid file...")
-    colorids = trajognize.parse.parse_colorid_file(options.coloridfile)
+    phase.start_phase("Checking colorids...")
+    colorids = project_settings.colorids
     if not colorids:
-        print("  ERROR parsing colorid file")
+        print("  ERROR parsing colorids")
         return
-    print("  %d colorids read, e.g. first is (%s,%s)" % (len(colorids), colorids[0].strid, colorids[0].symbol))
+    print("  %d colorids read, e.g. first is '%s'" % (len(colorids), colorids[0]))
     phase.end_phase()
 
     # parse entrytimes file
@@ -213,19 +207,8 @@ def main(argv=[]):
         exp = None
         experiment = None
     else:
-        if project_settings.get_exp_from_colorid_filename:
-            # sorry, this is a project-specific ugly hack...
-            tag = os.path.splitext(os.path.split(options.coloridfile)[1])[0].split("_")[-1]
-            tag = "male" if tag.startswith('M') else "female" if tag.startswith('F') else "unisex"
-            for exp in explist:
-                if tag in exp.split("_"):
-                    break
-            else:
-                exp = None
-            print(exp)
-        else:
-            # first one in list is the main one (we always calculate stat with that)
-            exp = explist[0]
+        # first one in list is the main one (we always calculate stat with that)
+        exp = explist[0]
         experiment = exps[exp]
     print("  current experiment is '%s'" % exp)
     phase.end_phase()

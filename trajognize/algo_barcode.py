@@ -63,14 +63,14 @@ def check_barcode_blob_consistency(barcodes, blobs, colorids):
                     if j is None: continue
                     if ki not in blobs[frame][j].barcodeindices:
                         raise ValueError("mismatch on frame %d, blob %d does not contain %s barcode #%d %s" % (
-                            frame, j, colorids[k].strid, i, mfix2str(barcode.mfix)))
+                            frame, j, colorids[k], i, mfix2str(barcode.mfix)))
         # check from blobs
         for j in range(len(blobs[frame])):
             blob = blobs[frame][j]
             for ki in blob.barcodeindices:
                 if j not in barcodes[frame][ki.k][ki.i].blobindices:
                     raise ValueError("mismatch on frame %d, %s barcode #%d %s does not contain blob %d in %s" % (
-                        frame, colorids[ki.k].strid, ki.i, mfix2str(barcode.mfix), j, barcodes[frame][ki.k][ki.i].blobindices))
+                        frame, colorids[ki.k], ki.i, mfix2str(barcode.mfix), j, barcodes[frame][ki.k][ki.i].blobindices))
     print("OK\n")
 
 
@@ -86,7 +86,7 @@ def print_max_barcode_count(barcodes, colorids):
     sum = 0
     for k in range(len(colorids)):
         sum += count[k][0]
-        print(" ", colorids[k].strid, count[k][0], "frame", count[k][1], end=" ")
+        print(" ", colorids[k], count[k][0], "frame", count[k][1], end=" ")
         for barcode in count[k][2]:
             print("xy", int(barcode.centerx), int(barcode.centery), mfix2str(barcode.mfix), end=" ")
         print
@@ -432,7 +432,7 @@ def set_nocluster_property(barcodes, blobs, cluster, MCHIPS):
 
 
 def find_partlyfound_from_tdist(direction, currentframe, tdistlists,
-    color_blobs, barcodes, colorids, project_settings, sdistlists,
+    color_blobs, barcodes, project_settings, sdistlists,
     md_blobs, mdindices):
     """Find partlyfound barcodes based on temporal blob-based closeness.
 
@@ -445,7 +445,6 @@ def find_partlyfound_from_tdist(direction, currentframe, tdistlists,
                    structured like this: [framenum][index]
     barcodes    -- global list of all barcodes (Barcode)
                    structured like this: [framenum][coloridindex][index]
-    colorids    -- global colorid database created by parse_colorid_file()
     project_settings -- global project specific settings
     sdistlists  -- possible chain connections on current frame, created in advance by
                    create_spatial_distlists()
@@ -478,6 +477,7 @@ def find_partlyfound_from_tdist(direction, currentframe, tdistlists,
         inc = -1
     else:
         raise ValueError("unknown direction: {}".format(direction))
+    colorids = project_settings.colorids
     tempbarcodes = [[] for x in range(len(colorids))] # temporarily found new barcodes
     # calculate temporal distances between blobs
     tdistlists[currentframe] = algo_blob.create_temporal_distlists(
@@ -560,7 +560,7 @@ def find_partlyfound_from_tdist(direction, currentframe, tdistlists,
             # so far tempbarcodes contains old barcode position and orientation,
             # we calculate new one now based on actual blob data
             temp = Barcode(0, 0, 0, 0, project_settings.MCHIPS, list(barcode.blobindices))
-            calculate_params(temp, colorids[k].strid, color_blobs[currentframe], project_settings.AVG_INRAT_DIST)
+            calculate_params(temp, colorids[k], color_blobs[currentframe], project_settings.AVG_INRAT_DIST)
             # check if barcode position orientation is consistent, skip if not
             if get_distance(temp, barcode) > project_settings.MAX_PERFRAME_DIST_MD or \
                     get_angle_deg(temp, barcode) > project_settings.MAX_PERFRAME_ANGLE:
@@ -581,10 +581,10 @@ def find_partlyfound_from_tdist(direction, currentframe, tdistlists,
                     barcode = oldbarcode
                     break
             # find missing unused blobs to supplement current tempbarcode (or oldbarcode)
-            count_adjusted += add_missing_unused_blob(barcode, colorids[k].strid,
+            count_adjusted += add_missing_unused_blob(barcode, colorids[k],
                 color_blobs[currentframe], sdistlists, currentframe, project_settings
             )
-            calculate_params(barcode, colorids[k].strid, color_blobs[currentframe], project_settings.AVG_INRAT_DIST)
+            calculate_params(barcode, colorids[k], color_blobs[currentframe], project_settings.AVG_INRAT_DIST)
             if barcode != oldbarcode:
                 barcodes[currentframe][k].append(barcode)
                 i = len(barcodes[currentframe][k]) - 1
@@ -626,7 +626,7 @@ def find_partlyfound_from_tdist(direction, currentframe, tdistlists,
 #         # get colorid candidates
 #         goodcolors = []
 #         for k in range(len(colorids)):
-#             strid = colorids[k].strid
+#             strid = colorids[k]
 #             # skip colorids that cannot contain colors in cluster
 #             skip = False
 #             for ci in colorsincluster:
@@ -674,8 +674,8 @@ def find_partlyfound_from_tdist(direction, currentframe, tdistlists,
 # # TODO: order_blobindices not transformed yet to new blobindices structure,
 # #       how to assign random order blobs to barcode??? Would be easier if
 # #       orientation would be known already...
-# #                order_blobindices(newbarcode, colorids[bestk].strid, color_blobs[currentframe], project_settings)
-# #                calculate_params(newbarcode, colorids[bestk].strid, color_blobs[currentframe], project_settings.AVG_INRAT_DIST)
+# #                order_blobindices(newbarcode, colorids[bestk], color_blobs[currentframe], project_settings)
+# #                calculate_params(newbarcode, colorids[bestk], color_blobs[currentframe], project_settings.AVG_INRAT_DIST)
 # #                barcodes[currentframe][bestk].append(newbarcode)
 # #                algo_blob.update_blob_barcodeindices(newbarcode, bestk, len(barcodes[currentframe][bestk]) - 1, color_blobs[currentframe])
 # #                count += 1
@@ -685,7 +685,7 @@ def find_partlyfound_from_tdist(direction, currentframe, tdistlists,
     return (count, count_adjusted, count_notused)
 
 
-def could_be_sharesblob(a, b, ka, kb, blobs, colorids, project_settings):
+def could_be_sharesblob(a, b, ka, kb, blobs, project_settings):
     """Are two barcodes good candidates for sharesblob?
 
     Keyword arguments:
@@ -694,7 +694,6 @@ def could_be_sharesblob(a, b, ka, kb, blobs, colorids, project_settings):
     ka       -- coloridindex of first barcode
     kb       -- coloridindex of second barcode
     blobs    -- list of all blobs for current frame
-    colorids -- global colorid database created by parse_colorid_file()
     project_settings -- global project-specific settings
 
     Return:
@@ -704,6 +703,7 @@ def could_be_sharesblob(a, b, ka, kb, blobs, colorids, project_settings):
     """
     sharedblobs = []
     positions = []
+    colorids = project_settings.colorids
     if get_distance(a, b) < project_settings.MAX_INRAT_DIST * 2:
         allblobs = set(a.blobindices + b.blobindices)
         allblobs.discard(None)
@@ -716,8 +716,8 @@ def could_be_sharesblob(a, b, ka, kb, blobs, colorids, project_settings):
             blob = blobs[blobi]
             c = project_settings.int2color(blob.color)
             # skip blob if its color is not common in a and b
-            if c not in colorids[ka].strid : continue
-            if c not in colorids[kb].strid : continue
+            if c not in colorids[ka] : continue
+            if c not in colorids[kb] : continue
             # skip blob if there is no room left for not used blobs of that color
             # or if their position is far away from their predicted position
             if blobi in a.blobindices:
@@ -725,7 +725,7 @@ def could_be_sharesblob(a, b, ka, kb, blobs, colorids, project_settings):
                 keep = False
                 mindist = project_settings.MAX_INRAT_DIST
                 for i, bi in enumerate(b.blobindices):
-                    if colorids[kb].strid[i] != c: continue
+                    if colorids[kb][i] != c: continue
                     if bi is None:
                         d = get_distance_at_position(b, i, blob,
                             project_settings.AVG_INRAT_DIST)
@@ -738,7 +738,7 @@ def could_be_sharesblob(a, b, ka, kb, blobs, colorids, project_settings):
                 keep = False
                 mindist = project_settings.MAX_INRAT_DIST
                 for i, ai in enumerate(a.blobindices):
-                    if colorids[kb].strid[i] != c: continue
+                    if colorids[kb][i] != c: continue
                     if ai is None:
                         d = get_distance_at_position(a, i, blob,
                             project_settings.AVG_INRAT_DIST)
@@ -754,7 +754,7 @@ def could_be_sharesblob(a, b, ka, kb, blobs, colorids, project_settings):
     return sharedblobs, positions
 
 
-def set_shared_mfix_flags(barcodes, blobs, colorids, project_settings):
+def set_shared_mfix_flags(barcodes, blobs, project_settings):
     """Set mfix SHARESBLOB and SHARESID flags based on barcode/blob states.
 
     Do not change deleted.
@@ -763,13 +763,13 @@ def set_shared_mfix_flags(barcodes, blobs, colorids, project_settings):
     blobs    -- list of all color blobs (ColorBlob) from the current frame
     barcodes -- list of all barcodes (Barcode) from the current frame,
                 structured like this: [coloridindex][index]
-    colorids -- global colorid database created by parse_colorid_file()
     project_settings -- global project-specific settings
 
     Function does not return a value but modifies mfix properties in
     list-type keyword parameter 'barcodes'.
 
     """
+    colorids = project_settings.colorids
     # set SHARESID property
     for k in range(len(barcodes)):
         #check 'deleted' flags
@@ -808,7 +808,7 @@ def set_shared_mfix_flags(barcodes, blobs, colorids, project_settings):
             a = barcodes[allindices[i].k][allindices[i].i]
             b = barcodes[allindices[j].k][allindices[j].i]
             if could_be_sharesblob(a, b, allindices[i].k, allindices[j].k,
-                    blobs, colorids, project_settings)[0]:
+                    blobs, project_settings)[0]:
                 a.mfix |= MFix.SHARESBLOB
                 b.mfix |= MFix.SHARESBLOB
 
@@ -841,7 +841,7 @@ def remove_close_sharesid(barcodes, blobs, colorids, project_settings, mfix=None
     for k in range(len(barcodes)):
         # skip ones with no sharesid
         if len(barcodes[k]) < 2: continue
-        strid = colorids[k].strid
+        strid = colorids[k]
         # iterate barcodes
         for i in range(len(barcodes[k]) - 1):
             barcode = barcodes[k][i]

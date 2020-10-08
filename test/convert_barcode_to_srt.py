@@ -3,7 +3,7 @@
 """
 This is a small script that converts a barcode file into an srt file.
 
-Usage:  __file__ something.barcodes coloridfile.xml projectsettingsfile.py
+Usage:  __file__ something.barcodes projectsettingsfile.py
 
 Output is saved as 'something.barcodes.srt'
 
@@ -37,25 +37,20 @@ def get_label_color(mfix):
 
 def main(argv=[]):
     """Main entry point."""
-    if len(argv) != 3 or "-h" in argv or "--help" in argv:
+    if len(argv) != 2 or "-h" in argv or "--help" in argv:
         print(__doc__)
         return
     inputfile = argv[0]
-    coloridfile = argv[1]
-    projectfile = argv[2]
+    projectfile = argv[1]
 
     print("\nParsing project settings file...")
     project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
     if project_settings is None:
         return
+    colorids = project_settings.colorids
     print("Project: %s" % project_settings.project_name)
     print("Image size: %gx%g" % project_settings.image_size)
     print("FPS: %g" % project_settings.FPS)
-
-    print("\nParsing colorid file...")
-    colorids = trajognize.parse.parse_colorid_file(coloridfile)
-    if colorids is None:
-        return
 
     print("\nParsing input file '%s'..." % inputfile)
     barcodes = trajognize.parse.parse_barcode_file(inputfile, colorids, lastframe=1000)
@@ -71,7 +66,7 @@ def main(argv=[]):
             for barcode in barcodes[currentframe][i]:
                 msg = trajognize.stat.util.get_subtitle_string(subtitleindex,
                         currentframe/float(project_settings.FPS),
-                        colorids[i].strid,
+                        colorids[i],
                         get_label_color(barcode.mfix),
                         barcode.centerx, barcode.centery,
                         project_settings.image_size.x,

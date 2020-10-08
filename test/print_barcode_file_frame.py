@@ -23,22 +23,24 @@ except ImportError:
 # parse command line arguments
 argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
 argparser.add_argument("-i", "--inputfile", metavar="FILE", required=True, dest="inputfile", help="define barcode input file name (.blobs.barcodes)")
-argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=True, dest="coloridfile", help="define colorid input file name (.xml)")
+argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
 argparser.add_argument("-n", "--framenum", metavar="NUM", dest="framenum", default=0, help="define frame to read")
 options = argparser.parse_args()
 
 # colorid file
-print("  Using colorid file: '%s'" % options.coloridfile)
+print("  Using project file: '%s'" % options.projectfile)
 # inputfile
 print("  Using inputfile: '%s'" % options.inputfile)
 # frame num
 options.framenum = int(options.framenum)
 
-# read coloridfile
-colorids = trajognize.parse.parse_colorid_file(options.coloridfile)
-if colorids is None:
-    print("colorids file bad")
-    sys.exit()
+# read projectfile
+project_settings = trajognize.settings.import_trajognize_settings_from_file(args.projectfile)
+if project_settings is None:
+    print("Could not parse project settings file")
+    sys.exit(1)
+colorids = project_settings.colorids
+print("  Current project is: %s" % project_settings.project_name)
 
 # read barcode file line
 print("Reading frame", options.framenum)
@@ -50,8 +52,8 @@ if not barcodes:
 # print line
 for k in range(len(colorids)):
     if not barcodes[0][k]:
-        print(colorids[k].strid)
+        print(colorids[k])
     for barcode in barcodes[0][k]:
-        print("%s\t%d\t%d\t%d\t%s\t%s" % (colorids[k].strid, int(barcode.centerx),
+        print("%s\t%d\t%d\t%d\t%s\t%s" % (colorids[k], int(barcode.centerx),
                 int(barcode.centery), int(barcode.orientation*180/pi),
                 trajognize.util.mfix2str(barcode.mfix), barcode.blobindices))

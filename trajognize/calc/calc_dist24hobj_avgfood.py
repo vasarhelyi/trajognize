@@ -2,7 +2,7 @@
 an average presence before and during feeding times. It also exports 'alldays'
 results into correlation files.
 
-Usage: calc_dist24hobj_feeding_avg.py projectfile coloridfile inputdir [experiment]
+Usage: calc_dist24hobj_feeding_avg.py projectfile inputdir [experiment]
 
 where inputdir is/are the location where the .zipped python object outputs of
 trajognize.statsum with options "-s dist24hobj" are located
@@ -132,8 +132,7 @@ class AvgDist24hObj():
         """Saves the contents of self to a file (possibly as a summarized stat).
 
         :param outputfile: file object where the results are written
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
+        :param colorids: global colorid database of project_settings
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
         :param substat: name of the virtual subclass statistics (e.g. dist24h.monday)
@@ -144,7 +143,7 @@ class AvgDist24hObj():
         # write results
         for group in exps[exp]['groups']:
             # get sorted names and colorid indices
-            allnames = [colorids[k].strid for k in range(len(colorids))]
+            allnames = [colorids[k] for k in range(len(colorids))]
             names = sorted(exps[exp]['groups'][group])
             klist = [allnames.index(name) for name in names]
             # calculate group sum
@@ -177,8 +176,7 @@ class AvgDist24hObj():
 
         :param statsum_basedir: base directory where statsum results are written
                 according to different statistics
-        :param colorids: global colorid database created by
-                trajognize.parse.parse_colorid_file()
+        :param colorids: global colorid database of project_settings
         :param exps: experiment database created by project_settings
         :param exp: name of the current experiment
         :param corrfiles: name of corr files created already by the script
@@ -187,7 +185,7 @@ class AvgDist24hObj():
         """
         for group in exps[exp]['groups']:
             # get sorted names and colorid indices
-            allnames = [colorids[k].strid for k in range(len(colorids))]
+            allnames = [colorids[k] for k in range(len(colorids))]
             names = sorted(exps[exp]['groups'][group])
             klist = [allnames.index(name) for name in names]
             # initialize corr file
@@ -220,15 +218,14 @@ class AvgDist24hObj():
 
 def main(argv=[]):
     """Main entry point of the script."""
-    if len(argv) < 3:
+    if len(argv) < 2:
         print(__doc__)
         return
     projectfile = argv[0]
-    coloridfile = argv[1]
-    inputdir = argv[2]
+    inputdir = argv[1]
     statsum_basedir = os.path.split(inputdir)[0]
-    if len(argv) == 4:
-        experiment = argv[3]
+    if len(argv) == 3:
+        experiment = argv[2]
     else:
         experiment = '*'
 #    inputfiles = glob.glob(os.path.join(inputdir, "statsum_dist24hobj.*", "stat_dist24hobj.*__exp_%s.zip" % experiment))
@@ -238,7 +235,7 @@ def main(argv=[]):
         print("Could not load project settings.")
         return
     exps = project_settings.experiments
-    colorids = trajognize.parse.parse_colorid_file(coloridfile)
+    colorids = project_settings.colorids
     id_count = len(colorids)
     # create full database of all data
     database = defaultdict(defaultdict)

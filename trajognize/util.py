@@ -207,7 +207,7 @@ class param_at_frame(object):
 def strid2coloridindex(strid, colorids):
     """Get coloridindex of a given color string, return -1 on error."""
     for k in range(len(colorids)):
-        if colorids[k].strid == strid:
+        if colorids[k] == strid:
             return k
     return -1
 

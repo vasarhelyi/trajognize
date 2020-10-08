@@ -43,7 +43,7 @@ def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
     barcodes -- barcodes (Barcode) of the current frame
                 structured like this: [coloridindex][index]
     framenum -- current frame number
-    colorids -- global colorid database created by parse_colorid_file()
+    colorids -- global colorid database
     deleted  -- should we write deleted barcodes as well?
 
     Uses the global variable 'oft' as the file handler.
@@ -63,7 +63,7 @@ def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
     oft.write("%d\t%d" % (framenum, i))
     # write data
     for k in range(len(barcodeindices)):
-        strid = colorids[k].strid
+        strid = colorids[k]
         for ki in barcodeindices[k]:
             barcode = barcodes[ki.k][ki.i]
             oft.write("\t%s\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%d" % (strid, barcode.centerx, barcode.centery, 0, 0, degrees(barcode.orientation), barcode.mfix))
@@ -76,7 +76,7 @@ def barcode_textfile_writeall(barcodes, colorids, deleted=True):
     Keyword arguments:
     barcodes -- global list of all barcodes (Barcode)
                 structured like this: [framenum][coloridindex][index]
-    colorids -- global colorid database created by parse_colorid_file()
+    colorids -- global colorid database
     deleted  -- should we write deleted barcodes as well?
 
     """

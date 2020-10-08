@@ -41,7 +41,7 @@ argparser.add_argument("-nm", "--nomotiondist", dest="nomotiondist", action="sto
 argparser.add_argument("-nh", "--noheatmap", dest="noheatmap", action="store_true", default=False, help="do not calculate heatmaps")
 argparser.add_argument("-cc", "--correctcage", dest="correctcage", action="store_true", default=False, help="correct for cage center dislocations")
 argparser.add_argument("-i", "--inputpath", required=True, dest="inputpath", help="define individual blob input file, or a path that has blob files at [PATH]*/OUT/*.blobs", metavar="PATH")
-argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
+argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
 args = argparser.parse_args()
 
 # project settings

@@ -23,30 +23,29 @@ def list_conflicts(conflicts, colorids):
     conflicts -- list of all conflicts ...[k] = Conflict
     barcodes     -- global list of all barcodes
     blobs        -- global list of all blobs
-    colorids     -- global colorid database created by parse_colorid_file()
+    colorids     -- global colorid database
 
     """
     for k in range(len(colorids)):
-        strid = colorids[k].strid
+        strid = colorids[k]
         for conflict in conflicts[k]:
             print("   ", conflict.ctype, strid, "f%d-%d" % (conflict.firstframe, \
                     algo_trajectory.trajlastframe(conflict)), \
-                    conflict.cwith if conflict.cwith is None else [colorids[x].strid for x in conflict.cwith], \
+                    conflict.cwith if conflict.cwith is None else [colorids[x] for x in conflict.cwith], \
                     TrajState(conflict.state).name)
 
 
-def list_conflicted_trajs(conflicted_trajs, colorids, project_settings,
-    trajectories):
+def list_conflicted_trajs(conflicted_trajs, project_settings, trajectories):
     """List conflicted trajectories.
 
     Keyword arguments:
     conflicted_trajs -- list of trajs that are conflicted ...[k][i] = traj index
-    colorids         -- global colorid database created by parse_colorid_file()
     project_settings -- global project-specific settings
     trajectories     -- global list of all trajectories
 
     """
-    MCHIPS = len(colorids[0].strid)
+    colorids = project_settings.colorids
+    MCHIPS = len(colorids[0])
     si = [] # si stands for 'sorted index'
     for k in range(len(colorids)):
         si += [(k, t) for t in conflicted_trajs[k]]
@@ -55,7 +54,7 @@ def list_conflicted_trajs(conflicted_trajs, colorids, project_settings,
     )
     for (k, t) in si:
         traj = trajectories[k][t]
-        print("   ", colorids[k].strid, "f%d-%d s%d" % (traj.firstframe,
+        print("   ", colorids[k], "f%d-%d s%d" % (traj.firstframe,
                 algo_trajectory.trajlastframe(traj),
                 algo_trajectory.traj_score(traj, MCHIPS,
                 project_settings.traj_score_method)), \
@@ -73,7 +72,7 @@ def get_gap_conflicts(barcodes, colorids):
 
     Keyword arguments:
     barcodes     -- global list of all barcodes
-    colorids     -- global colorid database created by parse_colorid_file()
+    colorids     -- global colorid database
 
     """
     conflicts = [[] for k in range(len(colorids))]
@@ -94,7 +93,7 @@ def get_gap_conflicts(barcodes, colorids):
     return conflicts
 
 
-def get_overlap_conflicts(barcodes, blobs, colorids, project_settings):
+def get_overlap_conflicts(barcodes, blobs, project_settings):
     """Return all overlap conflicts, i.e. when two barcodes fully overlap.
 
     MFix.SHAREDBLOB should be assigned to all such cases, even though
@@ -104,10 +103,10 @@ def get_overlap_conflicts(barcodes, blobs, colorids, project_settings):
     Keyword arguments:
     barcodes     -- global list of all barcodes
     blobs        -- global list of all blobs
-    colorids     -- global colorid database created by parse_colorid_file()
     project_settings -- global project-specific settings
 
     """
+    colorids = project_settings.colorids
     conflicts = [[] for k in range(len(colorids))]
     for frame in range(len(barcodes)):
         chosenindices = algo_barcode.get_chosen_barcode_indices(barcodes[frame])
@@ -130,14 +129,13 @@ def get_overlap_conflicts(barcodes, blobs, colorids, project_settings):
                     ii = chosenindices[kk]
                     chosenx = barcodes[frame][kk][ii]
                     if (chosenx.mfix & MFix.SHARESBLOB) and algo_barcode.could_be_sharesblob(
-                            chosen, chosenx, k, kk, blobs[frame], colorids, project_settings)[0]:
+                            chosen, chosenx, k, kk, blobs[frame], project_settings)[0]:
                         conflicts[k][-1].cwith.add(kk)
 
     return conflicts
 
 
-def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids,
-    project_settings):
+def resolve_overlap_conflicts(conflicts, barcodes, blobs, project_settings):
     """Try to solve overlap conflicts by the following:
 
     1. find not used blobs around with same color as conflicted, and try to
@@ -148,13 +146,13 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids,
     conflicts    -- list of all overlap conflicts
     barcodes     -- global list of all barcodes
     blobs        -- global list of all blobs
-    colorids     -- global colorid database created by parse_colorid_file()
     project_settings -- global project-specific settings
 
     """
     resolved = 0
+    colorids = project_settings.colorids
     for k in range(len(colorids)):
-        strid = colorids[k].strid
+        strid = colorids[k]
         for conflict in conflicts[k]:
             if conflict.state == TrajState.DELETED: continue
             frame = conflict.firstframe - 1
@@ -176,7 +174,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids,
                     bwith = barcodes[frame][kk][ii]
                     if not (bwith.mfix & MFix.SHARESBLOB): continue
                     sharedblobs, sharedpositions = algo_barcode.could_be_sharesblob(
-                            barcode, bwith, k, kk, blobs[frame], colorids, project_settings)
+                            barcode, bwith, k, kk, blobs[frame], project_settings)
                     if not sharedblobs: continue
                     allsharedblobs += sharedblobs
                     # no more check, try to resolve conflict
@@ -262,7 +260,7 @@ def resolve_overlap_conflicts(conflicts, barcodes, blobs, colorids,
     return resolved
 
 
-def get_nub_conflicts(trajectories, barcodes, blobs, colorids, project_settings):
+def get_nub_conflicts(trajectories, barcodes, blobs, project_settings):
     """Return all not-used-barcode conflicts.
 
     Check on traj level to separate more possible conflicts of same color,
@@ -272,10 +270,10 @@ def get_nub_conflicts(trajectories, barcodes, blobs, colorids, project_settings)
     trajectories -- global list of all trajectories
     barcodes     -- global list of all barcodes
     blobs        -- global list of all blobs
-    colorids     -- global colorid database created by parse_colorid_file()
     project_settings -- global project-specific settings
 
     """
+    colorids = project_settings.colorids
     conflicts = [[] for k in range(len(colorids))]
     conflicted_trajs = [set() for k in range(len(colorids))]
     for k in range(len(colorids)):
@@ -300,7 +298,7 @@ def get_nub_conflicts(trajectories, barcodes, blobs, colorids, project_settings)
                     if ii is None: continue
                     if algo_barcode.could_be_sharesblob(
                             barcode, barcodes[frame][kk][ii],
-                            k, kk, blobs[frame], colorids, project_settings):
+                            k, kk, blobs[frame], project_settings):
                         skip = True
                         break
                 if skip: continue
@@ -316,7 +314,7 @@ def get_nub_conflicts(trajectories, barcodes, blobs, colorids, project_settings)
 
 
 def create_conflict_database_and_try_resolve(trajectories, barcodes, blobs,
-    colorids, project_settings):
+    project_settings):
     """List and store barcodes and trajs that are in conflicted state.
 
     Conflicts are the following:
@@ -341,10 +339,11 @@ def create_conflict_database_and_try_resolve(trajectories, barcodes, blobs,
     trajsonframe -- global list of trajectory indices per frame per coloridindex
     barcodes     -- global list of all barcodes
     blobs        -- global list of all blobs
-    colorids     -- global colorid database created by parse_colorid_file()
     project_settings -- global project-specific settings
 
     """
+
+    colorids = project_settings.colorids
 
     print("  Get total number of chosen barcodes...")
     numchosen = 0
@@ -363,18 +362,18 @@ def create_conflict_database_and_try_resolve(trajectories, barcodes, blobs,
     list_conflicts(gap_conflicts, colorids)
 
     print("  Searching for all overlap conflicts...")
-    overlap_conflicts = get_overlap_conflicts(barcodes, blobs, colorids, project_settings)
+    overlap_conflicts = get_overlap_conflicts(barcodes, blobs, project_settings)
     num = sum(sum(len(x.barcodeindices) for x in confsamecolor) for confsamecolor in overlap_conflicts)
     print("    found %d overlap conflicted barcodes (%1.2f%% of all chosen), trying to resolve them..." % (num, 100.0 * num / numchosen))
-    resolved = resolve_overlap_conflicts(overlap_conflicts, barcodes, blobs, colorids, project_settings)
+    resolved = resolve_overlap_conflicts(overlap_conflicts, barcodes, blobs, project_settings)
     print("   ", resolved, "overlap conflicts resolved")
     list_conflicts(overlap_conflicts, colorids)
 
     print("  Searching for all not-used-barcode conflicts...")
-    (nub_conflicts, nub_conflicted_trajs) = get_nub_conflicts(trajectories, barcodes, blobs, colorids, project_settings)
+    (nub_conflicts, nub_conflicted_trajs) = get_nub_conflicts(trajectories, barcodes, blobs, project_settings)
     num = sum(sum(len(x.barcodeindices) for x in confsamecolor) for confsamecolor in nub_conflicts)
     print("    found %d nub conflicted barcodes (%1.2f%% of all chosen)" % (num, 100.0 * num / numchosen))
 #    list_conflicts(nub_conflicts, colorids)
-    list_conflicted_trajs(nub_conflicted_trajs, colorids, project_settings, trajectories)
+    list_conflicted_trajs(nub_conflicted_trajs, project_settings, trajectories)
 
 

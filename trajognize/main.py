@@ -61,8 +61,7 @@ def main(argv=[]):
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__)
     argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output file")
     argparser.add_argument("-i", "--inputfile", metavar="FILE", required=True, dest="inputfile", help="define blob input file name (.blobs)")
-    argparser.add_argument("-c", "--coloridfile", metavar="FILE", required=True, dest="coloridfile", help="define colorid input file name (.xml)")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
     argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
     argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for .barcodes output file")
     argparser.add_argument("-n", "--framenum", metavar="NUM", dest="framenum", type=int, help="define max frames to read (used for debug reasons)")
@@ -83,8 +82,6 @@ def main(argv=[]):
     phase.start_phase("Checking command line arguments...")
     # inputfile
     print("  Using inputfile: '%s'" % options.inputfile)
-    # colorid file
-    print("  Using colorid file: '%s'" % options.coloridfile)
     # project settings
     print("  Using project settings file: '%s'" % options.projectfile)
     # output path
@@ -126,12 +123,14 @@ def main(argv=[]):
         phase.end_phase()
 
         # parse colorid file
-        phase.start_phase("Reading colorid file...")
-        v.colorids = parse.parse_colorid_file(options.coloridfile)
-        if v.colorids is None: return
-        print("  %d colorids read, e.g. first is (%s,%s)" % (len(v.colorids), v.colorids[0].strid, v.colorids[0].symbol))
-        if len(v.colorids[0].strid) != v.project_settings.MCHIPS:
-            print("  ERROR: colorids consist of %d colors, but MCHIPS is %d" % (len(v.colorids[0].strid), v.project_settings.MCHIPS))
+        phase.start_phase("Checking colorids...")
+        v.colorids = v.project_settings.colorids # note that this is added for compatibility with older code only
+        if not v.colorids:
+            print("  ERROR: no colorids defined.")
+            return
+        print("  %d colorids read, e.g. first is '%s'" % (len(v.colorids), v.colorids[0]))
+        if len(v.colorids[0]) != v.project_settings.MCHIPS:
+            print("  ERROR: colorids consist of %d colors, but MCHIPS is %d" % (len(v.colorids[0]), v.project_settings.MCHIPS))
             return
         phase.end_phase()
 
@@ -216,15 +215,15 @@ def main(argv=[]):
         for currentframe in range(framecount):
             # find colorid chains
             chainlists = algo_blob.find_chains_in_sdistlists(
-                    v.color_blobs[currentframe], v.sdistlists[currentframe],
-                    v.colorids, v.project_settings)
+                v.color_blobs[currentframe], v.sdistlists[currentframe],
+                v.project_settings)
             # store full IDs
             for k in range(len(v.colorids)):
                 if not chainlists[k]: continue
                 for chain in chainlists[k]:
                     # append to blob list
                     barcode = Barcode(0, 0, 0, MFix.FULLFOUND, v.project_settings.MCHIPS, chain)
-                    algo_barcode.calculate_params(barcode,  v.colorids[k].strid,
+                    algo_barcode.calculate_params(barcode,  v.colorids[k],
                         v.color_blobs[currentframe], v.project_settings.AVG_INRAT_DIST
                     )
                     v.barcodes[currentframe][k].append(barcode)
@@ -304,7 +303,7 @@ def main(argv=[]):
                 # main algo is in algo.py, all function params are lists so they are modified in the call
                 (a, b, c) = algo_barcode.find_partlyfound_from_tdist(
                         'forward', currentframe, v.tdistlists, v.color_blobs,
-                        v.barcodes, v.colorids, v.project_settings,
+                        v.barcodes, v.project_settings,
                         v.sdistlists[currentframe], v.md_blobs, v.mdindices)
                 count += a
                 count_adjusted += b
@@ -343,7 +342,7 @@ def main(argv=[]):
                 # main algo is in algo.py, all function params are lists so they are modified in the call
                 (a, b, c) = algo_barcode.find_partlyfound_from_tdist(
                         'backward', currentframe, v.tdistlists, v.color_blobs,
-                        v.barcodes, v.colorids, v.project_settings,
+                        v.barcodes, v.project_settings,
                         v.sdistlists[currentframe], v.md_blobs, v.mdindices)
                 count += a
                 count_adjusted += b
@@ -404,7 +403,7 @@ def main(argv=[]):
         for currentframe in range(framecount):
             # set mfix flags temporarily (we might use this info later
             algo_barcode.set_shared_mfix_flags(v.barcodes[currentframe],
-                    v.color_blobs[currentframe], v.colorids, v.project_settings)
+                    v.color_blobs[currentframe], v.project_settings)
             # print status
             #phase.check_and_print_phase_status('backward', currentframe, framecount)
         phase.end_phase()
@@ -423,9 +422,8 @@ def main(argv=[]):
                 # create trajectory database
                 phase.start_phase("Creating trajectory database...")
                 for currentframe in range(framecount):
-                    algo_trajectory.initialize_trajectories(
-                        v.trajectories, v.trajsonframe, v.barcodes,
-                        v.color_blobs, currentframe, v.colorids,
+                    algo_trajectory.initialize_trajectories(v.trajectories,
+                        v.trajsonframe, v.barcodes, v.color_blobs, currentframe,
                         v.project_settings, v.md_blobs, v.mdindices
                     )
                     # write results to output text file
@@ -459,7 +457,7 @@ def main(argv=[]):
                 # sort and select best trajectories
                 phase.start_phase("Sort trajectories, choose and connect best, delete overlapping bad ones...")
                 algo_trajectory.find_best_trajectories(
-                        v.trajectories, v.trajsonframe, v.colorids, v.barcodes,
+                        v.trajectories, v.trajsonframe, v.barcodes,
                         v.color_blobs, v.project_settings)
                 phase.end_phase()
             elif options.debugload == 9:
@@ -485,7 +483,7 @@ def main(argv=[]):
                 phase.start_phase("Finalize trajectories...")
                 algo_trajectory.finalize_trajectories(
                         v.trajectories, v.trajsonframe, v.barcodes,
-                        v.color_blobs, v.colorids, v.project_settings)
+                        v.color_blobs, v.project_settings)
                 phase.end_phase()
             elif options.debugload == 10:
                 phase.start_phase("Reading previously saved debug environment at level %d..." % options.debugload)
@@ -505,7 +503,7 @@ def main(argv=[]):
             for currentframe in range(framecount):
                 # set mfix flags temporarily (we might use this info later
                 algo_barcode.set_shared_mfix_flags(v.barcodes[currentframe],
-                        v.color_blobs[currentframe], v.colorids, v.project_settings)
+                        v.color_blobs[currentframe], v.project_settings)
                 # print status
                 #phase.check_and_print_phase_status('backward', currentframe, framecount)
             phase.end_phase()
@@ -517,7 +515,7 @@ def main(argv=[]):
             # get conflicts
             phase.start_phase("Check, list and (solve) remaining conflicts...")
             algo_conflict.create_conflict_database_and_try_resolve(v.trajectories,
-                v.barcodes, v.color_blobs, v.colorids, v.project_settings
+                v.barcodes, v.color_blobs, v.project_settings
             )
             phase.end_phase()
 

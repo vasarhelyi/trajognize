@@ -107,7 +107,7 @@ def main(argv=[]):
     # parse command line arguments
     argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
     argparser.add_argument("-i", "--inputpath", metavar="PATH", required=True, dest="inputpath", default='', help="define input path with statsum output")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajectorySettings class instantiation.")
+    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
     argparser.add_argument("-v", "--verboseonly", dest="verbose_only", action="store_true", default=False, help="Do not create real symlinks, only print output.")
     argparser.add_argument("-m", "--maxsymlinks", metavar="num", dest="max_symlinks", type=int, default=100, help="Maximum number of symlinks to create.")
     # filters

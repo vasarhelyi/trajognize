@@ -7,7 +7,7 @@ import datetime
 import xml.dom.minidom
 from math import radians, sqrt
 
-from .init import ColorBlob, ColorBlobE, MDBlob, RatBlob, ColorID, Barcode
+from .init import ColorBlob, ColorBlobE, MDBlob, RatBlob, Barcode
 from .util import exit, strid2coloridindex
 
 
@@ -85,39 +85,6 @@ def parse_entry_times(inputfile):
         else:
             entrytimes[key].append(value)
     return entrytimes
-
-
-def parse_colorid_file(inputfile):
-    """Parse a full .xml file containing patek colorids and return database.
-
-    Keyword arguments:
-    inputfile -- any *.xml with lines like this:
-                 <chip id="RGB" symbol="13" />
-
-    Return value:
-    tuple containing used colorids as ColorID elements
-
-    """
-    try:
-        dom = xml.dom.minidom.parse(inputfile)
-    except IOError:
-        print("ERROR: could not open colorid file.")
-        return None
-    colorids = []
-    tempid = ColorID('', '')
-    for node in dom.getElementsByTagName('chip'):
-        tempid = None
-        tempsymbol = None
-        for (name, value) in node.attributes.items():
-            if name == 'id':
-                tempid = value
-            if name == 'symbol':
-                tempsymbol = int(value)
-        if tempid is None or tempsymbol is None:
-            exit('error in .xml file', 1)
-        colorids.append(ColorID(tempid, tempsymbol))
-
-    return colorids
 
 
 def parse_blob_file(inputfile, lastframe=None):
@@ -281,7 +248,7 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
 
     Keyword arguments:
     inputfile -- any *.blobs.barcodes file created by trajognize
-    colorids  -- global colorid database created by parse_colorid_file()
+    colorids  -- global colorid database
     firstframe -- debug option not to parse wht whole file, only the end
     lastframe -- debug option not to parse the whole file, only the beginning
 
@@ -290,7 +257,7 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
         barcodes[framenum][coloridindex][index] is a Barcode object
 
     """
-    MCHIPS = len(colorids[0].strid)
+    MCHIPS = len(colorids[0])
     # get number of frames quickly
     try:
         i = int(deque(open(inputfile), 1)[0].split(None, 1)[0])

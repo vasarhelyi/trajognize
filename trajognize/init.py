@@ -69,7 +69,6 @@ MDBlob = namedtuple('MDBlob','centerx centery axisA axisB orientation')
 RatBlob = namedtuple('RatBlob','centerx centery axisA axisB orientation')
 
 # named tuples for color codes and other useful things
-ColorID = namedtuple('ColorID','strid symbol')
 BarcodeIndex = namedtuple('BarcodeIndex','k i') # k = coloridindex, i = second (final) index
 
 
@@ -84,8 +83,9 @@ class Variables:
 
     def __init__(self):
         """Empty initialization."""
-        #: global colorid database created by parse_colorid_file()
-        #: colorids[coloridindex] is a 'ColorID' object
+        #: global colorid database as part of project_settings. This remaind
+        #: here separately only for compatibility with older code...
+        #: colorids[coloridindex] is a string with color capitals such as 'RGB'
         self.colorids = 0
         #: global project settings created by
         #: import_trajognize_settings_from_file()
