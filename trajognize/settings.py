@@ -467,8 +467,12 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
     def get_datetime_from_filename(self, filename) -> datetime:
         """Return datetime object parsed from input video file names.
 
-        It is useful only if you have multiple input files.
-        If you do not want to use time, just return some const datetime object.
+        If you have multiple input files, this function enables you to associate
+        each input file with a given date and thus a given experiment, to be
+        able to create experiment-specific statistics automatically.
+
+        If you do not want to use multiple experiments or time-dependent
+        analysis, just return some const datetime object that does not hurt.
 
         Parameters:
             filename(Path): input file name that contains date and time, e.g. using
