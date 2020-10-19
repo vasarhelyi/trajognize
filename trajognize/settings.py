@@ -475,8 +475,8 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         analysis, just return some const datetime object that does not hurt.
 
         Parameters:
-            filename(Path): input file name that contains date and time, e.g. using
-                format YYYY-MM-DD_HH-MM-SS.SSSSSS
+            filename(Path): input file name that contains date and time, e.g.
+                using format YYYY-MM-DD_HH-MM-SS.SSSSSS
 
         Return:
             datetime object parsed from the file, corresponding to video start

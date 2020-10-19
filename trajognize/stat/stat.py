@@ -892,7 +892,7 @@ def calculate_dailyfqobj(barcodes, light_log, cage_log, entrytimes, starttime,
         project_settings.object_types, project_settings.max_day, len(colorids)
     )
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
-            colorids, project_settings, experiment, dailyfqobj)
+            project_settings, experiment, dailyfqobj)
     return dailyfqobj
 
 
@@ -923,7 +923,7 @@ def calculate_fqfood(barcodes, light_log, cage_log, entrytimes, starttime,
     colorids = project_settings.colorids
     fqfood = init.FQFood(project_settings.good_light, len(colorids))
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
-            colorids, project_settings, experiment, None, fqfood)
+            project_settings, experiment, None, fqfood)
     return fqfood
 
 
@@ -956,7 +956,7 @@ def calculate_fqwhilef(barcodes, light_log, cage_log, entrytimes, starttime,
         project_settings.object_types, len(colorids)
     )
     calculate_fqobj(barcodes, light_log, cage_log, entrytimes, starttime,
-            colorids, project_settings, experiment, None, None, fqwhilef)
+            project_settings, experiment, None, None, fqwhilef)
     return fqwhilef
 
 
@@ -1186,7 +1186,7 @@ def calculate_aamap(barcodes, light_log, cage_log, entrytimes, starttime,
     colorids = project_settings.colorids
     aamap = init.AAMap(project_settings.good_light, project_settings.image_size)
     calculate_aa(barcodes, light_log, cage_log, entrytimes, starttime,
-        colorids, project_settings, experiment, subtitlefile, aamap)
+        project_settings, experiment, subtitlefile, aamap)
     return aamap
 
 
