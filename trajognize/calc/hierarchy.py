@@ -34,9 +34,9 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
     """
     n = len(W)
     if isinstance(W, dict):
-        keys = list(W) # keys of input data dict
+        keys = list(W.keys()) # keys of input data dict
     elif isinstance(W, list):
-        keys = range(n) # indices in the input data list matrix
+        keys = list(range(n)) # indices in the input data list matrix
     else:
         raise NotImplementedError("unhandled type of object W")
 
@@ -185,7 +185,7 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
     # http://bazaar.launchpad.net/~igraph/igraph/0.6-main/view/head:/src/feedback_arc_set.c#L377
 
     # create ordering in changed format (from [ID] = order to [order] = ID)
-    tmp = range(len(ordering))
+    tmp = list(range(len(ordering)))
     for j in ordering:
         tmp[ordering[j]] = j
 
@@ -211,13 +211,13 @@ def dominance_transitivity(W, idorder=None, max_noedge_value=0):
     lower = 0
     if idorder is None:
         if isinstance(W, dict):
-            idorder = list(W) # TODO: this case is not defined well!!!
+            idorder = list(W.keys()) # TODO: this case is not defined well!!!
         elif isinstance(W, list):
-            idorder = range(n)
+            idorder = list(range(n))
         else:
             raise NotImplementedError("unhandled type of object W")
-    for j in range(0, n-1): # from
-        for k in range(j+1, n): # to
+    for j in range(0, n - 1): # from
+        for k in range(j + 1, n): # to
             if W[idorder[j]][idorder[k]] > max_noedge_value:
                 upper += W[idorder[j]][idorder[k]]
             if W[idorder[k]][idorder[j]] > max_noedge_value:
@@ -259,9 +259,9 @@ def decompose_CD(W, idorder=None, s_index_power = 1):
     n = len(W)
     if idorder is None:
         if isinstance(W, dict):
-            idorder = list(W) # TODO: this case is not defined well!!!
+            idorder = list(W.keys()) # TODO: this case is not defined well!!!
         elif isinstance(W, list):
-            idorder = range(n)
+            idorder = list(range(n))
         else:
             raise NotImplementedError("unhandled type of object W")
 
@@ -326,9 +326,9 @@ def BBS_scale_score(W):
     """
 
     if isinstance(W, dict):
-        idorder = list(W)
+        idorder = list(W.keys())
     elif isinstance(W, list):
-        idorder = range(len(W))
+        idorder = list(range(len(W)))
     else:
         raise NotImplementedError("unhandled type of object W")
 
@@ -437,9 +437,9 @@ def deVries_modified_Davids_score(W, mode=4):
     """
 
     if isinstance(W, dict):
-        idorder = list(W)
+        idorder = list(W.keys())
     elif isinstance(W, list):
-        idorder = range(len(W))
+        idorder = list(range(len(W)))
     else:
         raise NotImplementedError("unhandled type of object W")
 
@@ -497,11 +497,11 @@ def deVries_modified_Davids_score(W, mode=4):
         if DS[i] > maxDS: maxDS = DS[i]
     for i in idorder:
         if mode in [2,3]:
-            normDS[i] = (DS[i] + n*(n-1)/2 - nans)/n
+            normDS[i] = (DS[i] + n * (n - 1) / 2 - nans) / n
         elif mode in [4]:
             if maxDS != minDS:
                 # this will get values in the range of 0-n at all times
-                normDS[i] = (DS[i] - minDS)/(maxDS-minDS) * (n-1)
+                normDS[i] = (DS[i] - minDS) / (maxDS - minDS) * (n - 1)
             else:
                 normDS[i] = 0
 
@@ -529,9 +529,9 @@ def Lindquist_dominance_index(W):
     """
 
     if isinstance(W, dict):
-        idorder = list(W)
+        idorder = list(W.keys())
     elif isinstance(W, list):
-        idorder = range(len(W))
+        idorder = list(range(len(W)))
     else:
         raise NotImplementedError("unhandled type of object W")
 
@@ -574,9 +574,9 @@ def row_sum(W):
     """
 
     if isinstance(W, dict):
-        idorder = list(W)
+        idorder = list(W.keys())
     elif isinstance(W, list):
-        idorder = range(len(W))
+        idorder = list(range(len(W)))
     else:
         raise NotImplementedError("unhandled type of object W")
 
@@ -608,9 +608,9 @@ def win_above_average(W):
     """
 
     if isinstance(W, dict):
-        idorder = list(W)
+        idorder = list(W.leys())
     elif isinstance(W, list):
-        idorder = range(len(W))
+        idorder = list(range(len(W)))
     else:
         raise NotImplementedError("unhandled type of object W")
 
@@ -652,9 +652,9 @@ def lose_above_average(W):
     """
 
     if isinstance(W, dict):
-        idorder = list(W)
+        idorder = list(W.keys())
     elif isinstance(W, list):
-        idorder = range(len(W))
+        idorder = list(range(len(W)))
     else:
         raise NotImplementedError("unhandled type of object W")
 
