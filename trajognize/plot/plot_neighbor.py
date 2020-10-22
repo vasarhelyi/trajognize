@@ -13,7 +13,7 @@ Script calls another scripts for the network type output:
 
 """
 
-import os, subprocess, sys, glob, numpy
+import os, subprocess, sys, glob, numpy, re
 
 try:
     import trajognize.parse

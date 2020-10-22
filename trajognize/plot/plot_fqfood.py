@@ -15,7 +15,7 @@ Script calls three other scripts:
 
 """
 
-import os, subprocess, sys, glob
+import os, subprocess, sys, glob, re
 
 try:
     import trajognize.parse
@@ -90,7 +90,7 @@ def main(argv=[]):
             mmparams = ["-i", orderedfile, "-n", str(index), "-o", outdir]
             # add extra parameters to plot
             # TODO: add axis labels, etc.
-            i = index/3 # F, C, D
+            i = index // 3 # F, C, D
             # symmetry, transitivity
             if name.endswith("_D") and name.startswith(params[i]['name']):
                 mmparams += ["-l", "Dominance transitivity: %1.2f" % params[i]['t_index']]

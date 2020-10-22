@@ -14,7 +14,7 @@ experiment, group, light and object.
 
 """
 
-import os, subprocess, sys, glob, numpy
+import os, subprocess, sys, glob, numpy, re
 
 # relative imports
 import plot
@@ -170,7 +170,7 @@ def main(argv=[]):
             # get categories
             name = alldata[index][0][0]
             (datatype, light, object, group, day) = get_categories_from_name(name)
-            i = index/3 # F, C, D
+            i = index // 3 # F, C, D
             # symmetry, transitivity
             if name.startswith(datatype) and name.endswith("_F"):
                 # calculate dominance indices

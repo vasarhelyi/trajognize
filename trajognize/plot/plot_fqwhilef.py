@@ -11,7 +11,7 @@ experiment, group, light and object.
 
 """
 
-import os, subprocess, sys, glob
+import os, subprocess, sys, glob, re
 
 try:
     import trajognize.parse

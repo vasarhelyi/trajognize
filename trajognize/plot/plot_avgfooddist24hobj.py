@@ -12,7 +12,7 @@ experiment and real/virt state.
 
 """
 
-import os, subprocess, sys, glob
+import os, subprocess, sys, glob, re
 
 # relative imports
 import plot
