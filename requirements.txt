@@ -1,3 +1,5 @@
 numpy
 spgm
 psutil
+python-igraph
+cairocffi
