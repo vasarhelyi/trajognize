@@ -22,6 +22,8 @@ def create_spatial_distlists(blobs, MAX_INRAT_DIST):
 
     """
     n = len(blobs)
+    if not n:
+        return []
 
     distmatrix = distance_matrix(numpy.array([[b.centerx, b.centery] for b in blobs]))
     a = [numpy.where(distmatrix[i] <= MAX_INRAT_DIST)[0] for i in range(n)]
@@ -57,6 +59,10 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs,
     """
     n = len(blobs)
     m = len(prevblobs)
+    if not n:
+        return []
+    if not m:
+        return [[] for i in range(n)]
     # include color in third coordinate to be 0 if match and too large if not
     pn = numpy.array([[b.centerx, b.centery, project_settings.MAX_PERFRAME_DIST_MD * b.color] for b in blobs])
     pm = numpy.array([[b.centerx, b.centery, project_settings.MAX_PERFRAME_DIST_MD * b.color] for b in prevblobs])
