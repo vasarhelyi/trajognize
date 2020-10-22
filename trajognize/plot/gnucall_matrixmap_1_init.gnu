@@ -1,28 +1,28 @@
-# call parameter 0: index in the sum file to use
-# call parameter 1: output file
+# call parameter ARG1: index in the sum file to use
+# call parameter ARG2: output file
 
 # input variables: inputfile, colsumfile, inputfilesum, nID
 # output variables: sumxmax, sumymax
 
-reset 
+reset
 
 # general settings
-set term png size 640,640 font "arial,12" 
+set term png size 640,640 font "arial,12"
 set encoding utf8
 #set data missing 'nan'
 
 # get max values of sums
 set table colsumfile
-splot inputfilesum index $0 matrix every ::1:nID+1:nID:nID+1
+splot inputfilesum index ARG1 matrix every ::1:nID+1:nID:nID+1
 unset table
 set out "/dev/null"
-plot inputfilesum index $0 u (column(nID+2)):(column(0)-0.5) every ::::nID
+plot inputfilesum index ARG1 u (column(nID+2)):(column(0)-0.5) every ::::nID
 sumxmax = GPVAL_X_MAX
 plot colsumfile u 1:3
-sumymax = GPVAL_Y_MAX 
+sumymax = GPVAL_Y_MAX
 
 # set output with multiplot
-set out $1
+set out ARG2
 set multiplot
 
 ################################################################################
@@ -45,9 +45,9 @@ set size ratio -1 1.15,1.15
 #set origin -0.08,-0.05
 # tics
 set ytics scale 0 offset 1,0
-set xtics scale 0 rotate by 90 offset 0,-0.5  
-set for [i=1:nID] ytics (ID(i) i-0.5) 
-set for [i=1:nID] xtics (ID(i) i-0.5) 
+set xtics scale 0 rotate by 90 offset 0,-0.5
+set for [i=1:nID] ytics (ID(i) i-0.5)
+set for [i=1:nID] xtics (ID(i) i-0.5)
 unset key
 # set labels
 set ylabel "ID (dominant)" offset -0.5,0
