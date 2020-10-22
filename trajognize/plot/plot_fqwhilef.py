@@ -24,9 +24,10 @@ except ImportError:
     import trajognize.calc.reorder_matrixfile_eades
     import trajognize.corr.util
 
-from . import plot
-from . import plot_matrixmap
-from . import spgm
+# relative imports
+import plot
+import plot_matrixmap
+import spgm
 
 
 def get_categories_from_name(name):

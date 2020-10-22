@@ -2,8 +2,9 @@
 
 import os, subprocess, sys, glob, argparse
 
-from . import plot
-from . import spgm
+# relative imports
+import plot
+import spgm
 
 try:
     import trajognize.parse

@@ -4,8 +4,9 @@ based layout of Enys."""
 
 import os, sys, glob, argparse, igraph, numpy
 
-from . import plot
-from . import spgm
+# relative imports
+import plot
+import spgm
 
 try:
     import trajognize.parse

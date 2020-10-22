@@ -11,8 +11,9 @@ and groups.
 
 import os, subprocess, sys, glob, re, numpy
 
-from . import plot
-from . import spgm
+# relative imports
+import plot
+import spgm
 
 try:
     import trajognize.stat.init

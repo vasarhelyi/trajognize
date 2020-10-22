@@ -24,9 +24,10 @@ except ImportError:
     import trajognize.parse
     import trajognize.corr.util
 
-from . import plot
-from . import plot_matrixmap
-from . import spgm
+# relative imports
+import plot
+import plot_matrixmap
+import spgm
 
 
 GNUPLOT_TEMPLATE = """#!/usr/bin/gnuplot

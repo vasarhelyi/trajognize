@@ -17,8 +17,9 @@ selected for a given output directory in one run.
 
 import os, subprocess, sys, glob, re
 
-from . import plot
-from . import spgm
+# relative imports
+import plot
+import spgm
 
 try:
     import trajognize.stat.init

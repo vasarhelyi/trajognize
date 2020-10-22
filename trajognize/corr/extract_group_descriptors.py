@@ -6,17 +6,15 @@ This script collects good params for main correlation analysis.
 import os, sys, numpy
 from collections import defaultdict
 
-# imports from this module
-from . import util
-from .good_params import good_params, all_params
-
-# import from other modules
+# import from trajognize
 try:
-    import trajognize.stat.experiments
+    from trajognize.corr.util import parse_corr_file
+    from trajognize.corr.good_params import good_params, all_params
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
-    import trajognize.stat.experiments
+    from trajognize.corr.util import parse_corr_file
+    from trajognize.corr.good_params import good_params, all_params
 
 
 def main(argv=[]):
@@ -40,7 +38,7 @@ def main(argv=[]):
         print("Correlation file does not exist:", corrfile)
         return
     print("Parsing corr file to collect data...")
-    headers, data = util.parse_corr_file(corrfile)
+    headers, data = parse_corr_file(corrfile)
 
     # open output file
     if os.path.isfile(outfile):

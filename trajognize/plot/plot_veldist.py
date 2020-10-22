@@ -11,8 +11,9 @@ experiments.
 
 import os, subprocess, sys, glob
 
-from . import plot
-from . import spgm
+# relative imports
+import plot
+import spgm
 
 GNUPLOT_TEMPLATE = """#!/usr/bin/gnuplot
 reset

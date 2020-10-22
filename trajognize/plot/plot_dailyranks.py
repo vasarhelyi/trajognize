@@ -16,8 +16,9 @@ experiment, group, light and object.
 
 import os, subprocess, sys, glob, numpy
 
-from . import plot
-from . import spgm
+# relative imports
+import plot
+import spgm
 
 try:
     import trajognize.parse

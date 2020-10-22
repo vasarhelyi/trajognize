@@ -11,8 +11,9 @@ experiment, group, light condition, real/virtual state.
 
 import os, subprocess, sys, glob, re
 
-from . import plot
-from . import spgm
+# relative imports
+import plot
+import spgm
 
 try:
     import trajognize.stat.init
