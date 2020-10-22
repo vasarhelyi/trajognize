@@ -31,7 +31,7 @@ def main(argv=[]):
         print("Could not load project settings.")
         return
     exps = project_settings.experiments
-    expnames = sorted(exps.keys(), lambda a,b: exps[a]['number'] - exps[b]['number'])
+    expnames = sorted(exps.keys(), key=lambda a: exps[a]['number'])
 
     # parse all data first
     if not os.path.isfile(corrfile):

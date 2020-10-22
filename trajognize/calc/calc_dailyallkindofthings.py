@@ -42,7 +42,7 @@ def main(argv=[]):
     exps = project_settings.experiments
 
     # initialize objects
-    expnames = sorted(exps.keys(), lambda a,b: exps[a]['number'] - exps[b]['number'])
+    expnames = sorted(exps.keys(), key=lambda a: exps[a]['number'])
     expnames = [exp for exp in expnames if exps[exp]['number'] < 10]
     paintdates = trajognize.parse.parse_paintdates(os.path.join(
             os.path.dirname(trajognize.__file__), '../misc/paintdates.dat'))

@@ -85,8 +85,8 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
             sinks.append(j)
 
     # sort initial sources and sinks
-    sources.sort(lambda x, y: cmp(outstrengths[y] - instrengths[y], outstrengths[x] - instrengths[x])) # descending
-    sinks.sort(lambda x, y: cmp(outstrengths[x] - instrengths[x], outstrengths[y] - instrengths[y])) # ascending
+    sources.sort(key=lambda x: outstrengths[x] - instrengths[x], reverse=True) # descending
+    sinks.sort(key=lambda x: outstrengths[x] - instrengths[x]) # ascending
 
     # While we have any nodes left...
     while nodes_left:

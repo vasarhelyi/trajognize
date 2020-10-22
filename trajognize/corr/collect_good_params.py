@@ -87,7 +87,7 @@ def main(argv=[]):
     # write summarized data to common file
     print("\nWriting summarized good data to", corrfile)
     print("Writing summarized all data to", corrfileall)
-    expnames = sorted(exps.keys(), lambda a,b: exps[a]['number'] - exps[b]['number'])
+    expnames = sorted(exps.keys(), key=lambda a: exps[a]['number'])
     for exp in expnames:
         print(" ", exp)
         expdir = "exp_%s" % exp

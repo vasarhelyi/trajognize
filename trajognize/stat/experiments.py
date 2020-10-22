@@ -32,7 +32,7 @@ def get_experiment(experiments, sometime, allonday=False):
         t2 = datetime.datetime.combine(sometime.date(), datetime.time(23,59,59))
         explist2 = get_experiment(experiments, t2)
         explist = sorted(list(set(explist1) | set(explist2)),
-                lambda a,b: experiments[a]['number'] - experiments[b]['number'])
+            key=lambda a: experiments[a]['number'])
         return explist
 
     explist = []
@@ -43,7 +43,7 @@ def get_experiment(experiments, sometime, allonday=False):
             # allow max 2 overlapping experiments (e.g. first + first_part_*)
             if len(explist) > 1:
                 # order according to experiment number
-                explist.sort(lambda a,b: experiments[a]['number'] - experiments[b]['number'])
+                explist.sort(key=lambda a: experiments[a]['number'])
                 break
     return explist
 
