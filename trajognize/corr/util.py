@@ -42,8 +42,8 @@ def strids2headerline(strids, pairwise=True, ID=["ID"]):
 
     """
     if pairwise:
-        return "\t".join(ID + map("->".join, itertools.product(
-                sorted(strids), sorted(strids))))
+        return "\t".join(ID + list(map("->".join, itertools.product(
+                sorted(strids), sorted(strids)))))
     else:
         return "\t".join(ID + sorted(strids))
 
