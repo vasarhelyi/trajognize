@@ -13,9 +13,16 @@ experiment, group, light and object.
 
 import os, subprocess, sys, glob
 
-import trajognize.parse
-import trajognize.calc.reorder_matrixfile_eades
-import trajognize.corr.util
+try:
+    import trajognize.parse
+    import trajognize.calc.reorder_matrixfile_eades
+    import trajognize.corr.util
+except ImportError:
+    sys.path.insert(0, os.path.abspath(os.path.join(
+        os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    import trajognize.parse
+    import trajognize.calc.reorder_matrixfile_eades
+    import trajognize.corr.util
 
 from . import plot
 from . import plot_matrixmap
