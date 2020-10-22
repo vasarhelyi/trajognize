@@ -608,7 +608,7 @@ def win_above_average(W):
     """
 
     if isinstance(W, dict):
-        idorder = list(W.leys())
+        idorder = list(W.keys())
     elif isinstance(W, list):
         idorder = list(range(len(W)))
     else:
