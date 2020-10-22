@@ -10,7 +10,7 @@ from collections import defaultdict
 from . import util
 from .good_params import good_params, all_params
 
-#inport from other modules
+# import from other modules
 try:
     import trajognize.stat.experiments
 except ImportError:

@@ -18,14 +18,14 @@ Main script returns name of outputfile and corresponding param dictionary.
 
 import os, sys, glob, datetime, collections
 
+from . import hierarchy
+
 try:
-    import hierarchy
     import trajognize.plot.plot
     import trajognize.parse
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
-    import hierarchy
     import trajognize.plot.plot
     import trajognize.parse
 
