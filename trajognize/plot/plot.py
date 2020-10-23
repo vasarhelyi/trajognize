@@ -50,7 +50,7 @@ def get_gnuplot_dailyvalidtimes_strs(exps, exp):
 def grep_headers_from_file(inputfile, headerstart):
     """Get header lines from trajognize.stat output .txt files."""
     headerlines = subprocess.run(["grep", "^%s" % headerstart, inputfile],
-        stdout=subprocess.PIPE, encodig="utf-8", check=True).stdout.split('\n')
+        stdout=subprocess.PIPE, encoding="utf-8", check=True).stdout.split('\n')
     return [line.split('\t') for line in headerlines if line]
 
 
