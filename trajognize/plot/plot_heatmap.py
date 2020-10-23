@@ -77,7 +77,7 @@ unset table
 # individual intensity distribution of heatmap
 bin=0.1
 set table "%(outputfile)s.table2"
-plot "<sed '/^$/d' %(outputfile)s.table" u 3:(1):(bin) smooth kdensity"
+plot "<sed '/^$/d' %(outputfile)s.table" u 3:(1):(bin) smooth kdensity
 unset table
 
 """
