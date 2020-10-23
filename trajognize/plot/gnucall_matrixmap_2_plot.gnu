@@ -17,7 +17,7 @@ unset ytics
 set xrange [0:sumxmax]
 if (sumxmax>=200) set xtics rotate by 90 offset 0,-int(log10(sumxmax))/2-1
 set xtics 0,sumxmax/2,sumxmax
-set yrange [0:nID] reverse
+set yrange [nID:0] reverse
 set lmargin at screen 0.78
 set rmargin at screen 0.88
 set bmargin at screen 0.15
