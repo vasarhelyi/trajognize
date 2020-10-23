@@ -25,7 +25,7 @@ try:
     import trajognize.stat.init
     import trajognize.stat.experiments
     import trajognize.settings
-    from trajognize.init import Rectangle, Circle
+    from trajognize.init import Rectangle, Circle, Point
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(
         os.path.dirname(sys.modules[__name__].__file__), "../..")))
