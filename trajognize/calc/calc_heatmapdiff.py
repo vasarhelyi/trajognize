@@ -1,7 +1,7 @@
 """This script calculates difference from average heatmaps for all
 experiments, groups, light conditions and real/virt states.
 
-Usage: calc_heatmapdiff.py inputfile(s)
+Usage: calc_heatmapdiff.py projectfile inputfile(s)
 
 where inputfile(s) is/are the output of trajognize.stat HeatMap or MotionMap object (.txt)
 

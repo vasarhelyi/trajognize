@@ -57,7 +57,8 @@ for inputfile in files:
         cage_at_frame = trajognize.util.param_at_frame(cage_log)
         print("  %d LED switches parsed" % len(light_log))
         print("  %d CAGE coordinates parsed" % len(cage_log))
-        lastframe = int(subprocess.Popen(['tail', '-1', inputfile], stdout=subprocess.PIPE).communicate()[0].split(None, 1)[0])
+        lastframe = int(subprocess.run(['tail', '-1', inputfile], 
+            capture_output=True, text=True, check=True).stdout.split(None, 1)[0])
         print("  %d frames will be iterated" % (lastframe+1))
 
         print("Calculating cage center distribution...")
