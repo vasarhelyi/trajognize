@@ -13,10 +13,10 @@ set encoding utf8
 
 # get max values of sums
 set table colsumfile
-splot inputfilesum index ARG1 matrix every ::1:nID+1:nID:nID+1
+splot inputfilesum index int(ARG1) matrix every ::1:nID+1:nID:nID+1 
 unset table
 set out "/dev/null"
-plot inputfilesum index ARG1 u (column(nID+2)):(column(0)-0.5) every ::::nID
+plot inputfilesum index int(ARG1) u (column(nID+2)):(column(0)-0.5) every ::::nID
 sumxmax = GPVAL_X_MAX
 plot colsumfile u 1:3
 sumymax = GPVAL_Y_MAX

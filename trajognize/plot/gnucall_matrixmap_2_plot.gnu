@@ -7,7 +7,7 @@
 # main plot in the center
 
 set pm3d map corners2color c2
-splot inputfile index ARG1 matrix # every ::::nID:nID
+splot inputfile index int(ARG1) matrix # every ::::nID:nID
 
 ################################################################################
 # row sum plot on the right side
@@ -22,7 +22,7 @@ set lmargin at screen 0.78
 set rmargin at screen 0.88
 set bmargin at screen 0.15
 set tmargin at screen 0.78
-plot inputfilesum index ARG1 u (column(nID+2)):(column(0)-0.5) every ::::nID w linespoints notitle
+plot inputfilesum index int(ARG1) u (column(nID+2)):(column(0)-0.5) every ::::nID w linespoints notitle
 
 ################################################################################
 # column sum plot at the top

@@ -13,9 +13,9 @@ set autoscale fix
 set cbrange [*:*]
 cbmin = 0
 cbmax = 0
-splot inputfile index ARG1 matrix
+splot inputfile index int(ARG1) matrix
 if (cbmin>GPVAL_CB_MIN) cbmin = GPVAL_CB_MIN
 if (cbmax<GPVAL_CB_MAX) cbmax = GPVAL_CB_MAX
-splot inputfile index ARG2 matrix
+splot inputfile index int(ARG2) matrix
 if (cbmin>GPVAL_CB_MIN) cbmin = GPVAL_CB_MIN
 if (cbmax<GPVAL_CB_MAX) cbmax = GPVAL_CB_MAX
