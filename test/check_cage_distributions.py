@@ -58,7 +58,7 @@ for inputfile in files:
         print("  %d LED switches parsed" % len(light_log))
         print("  %d CAGE coordinates parsed" % len(cage_log))
         lastframe = int(subprocess.run(['tail', '-1', inputfile], 
-            capture_output=True, text=True, check=True).stdout.split(None, 1)[0])
+            stdout=subprocess.PIPE, encoding="utf-8", check=True).stdout.split(None, 1)[0])
         print("  %d frames will be iterated" % (lastframe+1))
 
         print("Calculating cage center distribution...")
