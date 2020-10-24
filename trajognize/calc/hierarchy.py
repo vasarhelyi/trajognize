@@ -151,7 +151,7 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
             nodes_left -= 1
             # Exclude the node from further searches
             indegrees[v] = -1
-            outdegrees[v] = -1;
+            outdegrees[v] = -1
             # Remove outgoing edges
             for k in keys:
                 if W[v][k] > max_noedge_value: # k = neighbor below
@@ -230,7 +230,7 @@ def dominance_transitivity(W, idorder=None, max_noedge_value=0):
         print("WARNING: TODO dominance_transitivity: what to do if upper+lower == 0?")
         return 0
     else:
-        return upper/(upper+lower)
+        return upper / (upper + lower)
 
 
 def decompose_CD(W, idorder=None, s_index_power = 1):
@@ -303,7 +303,7 @@ def decompose_CD(W, idorder=None, s_index_power = 1):
         s_index[0] = -1
         s_index[1] = 1
 
-    return (C, D, s_index[0]/s_index[1], R)
+    return (C, D, s_index[0] / s_index[1], R)
 
 
 def BBS_scale_score(W):
@@ -358,7 +358,7 @@ def BBS_scale_score(W):
     scores = {}
     for i in idorder:
         if all[i]:
-            scores[i] = math.sqrt(2*math.pi) * (wins[i] - all[i]/2) / all[i]
+            scores[i] = math.sqrt(2 * math.pi) * (wins[i] - all[i]/2) / all[i]
         else:
             scores[i] = 0
     olds = scores.copy()
@@ -384,7 +384,7 @@ def BBS_scale_score(W):
         for i in idorder:
             # calculate new s
             if all[i]:
-                scores[i] = 2*(wins[i] - loses[i])/all[i] + means[i]
+                scores[i] = 2 * (wins[i] - loses[i]) / all[i] + means[i]
             # calculate error
             error += abs(abs(oldolds[i] - olds[i]) - abs(olds[i] - scores[i]))
         # increase iteration count
@@ -459,14 +459,14 @@ def deVries_modified_Davids_score(W, mode=4):
                 nans += 1
                 continue
             n = W[i][j] + W[j][i]
-            if mode in [0,2,4]: # original David's score
+            if mode in [0, 2, 4]: # original David's score
                 if n:
-                    wins[i] += W[i][j]/n
-                    loses[i] += W[j][i]/n
-            elif mode in [1,3]: # modified David's score
+                    wins[i] += W[i][j] / n
+                    loses[i] += W[j][i] / n
+            elif mode in [1, 3]: # modified David's score
                 if n != -1:
-                    wins[i] += (W[i][j]+0.5)/(n+1)
-                    loses[i] += (W[j][i]+0.5)/(n+1)
+                    wins[i] += (W[i][j] + 0.5) / (n + 1)
+                    loses[i] += (W[j][i] + 0.5) / (n + 1)
     nans /= 2
     if nans: print("Warning: there are %d not number elements, normDS calculation will be somewhat wrong..." % nans)
 
@@ -476,14 +476,14 @@ def deVries_modified_Davids_score(W, mode=4):
             if i == j: continue
             if W[i][j] != W[i][j] or W[j][i] != W[j][i]: continue
             n = W[i][j] + W[j][i]
-            if mode in [0,2,4]: # original David's score
+            if mode in [0, 2, 4]: # original David's score
                 if n:
-                    wins2[i] += wins[i] * W[i][j]/n
-                    loses2[i] += loses[i] * W[j][i]/n
-            elif mode in [1,3]: # modified David's score
+                    wins2[i] += wins[i] * W[i][j] / n
+                    loses2[i] += loses[i] * W[j][i] / n
+            elif mode in [1, 3]: # modified David's score
                 if n != -1:
-                    wins2[i] += wins[i] * (W[i][j]+0.5)/(n+1)
-                    loses2[i] += loses[i]* (W[j][i]+0.5)/(n+1)
+                    wins2[i] += wins[i] * (W[i][j] + 0.5) / (n + 1)
+                    loses2[i] += loses[i]* (W[j][i] + 0.5) / (n + 1)
 
     # calculate modified David's score and normalized modified David's score
     n = len(idorder)
@@ -496,7 +496,7 @@ def deVries_modified_Davids_score(W, mode=4):
         if DS[i] < minDS: minDS = DS[i]
         if DS[i] > maxDS: maxDS = DS[i]
     for i in idorder:
-        if mode in [2,3]:
+        if mode in [2, 3]:
             normDS[i] = (DS[i] + n * (n - 1) / 2 - nans) / n
         elif mode in [4]:
             if maxDS != minDS:
@@ -506,9 +506,9 @@ def deVries_modified_Davids_score(W, mode=4):
                 normDS[i] = 0
 
     # return score
-    if mode in [0,1]:
+    if mode in [0, 1]:
         return DS
-    elif mode in [2,3,4]:
+    elif mode in [2, 3, 4]:
         return normDS
 
 
@@ -553,7 +553,7 @@ def Lindquist_dominance_index(W):
     for i in idorder:
         n = wins[i] + loses[i]
         if n:
-            scores[i] = wins[i]/n
+            scores[i] = wins[i] / n
         else:
             scores[i] = 0
 
