@@ -1,8 +1,11 @@
-"""This is a file for some common functions for plotting into SPGM galleries."""
+"""This is a file for some common functions for plotting into SPGM galleries.
+
+Note that this version is optimized for the original atlasz usage together
+with the queue_jobs scripts so it might not work in a general setting yet."""
 
 import os
 
-PATH_TO_REMOVE = "full_run__statsum/done/"
+PATH_TO_REMOVE = "/done/"
 PATH_TO_ADD = "gal_sshfs_atlasz"
 THUMBNAIL_PREFIX = "_thb_"
 GAL_DESC_FILE = "gal-desc.txt"
@@ -15,8 +18,18 @@ MULTILINE = "\n>"
 ENDOFLINE = "\n"
 
 def _change_path(filename):
-    """Change path of filename on atlasz to one on hal."""
-    return os.path.join(PATH_TO_ADD, filename[filename.find(PATH_TO_REMOVE) + len(PATH_TO_REMOVE):])
+    """Change path of filename on atlasz to one on hal.
+    
+    Function assumes that statsum_* directories are the first level that are common,
+    which can be found in a directory on atlasz named as PATH_TO_REMOVE.
+    """
+    tokens = filename.split(PATH_TO_REMOVE, 1)
+    if len(tokens) != 2:
+        print("WARN: Path is probably different from what is expected on atlasz+hal.")
+        i = 0
+    else:
+        i = 1
+    return os.path.join(PATH_TO_ADD, tokens[i])
 
 
 def create_gallery_description(path, text, mode='w'):
