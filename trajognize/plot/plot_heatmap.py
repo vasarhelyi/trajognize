@@ -50,7 +50,7 @@ unset ytics
 unset border
 unset title
 unset key
-set label1 noenhanced
+set label 1 noenhanced
 set lmargin at screen 0
 set bmargin at screen 0
 set rmargin at screen 1
