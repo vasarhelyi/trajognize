@@ -10,6 +10,10 @@ reset
 set term png size 640,640 font "arial,12"
 set encoding utf8
 #set data missing 'nan'
+set label 1 noenhanced 
+set label 2 noenhanced
+set title noenhanced
+set key noenhanced
 
 # get max values of sums
 set table colsumfile

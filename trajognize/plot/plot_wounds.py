@@ -32,6 +32,7 @@ reset
 set term png size 800, 480
 set xlabel "Days of the experiment"
 set ylabel "Average %(basename)s"
+set title noenhanced
 set title "%(name)s\\n%(exp)s"
 set key outside autotitle columnhead
 set autoscale fix

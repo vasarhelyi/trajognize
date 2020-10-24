@@ -41,6 +41,7 @@ set format y '%%3.0f%%%%'
 set key outside
 set xdata time
 set timefmt "%%H:%%M:%%S"
+set title noenhanced
 
 set obj rect from "06:00:00", graph 0 to "18:00:00", graph 1 fs noborder solid 0.3 fc lt -1
 set label "nightlight" at "12:00:00", graph 0.95 center

@@ -35,6 +35,7 @@ set format y '%%3.0f%%%%'
 set key outside
 set xdata time
 set timefmt "%%H:%%M:%%S"
+set title noenhanced
 
 set obj rect from "01:00:00", graph 0 to "02:00:00", graph 1 fc lt -1 fs transparent pattern 2 bo
 

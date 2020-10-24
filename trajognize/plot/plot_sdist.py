@@ -21,6 +21,7 @@ set term png
 #set logscale y
 set xlabel "distance between barcodes (pixel)"
 set ylabel "number of frames"
+set title noenhanced
 set title "%(name)s\\n%(exp)s"
 unset key
 set out "%(outputfile)s"

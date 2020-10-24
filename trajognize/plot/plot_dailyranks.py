@@ -37,6 +37,7 @@ reset
 set term png size 800, 480
 set xlabel "Days since start of experiment"
 set ylabel "Rank / dominance index in ordered %(datatype)s matrix"
+set title noenhanced
 set title "%(name)s\\n%(exp)s"
 set key outside autotitle columnhead
 set autoscale fix

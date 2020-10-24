@@ -30,6 +30,7 @@ set term png
 set datafile missing "nan"
 set xlabel "Days of the experiment"
 set ylabel "%(datatype)s"
+set title noenhanced
 set title "%(name)s\\n%(expgroup)s"
 set key autotitle columnhead
 set autoscale fix

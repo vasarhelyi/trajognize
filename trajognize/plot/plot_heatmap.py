@@ -50,6 +50,7 @@ unset ytics
 unset border
 unset title
 unset key
+set label1 noenhanced
 set lmargin at screen 0
 set bmargin at screen 0
 set rmargin at screen 1
@@ -86,6 +87,7 @@ GNUPLOT_TEMPLATE_INTDIST_INDIV = """"%(inputfile)s" u 1:2 w l lw 2 title "%(stri
 GNUPLOT_TEMPLATE_INTDIST = """#!/usr/bin/gnuplot
 reset
 set term png
+set title noenhanced
 set title "%(name)s\\n%(exp)s"
 set xlabel "log(intensity of pixel on heatmap)"
 set ylabel "log(number of pixels on heatmap)"

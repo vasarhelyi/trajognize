@@ -36,6 +36,7 @@ set ylabel "Percentage of presence at %(obj)s"
 set autoscale fix
 %(paintdates)s
 set key outside autotitle columnhead
+set title noenhanced
 
 %(dailyvalidtimes_init)s
 

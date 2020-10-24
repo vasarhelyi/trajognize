@@ -21,6 +21,7 @@ set term png
 set logscale y
 set xlabel "velocity (pixel/frame)"
 set ylabel "number of frames"
+set title noenhanced
 set title "%(name)s\\n%(exp)s"
 set key autotitle columnhead
 set out "%(outputfile)s"

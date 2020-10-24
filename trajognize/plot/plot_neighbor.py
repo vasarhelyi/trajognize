@@ -35,6 +35,7 @@ reset
 set term png
 set xlabel "Number of neighbors"
 set ylabel "Number of frames"
+set title noenhanced
 set title "%(name)s\\n%(exp)s"
 set autoscale fix
 set key autotitle columnhead
