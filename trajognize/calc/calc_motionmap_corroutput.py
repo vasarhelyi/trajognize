@@ -97,7 +97,7 @@ def main(argv=[]):
     for exp in database:
         print(exp)
         allnames = []
-        for group in exps[exp]['groups'].keys() + ['all']:
+        for group in list(exps[exp]['groups'].keys()) + ['all']:
             if group == 'all':
                 names = sorted(allnames)
             else:

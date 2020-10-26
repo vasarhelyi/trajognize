@@ -96,7 +96,7 @@ def main(argv=[]):
     # create stat dictionary from implemented stat functions and classes
     stats = trajognize.stat.util.get_stat_dict()
     # collect all possible values for each filter
-    allstats = sorted(stats.keys() + ['bodymass', 'wounds'])
+    allstats = sorted(list(stats.keys()) + ['bodymass', 'wounds'])
     alllights = sorted(list(["DAYLIGHT", "NIGHTLIGHT"]))
     allrealvirts = sorted(list(trajognize.stat.init.mfix_types) + ['ANY'])
 
