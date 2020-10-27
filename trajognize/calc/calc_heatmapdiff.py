@@ -104,7 +104,7 @@ def main(argv=[]):
                 avgobj += newobj
         # no overloading for __div__ exists, we do it manually:
         for light in project_settings.good_light:
-            avgobj.data[light] /= len(filedict[key])
+            avgobj.data[light] //= len(filedict[key])
         # write new results for all files
         print()
         for inputfile in filedict[key]:
