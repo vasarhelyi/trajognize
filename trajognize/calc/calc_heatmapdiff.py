@@ -135,7 +135,7 @@ def main(argv=[]):
             outputfile.write("# for the given parameters, i.e. light condition and real/virtual state\n")
             outputfile.write("# this is not a true stat, it is only calculated from the results of %s stat\n" % stat)
             outputfile.write("\n")
-            newobj.write_results(outputfile, substat)
+            newobj.write_results(outputfile, project_settings, substat)
     # create SPGM gallery description
     spgm.create_gallery_description(head, "%ss of barcode occurrence differences from average" % stat.title())
 
