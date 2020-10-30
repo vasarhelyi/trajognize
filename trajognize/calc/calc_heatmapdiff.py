@@ -137,7 +137,7 @@ def main(argv=[]):
             outputfile.write("\n")
             newobj.write_results(outputfile, project_settings, substat)
     # create SPGM gallery description
-    spgm.create_gallery_description(head, "%ss of barcode occurrence differences from average" % stat.title())
+    trajognize.plot.spgm.create_gallery_description(head, "%ss of barcode occurrence differences from average" % stat.title())
 
 
 if __name__ == "__main__":
