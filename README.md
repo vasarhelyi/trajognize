@@ -57,16 +57,18 @@ recommended to install into a virtual environment with e.g. `pipenv`.
 
 The full workflow of trajognize should be something like this below in order:
 
-| **command**                  | **description**                                    | **related `queue_jobs` script on atlasz (ELTE)** |
-|------------------------------|----------------------------------------------------|--------------------------------------------------|
-| ratognize                    | create blob database for all videos separately     | full_run.py                                      |
-| trajognize                   | create barcode database for all videos separately  | full_run__trajognize.py                          |
-| trajognize stat              | create statistics for all videos separately        | full_run__statistics.py                          |
-| trajognize statsum           | create summarized results for all stats            | full_run__statsum.py                             |
-| trajognize plot/calc         | plot stats and create arbitrary analysis results   | -                                                |
-| trajognize corr              | perform correlation analysis between the results   | -                                                |
-| collect_good_params.py       | collect all correlation outputs                    | manual work needed                               |
-| extract_group_descriptors.py | groupify correlation outputs                       | manual work needed                               |
+| **command**                                  | **description**                                     | **related `queue_jobs` script on atlasz (ELTE)** |
+|----------------------------------------------|-----------------------------------------------------|--------------------------------------------------|
+| colorWheelHSV                                | define HSV color ranges for your video files        | -                                                |
+| ratognize                                    | create blob database for all videos separately      | full_run.py                                      |
+| trajognize test/check_blob_distributions.py  | quick stat on blobs to aid setup trajognize params  |                                                  |
+| trajognize                                   | create barcode database for all videos separately   | full_run__trajognize.py                          |
+| trajognize stat                              | create statistics for all videos separately         | full_run__statistics.py                          |
+| trajognize statsum                           | create summarized results for all stats             | full_run__statsum.py                             |
+| trajognize plot/calc                         | plot stats and create arbitrary analysis results    | -                                                |
+| trajognize corr                              | perform correlation analysis between the results    | -                                                |
+| trajognize corr/collect_good_params.py       | collect all correlation outputs                     | manual work needed                               |
+| trajognize corr/extract_group_descriptors.py | groupify correlation outputs                        | manual work needed                               |
 
 **Note**: In case of ELTE-specific usage, 'queue_jobs' scripts at
 [hal.elte.hu/flocking](https://hal.elte.hu/flocking) are
@@ -81,16 +83,15 @@ to assist a very large project first, so many of the possible parameters will
 be probably not relevant for your case. I tried to separate these as much as
 possible.
 
-Anyhow, to setup trajognize properly, you need two main settings file:
+Anyhow, to setup trajognize properly, you need one main **project_settings**
+file, which is a .py python file that should contain a single class definition
+that is the child of `trajognize.settings.TrajognizeSettingsBase`.
+This contains all of the project-specific settings. Documentation is available
+in the implementation of the base class in `trajognize/settings.py`.
 
-  * the **colorid** file is an .xml (in a very bad format inherited from a very
-    old but at that time very nice project - SwissTrack) containing the barcode
-    color definitions, such as 'RGB' meaning red-green-blue for example.
-  * the **project_settings** file is a .py python file that should contain a
-    single class definition that is the child of
-    `trajognize.settings.TrajognizeSettingsBase`. This contains most of the
-    project-specific settings. Documentation is available in the implementation
-    of the base class in `trajognize/settings.py`.
+TIP: use trajognize/test/check_blob_distributions.py to check your ratognize
+.blob output to setup `MAX_INRAT_DIST`, `AVG_INRAT_DIST` and `MAX_PERFRAME_*`
+main parameters.
 
 
 ## List of statistics implemented
