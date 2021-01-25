@@ -13,7 +13,7 @@ import sys
 from trajognize.main import main as cli
 
 __author__ = "Gabor Vasarhelyi"
-__email__ = "vasarhelyi@angel.elte.hu"
+__email__ = "gabor.vasarhelyi@ttk.elte.hu"
 
 def main(argv=[]):
     if argv:
