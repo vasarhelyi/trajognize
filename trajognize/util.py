@@ -82,7 +82,7 @@ class Phase(object):
 
     def __init__(self):
         """Initialize class and timers."""
-        self.mainstarttime = time.clock()
+        self.mainstarttime = time.perf_counter()
         self.starttime = 0
         self.lasttime = 0
         self.phase_status = 0
@@ -95,7 +95,7 @@ class Phase(object):
         msg -- the message to print at phase start
 
         """
-        self.starttime = time.clock()
+        self.starttime = time.perf_counter()
         self.lasttime = self.starttime
         self.phase_status = 0
         print(msg)
@@ -111,7 +111,7 @@ class Phase(object):
 
         """
         # if too slow (>5s for one iteration)
-        now = time.clock()
+        now = time.perf_counter()
         if now-self.lasttime >= 1:
             print("%d:%.1fs" % (current, now-self.lasttime), end=" ")
         self.lasttime = now
@@ -133,7 +133,7 @@ class Phase(object):
         if main:
             if userstr: print("  %s" % userstr)
             # print total elapsed time
-            print("Total time elapsed: %gs" % (time.clock()-self.mainstarttime))
+            print("Total time elapsed: %gs" % (time.perf_counter()-self.mainstarttime))
         else:
             # if status was checked while running, print 'done' to the end
             if self.phase_status:
@@ -143,7 +143,7 @@ class Phase(object):
             # print memory usage
             print("  memory used: %g MB" % (self.process.memory_info()[0] / 1024 / 1024))
             # print elapsed time
-            print("  time elapsed: %gs\n" % (time.clock()-self.starttime))
+            print("  time elapsed: %gs\n" % (time.perf_counter()-self.starttime))
         sys.stdout.flush()
 
 

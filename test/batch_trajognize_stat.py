@@ -33,12 +33,12 @@ if not files:
 
 # print filenames and good lines
 i = 0
-start = time.clock()
+start = time.perf_counter()
 for inputfile in files:
     i += 1
     # get file name
     head, tail = os.path.split(inputfile)
     print("\n\nParsing input file #%d: '%s'...\n" % (i, tail))
     trajognize.stat.main(['-i', inputfile, '-f', '-s', 'aa'])
-end = time.clock()
+end = time.perf_counter()
 print("\n\nTotal time elapsed parsing %d files: %f hours" % (len(files), (end-start)/3600))

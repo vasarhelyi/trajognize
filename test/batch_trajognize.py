@@ -33,7 +33,7 @@ if not files:
 
 # print filenames and good lines
 i = 0
-start = time.clock()
+start = time.perf_counter()
 for inputfile in files:
     i += 1
     # get file name
@@ -41,5 +41,5 @@ for inputfile in files:
     print("\n\nParsing input file #%d: '%s'...\n" % (i, tail))
     # TODO: to force overwrite of output files, add '-f' to params
     trajognize.main('--inputfile=%s' % inputfile)
-end = time.clock()
+end = time.perf_counter()
 print("\n\nTotal time elapsed parsing %d files: %f hours" % (len(files), (end-start)/3600))

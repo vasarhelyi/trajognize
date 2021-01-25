@@ -48,7 +48,7 @@ for inputfile in files:
         ii += 1
         # get file name
         head, tail = os.path.split(inputfile)
-        start = time.clock()
+        start = time.perf_counter()
 
         print("\nParsing input file #%d: '%s'..." % (ii, tail))
         (light_log, cage_log) = trajognize.parse.parse_log_file(inputfile)
@@ -114,7 +114,7 @@ for inputfile in files:
                 cagecenter_this_avg[2],sqrt(cagecenter_this_std[2]/cagecenter_this_n),
                 cagecenter_this_avg[3],sqrt(cagecenter_this_std[3]/cagecenter_this_n)))
 
-        print("  time elapsed: %gs" % (time.clock()-start))
+        print("  time elapsed: %gs" % (time.perf_counter()-start))
         sys.stdout.flush()
 
     except KeyboardInterrupt:

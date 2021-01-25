@@ -90,7 +90,7 @@ for inputfile in files:
         head, tail = os.path.split(inputfile)
         inputfile_log = inputfile[:-15] # remove '.blobs.barcodes'
         inputfile_log += '.log'
-        start = time.clock()
+        start = time.perf_counter()
 
         print("\nParsing input file #%d: '%s'..." % (ii, tail))
         barcodes = trajognize.parse.parse_barcode_file(inputfile, colorids)
@@ -235,7 +235,7 @@ for inputfile in files:
                 numsumsum += numsum
             print("  %d barcodes added" % numsumsum)
 
-        print("Time elapsed: %gs" % (time.clock()-start))
+        print("Time elapsed: %gs" % (time.perf_counter()-start))
         sys.stdout.flush()
 
     except KeyboardInterrupt:

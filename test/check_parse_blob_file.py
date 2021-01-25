@@ -39,10 +39,10 @@ for inputfile in files:
     # get file name
     head, tail = os.path.split(inputfile)
     print("Parsing input file #%d: '%s'..." % (i, tail))
-    start = time.clock()
+    start = time.perf_counter()
     color_blobs, md_blobs, rat_blobs = trajognize.parse.parse_blob_file(inputfile)
     if color_blobs is None and md_blobs is None and rat_blobs is None: continue
-    end = time.clock()
+    end = time.perf_counter()
     print("  time elapsed: %.2gs" % (end-start))
     print("  %d BLOB lines" % len(color_blobs))
     print("  %d MD lines" % len(rat_blobs))

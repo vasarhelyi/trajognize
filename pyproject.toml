@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "trajognize"
+version = "1.1.3"
+description = "Trajognize is a set of python tools developed for the automated tracking of objects with colored barcodes and additional statistical analysis tools for high-throughput ethology."
+authors = ["Gabor Vasarhelyi <gabor.vasarhelyi@ttk.elte.hu>"]
+license = "GPL-3.0-only"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.19.5"
+psutil = "^5.8.0"
+python-igraph = "^0.8.3"
+cairocffi = "^1.2.0"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+trajognize = "trajognize.main:main"
+stat = "trajognize.stat.main:main"
+statsum = "trajognize.stat.sum:main"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

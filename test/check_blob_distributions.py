@@ -98,7 +98,7 @@ for inputfile in files:
         head, tail = os.path.split(inputfile)
         inputfile_log = inputfile[:-6] # remove '.blobs'
         inputfile_log += '.log'
-        start = time.clock()
+        start = time.perf_counter()
 
         print("\nParsing input file #%d: '%s'..." % (ii, tail))
         color_blobs, md_blobs, rat_blobs = trajognize.parse.parse_blob_file(inputfile)
@@ -342,7 +342,7 @@ for inputfile in files:
             print("  %d blobs added to nightlight rat blob heatmap" % good[1])
             sys.stdout.flush()
 
-        print("  time elapsed: %gs" % (time.clock()-start))
+        print("  time elapsed: %gs" % (time.perf_counter()-start))
         sys.stdout.flush()
 
     except KeyboardInterrupt:
