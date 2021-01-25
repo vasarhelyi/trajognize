@@ -1,4 +1,0 @@
-numpy
-psutil
-python-igraph
-cairocffi
