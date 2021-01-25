@@ -1,56 +1,54 @@
 # trajognize
 
-Trajognize is a set of python tools developed for the automated tracking of
-objects with colored barcodes and additional statistical analysis tools for
-high-throughput ethology.
+Trajognize is a set of python tools developed for the automated tracking of objects with colored barcodes and additional statistical analysis tools for high-throughput ethology.
 
 
 ## history
 
-It was developed at Eötvös University, Department of Biological Physics,
-throughout the [EU ERC COLLMOT Research Grant](https://hal.elte.hu/flocking)
-for tracking painted animals for several hours, days or even months.
+Trajognize was developed at Eötvös University, Department of Biological Physics, throughout the [EU ERC COLLMOT Research Grant](https://hal.elte.hu/flocking) for tracking painted animals for several hours, days or even months.
 
-It got public on GitHub in line with open-access efforts after our
-publication of the following article (please cite it if you use this repo):
+It got public on GitHub in line with open-access efforts after our publication of the following article (please cite it if you use this repo):
 
-Synergistic benefits of group search in rats. (2020).
-Máté Nagy, Attila Horicsányi, Enikő Kubinyi, Iain D. Couzin,
-Gábor Vásárhelyi, Andrea Flack, Tamás Vicsek.
-Current Biology. DOI: https://doi.org/10.1016/j.cub.2020.08.079
+> Synergistic benefits of group search in rats. (2020).
+> Máté Nagy, Attila Horicsányi, Enikő Kubinyi, Iain D. Couzin,
+> Gábor Vásárhelyi, Andrea Flack, Tamás Vicsek.
+> Current Biology. DOI: https://doi.org/10.1016/j.cub.2020.08.079
 
 
 ## quick introduction
 
-Trajognize uses [ratognize](https://github.com/vasarhelyi/ratognize) output
-as input, i.e., lists of individually colored blobs identified on each frame
-of input videos. It creates barcodes from cohesive groups of individual blobs
-on each frame and reconstructs trajectories of barcodes on series of frames.
+Trajognize uses [ratognize](https://github.com/vasarhelyi/ratognize) output as input, i.e., lists of individually colored blob coordinates identified on each frame of input videos. Trajognize creates barcodes from cohesive groups of individual blobs on each frame and reconstructs trajectories of barcodes on series of frames.
 
-Output generation (trajectories, statistics and plots) are also part of the
-trajognize toolset.
+Output generation (trajectories, statistics and plots) are also part of the trajognize toolset.
 
-Trajognize is designed to be efficient on computer clusters if multiple videos
-are to be analyzed in parallel. The only inherently non-parallel step is the
-statistical summary 'statsum', but it should be very fast.
+Trajognize is designed to be efficient on computer clusters if multiple videos are to be analyzed in parallel. The only inherently non-parallel step is the statistical summary 'statsum', but it should be very fast.
 
 
 # install
 
-Trajognize is a python package, installation should be as simple as running:
+Trajognize is written in Python, so installation and usage is platform-independent.
+
+## prerequisites 
+
+* Install git
+* Get Python 3.8 or later
+* Install Poetry according to its [official install guide](https://python-poetry.org/docs/#installation).
+
+## install using Poetry
+
+installation should be as simple as running the following code:
 
 ```
-python setup.py install
+git clone https://github.com/vasarhelyi/trajognize.git
+cd trajognize
+poetry install
 ```
 
-or
+As trajognize uses Poetry, all Python package dependencies will be installed automatically in a local virtual environment under `.venv` in the project folder.
 
-```
-pip install -r requirements.txt
-```
+## update
 
-There are not too many non-trivil package dependencies, but it is still
-recommended to install into a virtual environment with e.g. `pipenv`.
+If you `git pull` later on to get updates, it might be needed to rerun `poetry install` to update possibly changed dependencies properly.
 
 
 # usage
@@ -61,7 +59,7 @@ The full workflow of trajognize should be something like this below in order:
 |----------------------------------------------|-----------------------------------------------------|--------------------------------------------------|
 | colorWheelHSV                                | define HSV color ranges for your video files        | -                                                |
 | ratognize                                    | create blob database for all videos separately      | full_run.py                                      |
-| trajognize test/check_blob_distributions.py  | quick stat on blobs to aid setup trajognize params  |                                                  |
+| trajognize test/check_blob_distributions.py  | quick stat on blobs to aid setup trajognize params  | -                                                |
 | trajognize                                   | create barcode database for all videos separately   | full_run__trajognize.py                          |
 | trajognize stat                              | create statistics for all videos separately         | full_run__statistics.py                          |
 | trajognize statsum                           | create summarized results for all stats             | full_run__statsum.py                             |
@@ -77,21 +75,11 @@ available for those with access right to run everything parallely on
 
 Detailed help on usage is available for all python commands with '-h' or '--help'.
 
-The 'examples' directory contains some example settings for the different
-features of trajognize. Note that the code was developed for scientific purposes,
-to assist a very large project first, so many of the possible parameters will
-be probably not relevant for your case. I tried to separate these as much as
-possible.
+The 'examples' directory contains some example settings for the different features of trajognize. Note that the code was developed for scientific purposes, to assist a very large project first, so many of the possible parameters will be probably not relevant for your case. I tried to separate these as much as possible.
 
-Anyhow, to setup trajognize properly, you need one main **project_settings**
-file, which is a .py python file that should contain a single class definition
-that is the child of `trajognize.settings.TrajognizeSettingsBase`.
-This contains all of the project-specific settings. Documentation is available
-in the implementation of the base class in `trajognize/settings.py`.
+Anyhow, to setup trajognize properly, you need one main **project_settings** file, which is a `.py` python file that should contain a single class definition that is the child of `trajognize.settings.TrajognizeSettingsBase`. This contains all of the project-specific settings. Documentation is available in the implementation of the base class in `trajognize/settings.py`.
 
-TIP: use trajognize/test/check_blob_distributions.py to check your ratognize
-.blob output to setup `MAX_INRAT_DIST`, `AVG_INRAT_DIST` and `MAX_PERFRAME_*`
-main parameters.
+TIP: use `trajognize/test/check_blob_distributions.py` to check your ratognize .blob output to setup `MAX_INRAT_DIST`, `AVG_INRAT_DIST` and `MAX_PERFRAME_*` main parameters from the `sdist` and `tdist` distributions, consecutively.
 
 
 ## List of statistics implemented
