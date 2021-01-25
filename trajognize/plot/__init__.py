@@ -10,5 +10,5 @@ Submodule to plot outputs of trajognize stat(sum).
 """
 
 __author__ = "Gabor Vasarhelyi"
-__email__ = "vasarhelyi@angel.elte.hu"
+__email__ = "gabor.vasarhelyi@ttk.elte.hu"
 __version__ = "0.1"

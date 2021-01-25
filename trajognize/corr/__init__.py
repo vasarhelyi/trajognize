@@ -10,5 +10,5 @@ Submodule to perform the final correlation analysis of all results.
 """
 
 __author__ = "Gabor Vasarhelyi"
-__email__ = "vasarhelyi@angel.elte.hu"
+__email__ = "gabor.vasarhelyi@ttk.elte.hu"
 __version__ = "0.1"
