@@ -6,7 +6,7 @@ authors = ["Gabor Vasarhelyi <gabor.vasarhelyi@ttk.elte.hu>"]
 license = "GPL-3.0-only"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7"
 numpy = "^1.19.5"
 psutil = "^5.8.0"
 python-igraph = "^0.8.3"
