@@ -197,11 +197,10 @@ for inputfile in files:
             # get file name
             head, tail = os.path.split(inputfile)
             # get starting time
-            # TODO: no error checking
-            hour, minute, second = tail.split('_')[1].split('-')
-            hour = int(hour)
-            minute = int(minute)
-            second = int(round(float(second[0:second.find('.ts.blob')])))
+            starttime = project_settings.get_datetime_from_filename(inputfile)
+            hour = starttime.hour
+            minute = starttime.minute
+            second = starttime.second
             secofday = hour * 3600 + minute * 60 + second
             # iterate for all frames
             numsumsum = 0

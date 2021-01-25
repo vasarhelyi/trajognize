@@ -77,7 +77,7 @@ def get_stat_from_filename(inputfile):
                       *.blobs.barcodes.stat_[statname].zip
 
     """
-    match = re.match(r'.*\.(?:ts|MTS|MP4)\.blobs\.barcodes\.stat_(.*)\.zip$', inputfile)
+    match = re.match(r'.*\.blobs\.barcodes\.stat_(.*)\.zip$', inputfile)
     if match:
         return match.group(1)
     return None

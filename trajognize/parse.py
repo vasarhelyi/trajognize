@@ -195,10 +195,10 @@ def parse_blob_file(inputfile, lastframe=None):
 
 
 def parse_log_file(inputfile, lastframe=None):
-    """Parse a full ts.log file and extract light condition and cage center list (so far).
+    """Parse a full .log file and extract light condition and cage center list (so far).
 
     Keyword arguments:
-    inputfile -- any *.ts.log file created by ratognize
+    inputfile -- any *.log file created by ratognize
     lastframe -- debug option not to parse the whole file, only the beginning
 
     Return value:
