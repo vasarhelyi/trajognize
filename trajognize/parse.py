@@ -11,24 +11,22 @@ from .init import ColorBlob, ColorBlobE, MDBlob, RatBlob, Barcode
 from .util import exit, strid2coloridindex
 
 
-
 def parse_paintdates(inputfile):
     """Parse paint date file and return list of paint dates."""
-    linenum = 0
     paintdates = []
-    for line in open(inputfile).readlines():
+    for linenum, line in enumerate(open(inputfile).readlines()):
         line = line.strip()
-        linenum += 1
         # check for empty and comment lines
-        if not line or line.startswith('#'): continue
-        linesplit = line.split(' ', 3)
+        if not line or line.startswith("#"):
+            continue
+        linesplit = line.split(" ", 3)
         # some error checking
-        if linesplit[0] != 'PAINT' or len(linesplit) < 2:
+        if linesplit[0] != "PAINT" or len(linesplit) < 2:
             print("WARNING - line #%d is probably bad:\n%s" % (linenum, line))
             continue
         # convert line to datetime (and let datetime do the error handling)
         try:
-            t = datetime.datetime.strptime(linesplit[1],"%Y-%m-%d_%H-%M-%S")
+            t = datetime.datetime.strptime(linesplit[1], "%Y-%m-%d_%H-%M-%S")
         except ValueError:
             print("WARNING - format error in line %d:\n%s" % (linenum, line))
             raise
@@ -50,36 +48,37 @@ def parse_entry_times(inputfile):
     is an entry time or not.
 
     """
-    linenum = 0
     entrytimes = dict()
-    for line in open(inputfile).readlines():
+    for linenum, line in enumerate(open(inputfile).readlines()):
         line = line.strip()
-        linenum += 1
         # check for empty and comment lines
-        if not line or line.startswith('#'): continue
+        if not line or line.startswith("#"):
+            continue
         # add all elements to global list
-        linesplit = line.split('\t',3)
+        linesplit = line.split("\t", 3)
         # some error checking
         if len(linesplit) < 3:
             print("WARNING - too few blocks in line %d:\n%s" % (linenum, line))
             continue
         # convert line to date and time (and let datetime do the error handling)
         try:
-            date = datetime.datetime.strptime(linesplit[0],"%Y.%m.%d").date()
-            timefrom = datetime.datetime.strptime(linesplit[1],"%H:%M").time()
-            timeto = datetime.datetime.strptime(linesplit[2],"%H:%M").time()
+            date = datetime.datetime.strptime(linesplit[0], "%Y.%m.%d").date()
+            timefrom = datetime.datetime.strptime(linesplit[1], "%H:%M").time()
+            timeto = datetime.datetime.strptime(linesplit[2], "%H:%M").time()
         except ValueError:
             print("WARNING - format error in line %d:\n%s" % (linenum, line))
             raise
         if len(linesplit) > 3:
             comment = linesplit[3]
         else:
-            comment = ''
+            comment = ""
         # add to entrytimes dict
         key = date.isoformat()
-        value = {'from': datetime.datetime.combine(date, timefrom),
-                'to': datetime.datetime.combine(date, timeto),
-                'comment': comment}
+        value = {
+            "from": datetime.datetime.combine(date, timefrom),
+            "to": datetime.datetime.combine(date, timeto),
+            "comment": comment,
+        }
         if key not in entrytimes.keys():
             entrytimes[key] = [value]
         else:
@@ -105,8 +104,7 @@ def parse_blob_file(inputfile, lastframe=None):
             md[0][0].orientation means the 0th frame 0th md blob orientation in radians
 
     """
-    linetypes = {'MD':5, 'RAT':5, 'BLOB':4, 'BLOBE':6}
-
+    linetypes = {"MD": 5, "RAT": 5, "BLOB": 4, "BLOBE": 6}
 
     # get number of frames quickly
     try:
@@ -117,20 +115,21 @@ def parse_blob_file(inputfile, lastframe=None):
     if lastframe is None or lastframe < 0 or lastframe > i:
         lastframe = i
 
-    color_blobs = [[] for x in range(lastframe+1)]
-    md_blobs = [[] for x in range(lastframe+1)]
-    rat_blobs = [[] for x in range(lastframe+1)]
+    color_blobs = [[] for x in range(lastframe + 1)]
+    md_blobs = [[] for x in range(lastframe + 1)]
+    rat_blobs = [[] for x in range(lastframe + 1)]
 
-    for line in open(inputfile).readlines():
+    for linenum, line in enumerate(open(inputfile).readlines()):
         line = line.strip()
         # check for empty and comment lines
-        if not line or line.startswith('#'): continue
+        if not line or line.startswith("#"):
+            continue
         # add all elements to global list
         linesplit = line.split()
         # skip empty lines (there is one at the end of each list/file)
         i = len(linesplit)
         if i < 3:
-            print("WARNING - too few blocks in line:\n%s" % line)
+            print("WARNING - too few blocks in line #%d:\n%s" % (linenum, line))
             continue
         framenum = int(linesplit[0])
         if framenum > lastframe:
@@ -139,57 +138,87 @@ def parse_blob_file(inputfile, lastframe=None):
         blobcount = int(linesplit[2])
         # quick check on element count
         if i != blobcount * linetypes[linetype] + 3:
-            "WARNING - blobcount mismatch, %d elements instead of %d*%d=%d" % (i-3, blobcount, linetypes[linetype], blobcount * linetypes[linetype])
+            print(
+                "WARNING - blobcount mismatch in line #%d; %d elements instead of %d*%d=%d"
+                % (
+                    linenum,
+                    i - 3,
+                    blobcount,
+                    linetypes[linetype],
+                    blobcount * linetypes[linetype],
+                )
+            )
         j = 3
-        if linetype == 'BLOB':
-            #if framenum != len(color_blobs):
-            #    print("WARNING - framenum mismatch, framenum=%d, len(color_blobs)=%d" % (framenum, len(color_blobs)))
-            #color_blobs.append([ [] for x in project_settings.color2int_lookup ])
-            for i in range(blobcount):
-                color = int(linesplit[j][1:])
-                centerx = float(linesplit[j+1])
-                centery = float(linesplit[j+2])
-                radius = float(linesplit[j+3][:-1])
-                color_blobs[framenum].append(ColorBlob(color, centerx, centery, radius, []))
-                j += linetypes[linetype]
-        elif linetype == 'BLOBE':
-            #if framenum != len(color_blobs):
-            #    print("WARNING - framenum mismatch, framenum=%d, len(color_blobs)=%d" % (framenum, len(color_blobs)))
-            #color_blobs.append([ [] for x in color2int ])
-            for i in range(blobcount):
-                color = int(linesplit[j][1:])
-                centerx = float(linesplit[j+1])
-                centery = float(linesplit[j+2])
-                axisA = float(linesplit[j+3])
-                axisB = float(linesplit[j+4])
-                radius = sqrt(axisA*axisB)
-                orientation = radians(float(linesplit[j+5][:-1])) # [deg]->[rad]
-                color_blobs[framenum].append(ColorBlobE(color, centerx, centery, radius, axisA, axisB, orientation, []))
-                j += linetypes[linetype]
-        elif linetype == 'MD':
-            #if framenum != len(md_blobs):
-            #    print("WARNING - framenum mismatch, framenum=%d, len(md_blobs)=%d" % (framenum, len(md_blobs)))
-            #md_blobs.append([])
-            for i in range(blobcount):
-                centerx = float(linesplit[j][1:])
-                centery = float(linesplit[j+1])
-                axisA = float(linesplit[j+2])
-                axisB = float(linesplit[j+3])
-                orientation = radians(float(linesplit[j+4][:-1])) # [deg]->[rad]
-                md_blobs[framenum].append(MDBlob(centerx, centery, axisA, axisB, orientation))
-                j += linetypes[linetype]
-        elif linetype == 'RAT':
-            #if framenum != len(rat_blobs):
-            #    print("WARNING - framenum mismatch, framenum=%d, len(rat_blobs)=%d" % (framenum, len(rat_blobs)))
-            #rat_blobs.append([])
-            for i in range(blobcount):
-                centerx = float(linesplit[j][1:])
-                centery = float(linesplit[j+1])
-                axisA = float(linesplit[j+2])
-                axisB = float(linesplit[j+3])
-                orientation = radians(float(linesplit[j+4][:-1])) # [deg]->[rad]
-                rat_blobs[framenum].append(RatBlob(centerx, centery, axisA, axisB, orientation))
-                j += linetypes[linetype]
+        try:
+            if linetype == "BLOB":
+                # if framenum != len(color_blobs):
+                #    print("WARNING - framenum mismatch, framenum=%d, len(color_blobs)=%d" % (framenum, len(color_blobs)))
+                # color_blobs.append([ [] for x in project_settings.color2int_lookup ])
+                for i in range(blobcount):
+                    color = int(linesplit[j][1:])
+                    centerx = float(linesplit[j + 1])
+                    centery = float(linesplit[j + 2])
+                    radius = float(linesplit[j + 3][:-1])
+                    color_blobs[framenum].append(
+                        ColorBlob(color, centerx, centery, radius, [])
+                    )
+                    j += linetypes[linetype]
+            elif linetype == "BLOBE":
+                # if framenum != len(color_blobs):
+                #    print("WARNING - framenum mismatch, framenum=%d, len(color_blobs)=%d" % (framenum, len(color_blobs)))
+                # color_blobs.append([ [] for x in color2int ])
+                for i in range(blobcount):
+                    color = int(linesplit[j][1:])
+                    centerx = float(linesplit[j + 1])
+                    centery = float(linesplit[j + 2])
+                    axisA = float(linesplit[j + 3])
+                    axisB = float(linesplit[j + 4])
+                    radius = sqrt(axisA * axisB)
+                    orientation = radians(float(linesplit[j + 5][:-1]))  # [deg]->[rad]
+                    color_blobs[framenum].append(
+                        ColorBlobE(
+                            color,
+                            centerx,
+                            centery,
+                            radius,
+                            axisA,
+                            axisB,
+                            orientation,
+                            [],
+                        )
+                    )
+                    j += linetypes[linetype]
+            elif linetype == "MD":
+                # if framenum != len(md_blobs):
+                #    print("WARNING - framenum mismatch, framenum=%d, len(md_blobs)=%d" % (framenum, len(md_blobs)))
+                # md_blobs.append([])
+                for i in range(blobcount):
+                    centerx = float(linesplit[j][1:])
+                    centery = float(linesplit[j + 1])
+                    axisA = float(linesplit[j + 2])
+                    axisB = float(linesplit[j + 3])
+                    orientation = radians(float(linesplit[j + 4][:-1]))  # [deg]->[rad]
+                    md_blobs[framenum].append(
+                        MDBlob(centerx, centery, axisA, axisB, orientation)
+                    )
+                    j += linetypes[linetype]
+            elif linetype == "RAT":
+                # if framenum != len(rat_blobs):
+                #    print("WARNING - framenum mismatch, framenum=%d, len(rat_blobs)=%d" % (framenum, len(rat_blobs)))
+                # rat_blobs.append([])
+                for i in range(blobcount):
+                    centerx = float(linesplit[j][1:])
+                    centery = float(linesplit[j + 1])
+                    axisA = float(linesplit[j + 2])
+                    axisB = float(linesplit[j + 3])
+                    orientation = radians(float(linesplit[j + 4][:-1]))  # [deg]->[rad]
+                    rat_blobs[framenum].append(
+                        RatBlob(centerx, centery, axisA, axisB, orientation)
+                    )
+                    j += linetypes[linetype]
+        except:
+            print("ERROR - in line #%d" % linenum)
+            raise
 
     return (color_blobs, md_blobs, rat_blobs)
 
@@ -227,9 +256,11 @@ def parse_log_file(inputfile, lastframe=None):
     for line in open(inputfile).readlines():
         line = line.strip()
         # check for empty and comment lines
-        if not line or line.startswith('#'): continue
+        if not line or line.startswith("#"):
+            continue
         linesplit = line.split()
-        if len(linesplit) < 2: continue
+        if len(linesplit) < 2:
+            continue
         framenum = int(linesplit[0])
         if framenum > lastframe:
             break
@@ -264,19 +295,26 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
     except IndexError:
         print("ERROR: could not read frame number from barcode file.")
         return None
-    if firstframe < 0: firstframe = 0
+    if firstframe < 0:
+        firstframe = 0
     if firstframe:
-        print("WARNING: debug option firstframe specified, frame number will not be equal to list index in output!")
-        if firstframe > i: firstframe = i
+        print(
+            "WARNING: debug option firstframe specified, frame number will not be equal to list index in output!"
+        )
+        if firstframe > i:
+            firstframe = i
     if lastframe is None or lastframe < firstframe or lastframe > i:
         lastframe = i
 
-    barcodes = [[[] for k in range(len(colorids))] for x in range(firstframe, lastframe+1)]
+    barcodes = [
+        [[] for k in range(len(colorids))] for x in range(firstframe, lastframe + 1)
+    ]
 
     for line in open(inputfile).readlines():
         line = line.strip()
         # check for empty and comment lines
-        if not line or line.startswith('#'): continue
+        if not line or line.startswith("#"):
+            continue
         # add all elements to global list
         linesplit = line.split()
         # skip empty lines (there is one at the end of each list/file)
@@ -293,14 +331,15 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
         j = 2
         for i in range(barcodecount):
             barcode = Barcode(
-                    float(linesplit[j+1]),          # centerx
-                    float(linesplit[j+2]),          # centery
-                    radians(float(linesplit[j+5])), # orientation [deg]->[rad]
-                    int(linesplit[j+6]),            # mfix
-                    MCHIPS)
+                float(linesplit[j + 1]),  # centerx
+                float(linesplit[j + 2]),  # centery
+                radians(float(linesplit[j + 5])),  # orientation [deg]->[rad]
+                int(linesplit[j + 6]),  # mfix
+                MCHIPS,
+            )
 
             k = strid2coloridindex(linesplit[j], colorids)
-            barcodes[framenum-firstframe][k].append(barcode)
+            barcodes[framenum - firstframe][k].append(barcode)
             j += 7
 
     return barcodes
@@ -334,18 +373,22 @@ def parse_stat_output_file(inputfile, index=None):
         line = line.strip()
         linenum += 1
         # check for empty and comment lines
-        if line.startswith('#'): continue
+        if line.startswith("#"):
+            continue
         if not line:
             emptylines += 1
             continue
-        linesplit = line.split('\t')
+        linesplit = line.split("\t")
         # jump to next paragraph
         if emptylines > 1:
             p += 1
             data.append([])
         # or check error
         elif emptylines == 1:
-            print("Error in data, only one line separates paragraphs in line #%d" % linenum)
+            print(
+                "Error in data, only one line separates paragraphs in line #%d"
+                % linenum
+            )
             return None
         # or check this paragraph
         else:
@@ -354,15 +397,18 @@ def parse_stat_output_file(inputfile, index=None):
             lenthis = len(linesplit)
             # if size is decreasing, we throw an error
             if lenprev > lenthis:
-                print("Error in data, length mismatch in line #%d (%d > %d)" % (linenum, lenprev, lenthis))
+                print(
+                    "Error in data, length mismatch in line #%d (%d > %d)"
+                    % (linenum, lenprev, lenthis)
+                )
                 return None
             # if greater, we insert empty values to previous entries and throw only warning
             # (e.g. heatmap dailyoutput uses this format that header line is only 1 entry long)
             elif lenprev < lenthis:
                 for i in range(len(data[p])):
-                    data[p][i] += [""]*(lenthis-lenprev)
-#                print("Warning in data, length mismatch in line #%d (%d < %d)" % (linenum, lenprev, lenthis))
-#        if index is None or index == p:
+                    data[p][i] += [""] * (lenthis - lenprev)
+        #                print("Warning in data, length mismatch in line #%d (%d < %d)" % (linenum, lenprev, lenthis))
+        #        if index is None or index == p:
         data[p].append(list(linesplit))
         emptylines = 0
 
