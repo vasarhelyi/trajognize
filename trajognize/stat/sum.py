@@ -18,10 +18,21 @@ from . import util
 from . import experiments
 
 
-def write_results(outputfilename, stats, stat, substat, statobject, exps, exp,
-        day, dailyoutput, colorids, project_settings):
+def write_results(
+    outputfilename,
+    stats,
+    stat,
+    substat,
+    statobject,
+    exps,
+    exp,
+    day,
+    dailyoutput,
+    colorids,
+    project_settings,
+):
     """Helper function to write results to file."""
-    outputfile = open(outputfilename, 'w')
+    outputfile = open(outputfilename, "w")
     # print other parameters to file
     outputfile.write("trajognize version = %s\n" % trajognize.util.get_version_info())
     outputfile.write("%s_t object version = %d\n" % (stat, statobject.version))
@@ -31,20 +42,30 @@ def write_results(outputfilename, stats, stat, substat, statobject, exps, exp,
     outputfile.close()
     trajognize.util.insert_commentchar_to_file(outputfilename, "#")
     # print experiment definition to file
-    outputfile = open(outputfilename, 'a')
+    outputfile = open(outputfilename, "a")
     outputfile.write("\n")
     if exp == "dailyoutput":
-        outputfile.write("# This file contains data from all files on day %s, regardless of experiment definitions.\n" % day)
+        outputfile.write(
+            "# This file contains data from all files on day %s, regardless of experiment definitions.\n"
+            % day
+        )
     elif exp == "all":
-        outputfile.write("# This file contains data from all files, regardless of experiment definitions.\n")
+        outputfile.write(
+            "# This file contains data from all files, regardless of experiment definitions.\n"
+        )
     else:
         outputfile.write(experiments.get_formatted_description(exps[exp], "#"))
     outputfile.write("\n\n")
     # print results to file
     if dailyoutput:
         # next line is needed for heatmap simplified stat only...
-        exp = [e for e in trajognize.stat.experiments.get_experiment(exps,
-                datetime.datetime.strptime(day, "%Y-%m-%d"), True) if exps[e]['number'] < 10][-1]
+        exp = [
+            e
+            for e in trajognize.stat.experiments.get_experiment(
+                exps, datetime.datetime.strptime(day, "%Y-%m-%d"), True
+            )
+            if exps[e]["number"] < 10
+        ][-1]
         util.write_dailyoutput_stat(stats, stat, statobject)
     else:
         util.write_stat(stats, stat, statobject)
@@ -64,19 +85,115 @@ def main(argv=[]):
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
     # parse command line arguments
-    argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
-    argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["stats"] + sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["stats"] + sorted(stats.keys())))
-    argparser.add_argument("-i", "--inputpath", metavar="PATH", required=False, dest="inputpath", help="define input path to have stat files at [PATH]/*/OUT/*.blobs.barcodes.stat_*.zip")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=False, dest="projectfile", help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
-    argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
-    argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for summarized results")
-    argparser.add_argument("-s", "--statistics", metavar="stat", dest="statistics", nargs="+", choices=sorted(stats.keys()), default=sorted(stats.keys()), help="Define only some of the statistics to run. Possible values: %s" % sorted(stats.keys()))
-    argparser.add_argument("-ns", "--nostatistics", metavar="stat", dest="nostatistics", nargs="+", choices=sorted(stats.keys()), default=[], help="Define some of the statistics not to run. Possible values: %s" % sorted(stats.keys()))
-    argparser.add_argument("-e", "--experiments", metavar="exp", dest="experiments", nargs="+", help="Define only some of the experiments to process.")
-    argparser.add_argument("-ne", "--noexperiments", metavar="exp", dest="noexperiments", nargs="+", default=[], help="Define some of the experiments not to process.")
-    argparser.add_argument("-sci", "--subclassindex", metavar="INDEX", dest="subclassindex", nargs='+', type=int, help="Define only some of the stat subclasses to run. Works bugfree only if a single stat is selected.")
-    argparser.add_argument("-d", "--dailyoutput", dest="dailyoutput", action="store_true", default=False, help="Write results separated for days. This is kind of a hack and should be used only with heatmaps so far.")
-    argparser.add_argument("-u", "--uniqueoutput", dest="uniqueoutput", action="store_true", default=False, help="Write results separated for each input file uniquely.")
+    argparser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=main.__doc__,
+        add_help=False,
+    )
+    argparser.add_argument(
+        "-h",
+        "--help",
+        metavar="HELP",
+        nargs="?",
+        const=[],
+        choices=["stats"] + sorted(stats.keys()),
+        help="Without arguments show this help and exit. Optional arguments for help topics: %s."
+        % (["stats"] + sorted(stats.keys())),
+    )
+    argparser.add_argument(
+        "-i",
+        "--inputpath",
+        metavar="PATH",
+        required=False,
+        dest="inputpath",
+        help="define input path to have stat files at [PATH]/*/OUT/*.blobs.barcodes.stat_*.zip",
+    )
+    argparser.add_argument(
+        "-p",
+        "--projectfile",
+        metavar="FILE",
+        required=False,
+        dest="projectfile",
+        help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.",
+    )
+    argparser.add_argument(
+        "-k",
+        "--calibfile",
+        metavar="FILE",
+        dest="calibfile",
+        help="define space calibration input file name (.xml)",
+    )
+    argparser.add_argument(
+        "-o",
+        "--outputpath",
+        metavar="PATH",
+        dest="outputpath",
+        help="define output path for summarized results",
+    )
+    argparser.add_argument(
+        "-s",
+        "--statistics",
+        metavar="stat",
+        dest="statistics",
+        nargs="+",
+        choices=sorted(stats.keys()),
+        default=sorted(stats.keys()),
+        help="Define only some of the statistics to run. Possible values: %s"
+        % sorted(stats.keys()),
+    )
+    argparser.add_argument(
+        "-ns",
+        "--nostatistics",
+        metavar="stat",
+        dest="nostatistics",
+        nargs="+",
+        choices=sorted(stats.keys()),
+        default=[],
+        help="Define some of the statistics not to run. Possible values: %s"
+        % sorted(stats.keys()),
+    )
+    argparser.add_argument(
+        "-e",
+        "--experiments",
+        metavar="exp",
+        dest="experiments",
+        nargs="+",
+        help="Define only some of the experiments to process.",
+    )
+    argparser.add_argument(
+        "-ne",
+        "--noexperiments",
+        metavar="exp",
+        dest="noexperiments",
+        nargs="+",
+        default=[],
+        help="Define some of the experiments not to process.",
+    )
+    argparser.add_argument(
+        "-sci",
+        "--subclassindex",
+        metavar="INDEX",
+        dest="subclassindex",
+        nargs="+",
+        type=int,
+        help="Define only some of the stat subclasses to run. Works bugfree only if a single stat is selected.",
+    )
+    argparser.add_argument(
+        "-d",
+        "--dailyoutput",
+        dest="dailyoutput",
+        action="store_true",
+        default=False,
+        help="Write results separated for days. This is kind of a hack and should be used only with heatmaps so far.",
+    )
+    argparser.add_argument(
+        "-u",
+        "--uniqueoutput",
+        dest="uniqueoutput",
+        action="store_true",
+        default=False,
+        help="Write results separated for each input file uniquely.",
+    )
     # if arguments are passed to main(argv), parse them
     if argv:
         options = argparser.parse_args(argv)
@@ -104,7 +221,7 @@ def main(argv=[]):
         print("  ERROR: inputpath not specified. Use the '-i' option")
         return
     print("  Using input path: '%s'" % options.inputpath)
-    inputdirs = glob.glob(os.path.join(options.inputpath, '*' + os.sep))
+    inputdirs = glob.glob(os.path.join(options.inputpath, "*" + os.sep))
 
     # project settings file
     if not options.projectfile:
@@ -115,7 +232,10 @@ def main(argv=[]):
     # output path
     if options.outputpath is None:
         options.outputpath = options.inputpath
-        print("  WARNING! No output path is specified! Default is input path: '%s'" % options.outputpath)
+        print(
+            "  WARNING! No output path is specified! Default is input path: '%s'"
+            % options.outputpath
+        )
     else:
         print("  Using output path: '%s'" % options.outputpath)
 
@@ -131,7 +251,9 @@ def main(argv=[]):
     # uniqueoutput
     # get input files for unique output
     if options.uniqueoutput:
-        print("  WARNING: option '-u' specified, output is written for every input file separately.")
+        print(
+            "  WARNING: option '-u' specified, output is written for every input file separately."
+        )
         uniqueoutput = True
     # get standard inputfiles
     else:
@@ -141,7 +263,9 @@ def main(argv=[]):
 
     # parse project settings file
     phase.start_phase("Reading project settings file...")
-    project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(
+        options.projectfile
+    )
     if project_settings is None:
         print("  ERROR: Could not load project settings.")
         return
@@ -180,7 +304,7 @@ def main(argv=[]):
     for i, exp in enumerate(options.experiments):
         if exp not in exps:
             for e in exps:
-                if exp.isdigit() and exps[e]['number'] == int(exp):
+                if exp.isdigit() and exps[e]["number"] == int(exp):
                     options.experiments[i] = e
                     break
             else:
@@ -189,18 +313,22 @@ def main(argv=[]):
     for i, exp in enumerate(options.noexperiments):
         if exp not in exps:
             for e in exps:
-                if exp.isdigit() and exps[e]['number'] == int(exp):
+                if exp.isdigit() and exps[e]["number"] == int(exp):
                     options.noexperiments[i] = e
                     break
             else:
                 print("  ERROR: invalid experiment '{}'".format(exp))
                 return
     # get difference of exp and noexp
-    options.experiments = sorted(list(set(options.experiments).difference(set(options.noexperiments))))
+    options.experiments = sorted(
+        list(set(options.experiments).difference(set(options.noexperiments)))
+    )
     if len(options.experiments) == len(exps):
         options.experiments += ["all"]
     # get difference of stat and nostat
-    options.statistics = sorted(list(set(options.statistics).difference(set(options.nostatistics))))
+    options.statistics = sorted(
+        list(set(options.statistics).difference(set(options.nostatistics)))
+    )
     # initialize subclassdict
     subclassdict = dict()
     for stat in options.statistics:
@@ -210,16 +338,26 @@ def main(argv=[]):
 
     ############################################################################
     # parse (sub)stats
-    for day in experiments.get_dayrange_of_all_experiments(exps) if dailyoutput else [None]:
-        inputfiles = glob.glob(os.path.join(options.inputpath, "*", "OUT",
-                '%s*.blobs.barcodes.stat_*.zip' % ("%s/" % day if day else "")))
-        print("  %sparsing %d input .zip files from %d directories" % \
-                ("%s: " % day if day else "", len(inputfiles), len(inputdirs)))
+    for day in (
+        experiments.get_dayrange_of_all_experiments(exps) if dailyoutput else [None]
+    ):
+        inputfiles = glob.glob(
+            os.path.join(
+                options.inputpath,
+                "*",
+                "OUT",
+                "%s*.blobs.barcodes.stat_*.zip" % ("%s/" % day if day else ""),
+            )
+        )
+        print(
+            "  %sparsing %d input .zip files from %d directories"
+            % ("%s: " % day if day else "", len(inputfiles), len(inputdirs))
+        )
         if not inputfiles:
             continue
         # initialize statobjects
         statobjects = dict()
-        for exp in ['dailyoutput'] if dailyoutput else options.experiments:
+        for exp in ["dailyoutput"] if dailyoutput else options.experiments:
             statobjects[exp] = dict()
             if dailyoutput:
                 print("  dailyoutput for", day)
@@ -246,67 +384,108 @@ def main(argv=[]):
                 explist = ["dailyoutput"]
             else:
                 # get current experiment name (TODO: assuming that it will remain the same on the whole video)
-                explist = experiments.get_experiment(exps,
-                        project_settings.get_datetime_from_filename(inputfile))
+                explist = experiments.get_experiment(
+                    exps, project_settings.get_datetime_from_filename(inputfile)
+                )
                 # if current experiment is not in list, add next object to summarized result
-                if "all" in options.experiments and (not explist or explist[0] not in options.experiments):
+                if "all" in options.experiments and (
+                    not explist or explist[0] not in options.experiments
+                ):
                     # calculate summarized result only if all experiments are to be calculated
                     explist.append("all")
             # do things twice for cut-up first experiment
             for exp in explist:
-                if not dailyoutput and exp not in options.experiments: continue
+                if not dailyoutput and exp not in options.experiments:
+                    continue
                 substat = util.get_stat_from_filename(inputfile)
-                if substat is None or substat not in statobjects[exp].keys(): continue
+                if substat is None or substat not in statobjects[exp].keys():
+                    continue
                 statobject = statobjects[exp][substat]
-                phase.start_phase("Reading file #%d (%1.1f%%): %s" % (filenum,
-                        100.0*filenum/len(inputfiles), os.path.split(inputfile)[1]))
+                phase.start_phase(
+                    "Reading file #%d (%1.1f%%): %s"
+                    % (
+                        filenum,
+                        100.0 * filenum / len(inputfiles),
+                        os.path.split(inputfile)[1],
+                    )
+                )
                 newobj = trajognize.util.load_object(inputfile)
                 if newobj:
                     newobj.print_status()
                     if newobj.version != statobject.version:
-                        print("  WARNING: object version is %d instead of %d. Skipping it!" % (newobj.version, statobject.version))
+                        print(
+                            "  WARNING: object version is %d instead of %d. Skipping it!"
+                            % (newobj.version, statobject.version)
+                        )
                     else:
                         statobject += newobj
                     if uniqueoutput:
                         # print results to stdout
                         print("  writing unique output...")
-                        uniqueoutputfilename = project_settings.get_unique_output_filename(
-                            options.outputpath, inputfile
+                        uniqueoutputfilename = (
+                            project_settings.get_unique_output_filename(
+                                options.outputpath, inputfile
+                            )
                         )
-                        write_results(uniqueoutputfilename, stats, stat, substat, newobj,
-                                exps, exp, day, dailyoutput, colorids, project_settings)
+                        write_results(
+                            uniqueoutputfilename,
+                            stats,
+                            stat,
+                            substat,
+                            newobj,
+                            exps,
+                            exp,
+                            day,
+                            dailyoutput,
+                            colorids,
+                            project_settings,
+                        )
 
                 phase.end_phase()
 
         ############################################################################
         # write results
         phase.start_phase("Writing results to files...")
-        for exp in ['dailyoutput'] if dailyoutput else options.experiments:
+        for exp in ["dailyoutput"] if dailyoutput else options.experiments:
             for substat in statobjects[exp]:
                 statobject = statobjects[exp][substat]
                 # parse 'substat' and 'subclassindex'
-                i = substat.find('.')
+                i = substat.find(".")
                 if i == -1:
                     stat = substat
                     subclassindex = 0
                 else:
                     stat = substat[:i]
-                    subclassindex = subclassdict[stat].index(substat[i+1:])
+                    subclassindex = subclassdict[stat].index(substat[i + 1 :])
                 # if this is the summary, add all others before printing result
                 if exp == "all":
                     for tempexp in options.experiments:
-                        if tempexp == "all" or "part" in tempexp: continue
+                        if tempexp == "all" or "part" in tempexp:
+                            continue
                         statobject += statobjects[tempexp][substat]
                 # print results to stdout
-                tailcommon = util.get_stat_fileext(substat, day if dailyoutput else exp, False)
+                tailcommon = util.get_stat_fileext(
+                    substat, day if dailyoutput else exp, False
+                )
                 print()
                 trajognize.util.print_underlined(tailcommon)
                 statobject.print_status()
                 # print results to .txt file
                 outputfilecommon = os.path.join(options.outputpath, tailcommon)
                 outputfilename = outputfilecommon + ".txt"
-                write_results(outputfilename, stats, stat, substat, statobject,
-                        exps, exp, day, dailyoutput, colorids, project_settings)
+                write_results(
+                    outputfilename,
+                    stats,
+                    stat,
+                    substat,
+                    statobject,
+                    exps,
+                    exp,
+                    day,
+                    dailyoutput,
+                    colorids,
+                    project_settings,
+                )
                 # save output in object format as well for later analysis, post processing, etc.
                 trajognize.util.save_object(statobject, outputfilecommon + ".zip")
         phase.end_phase("\n")

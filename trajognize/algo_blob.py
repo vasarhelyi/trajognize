@@ -9,7 +9,7 @@ from .init import MFix, BarcodeIndex
 from .algo import distance_matrix, get_distance, is_point_inside_ellipse
 
 # global variables
-chainlists = [] # chains of possible ids with blob indices
+chainlists = []  # chains of possible ids with blob indices
 
 
 def create_spatial_distlists(blobs, MAX_INRAT_DIST):
@@ -27,34 +27,42 @@ def create_spatial_distlists(blobs, MAX_INRAT_DIST):
 
     distmatrix = distance_matrix(numpy.array([[b.centerx, b.centery] for b in blobs]))
     a = [numpy.where(distmatrix[i] <= MAX_INRAT_DIST)[0] for i in range(n)]
-    b = [numpy.where((distmatrix[i] <= 2 * MAX_INRAT_DIST) & (distmatrix[i] > MAX_INRAT_DIST))[0] for i in range(n)]
-    sdistlists = [[numpy.ndarray.tolist(a[i]), numpy.ndarray.tolist(b[i])] for i in range(n)]
+    b = [
+        numpy.where(
+            (distmatrix[i] <= 2 * MAX_INRAT_DIST) & (distmatrix[i] > MAX_INRAT_DIST)
+        )[0]
+        for i in range(n)
+    ]
+    sdistlists = [
+        [numpy.ndarray.tolist(a[i]), numpy.ndarray.tolist(b[i])] for i in range(n)
+    ]
 
     return sdistlists
 
 
-def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs,
-    prevmdindices, mdindices, project_settings):
+def create_temporal_distlists(
+    prevblobs, blobs, prevmd_blobs, md_blobs, prevmdindices, mdindices, project_settings
+):
     """Return a list for all blobs containing prevblob indices
-    that are close enough to be the same blobs as on the previous frame.
+        that are close enough to be the same blobs as on the previous frame.
 
-    Function uses two thresholds, a lower one for static cases and
-    a higher one for cases when there are motion blobs under the blobs.
-#    If motion blob is present on both frames, shift of centers can be calculated
-#    easily and distance calculation is corrected with this shift.
+        Function uses two thresholds, a lower one for static cases and
+        a higher one for cases when there are motion blobs under the blobs.
+    #    If motion blob is present on both frames, shift of centers can be calculated
+    #    easily and distance calculation is corrected with this shift.
 
-    TODO: better algo would be nice, checking orientation of md blobs, etc.
+        TODO: better algo would be nice, checking orientation of md blobs, etc.
 
-    Keyword arguments:
-    prevblobs     -- list of all blobs (ColorBlob) from the previous frame
-    blobs         -- list of all blobs (ColorBlob) from the current frame
-    prevmd_blobs  -- list of all motion blobs (motion_blob_t) from the previous frame
-    md_blobs      -- list of all motion blobs (motion_blob_t) from the current frame
-    prevmdindices -- motion blob index for blobs of the previous frame
-    mdindices     -- motion blob index for blobs of the current frame
-    project_settings -- global project-specific settings
+        Keyword arguments:
+        prevblobs     -- list of all blobs (ColorBlob) from the previous frame
+        blobs         -- list of all blobs (ColorBlob) from the current frame
+        prevmd_blobs  -- list of all motion blobs (motion_blob_t) from the previous frame
+        md_blobs      -- list of all motion blobs (motion_blob_t) from the current frame
+        prevmdindices -- motion blob index for blobs of the previous frame
+        mdindices     -- motion blob index for blobs of the current frame
+        project_settings -- global project-specific settings
 
-    Backward compatible - simply feed with 'next*' as prev*.
+        Backward compatible - simply feed with 'next*' as prev*.
 
     """
     n = len(blobs)
@@ -64,12 +72,30 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs,
     if not m:
         return [[] for i in range(n)]
     # include color in third coordinate to be 0 if match and too large if not
-    pn = numpy.array([[b.centerx, b.centery, project_settings.MAX_PERFRAME_DIST_MD * b.color] for b in blobs])
-    pm = numpy.array([[b.centerx, b.centery, project_settings.MAX_PERFRAME_DIST_MD * b.color] for b in prevblobs])
+    pn = numpy.array(
+        [
+            [b.centerx, b.centery, project_settings.MAX_PERFRAME_DIST_MD * b.color]
+            for b in blobs
+        ]
+    )
+    pm = numpy.array(
+        [
+            [b.centerx, b.centery, project_settings.MAX_PERFRAME_DIST_MD * b.color]
+            for b in prevblobs
+        ]
+    )
     distmatrix = distance_matrix(pn, pm)
-    a = [numpy.where(distmatrix[i] <= project_settings.MAX_PERFRAME_DIST)[0] for i in range(n)]
-    b = [numpy.where((distmatrix[i] <= 2 * project_settings.MAX_PERFRAME_DIST_MD) & \
-        (distmatrix[i] > project_settings.MAX_PERFRAME_DIST))[0] for i in range(n)]
+    a = [
+        numpy.where(distmatrix[i] <= project_settings.MAX_PERFRAME_DIST)[0]
+        for i in range(n)
+    ]
+    b = [
+        numpy.where(
+            (distmatrix[i] <= 2 * project_settings.MAX_PERFRAME_DIST_MD)
+            & (distmatrix[i] > project_settings.MAX_PERFRAME_DIST)
+        )[0]
+        for i in range(n)
+    ]
     # tdistlist is initialized with closeby prevblobs with lower threshold
     tdistlists = [numpy.ndarray.tolist(a[i]) for i in range(n)]
     # higher threshold closeby prevblobs are added if other conditions are met
@@ -86,13 +112,19 @@ def create_temporal_distlists(prevblobs, blobs, prevmd_blobs, md_blobs,
                 tdistlists[i].append(j)
             # start of motion: prevframe is static, frame is dynamic:
             # if prev is under current motion blob, keep it
-            elif mdindices[i] > -1 and prevmdindices[j] == -1 and \
-                    is_point_inside_ellipse(prevblobs[j], md_blobs[mdindices[i]]):
+            elif (
+                mdindices[i] > -1
+                and prevmdindices[j] == -1
+                and is_point_inside_ellipse(prevblobs[j], md_blobs[mdindices[i]])
+            ):
                 tdistlists[i].append(j)
             # end of motion: prevframe is dynamic, frame is static
             # if current is under prev motion blob, keep it
-            elif mdindices[i] == -1 and prevmdindices[j] > -1 and \
-                    is_point_inside_ellipse(blobs[i], prevmd_blobs[prevmdindices[j]]):
+            elif (
+                mdindices[i] == -1
+                and prevmdindices[j] > -1
+                and is_point_inside_ellipse(blobs[i], prevmd_blobs[prevmdindices[j]])
+            ):
                 tdistlists[i].append(j)
 
     return tdistlists
@@ -124,7 +156,8 @@ def find_chains_in_sdistlists(blobs, sdistlists, project_settings):
         fr = -1
         while fr < len(blobs) - 1:
             fr += 1
-            if blobs[fr].color != color0: continue
+            if blobs[fr].color != color0:
+                continue
             # store blob index (last iteration of current level)
             lastit[0] = fr
             # iterate all that are chained to the first element and find the rest recursively
@@ -135,15 +168,23 @@ def find_chains_in_sdistlists(blobs, sdistlists, project_settings):
                     # store blob index (last iteration of current level)
                     lastit[1] = distto
                     # iterate through all possibilities and save chains
-                    find_chains_in_sdistlists_recursively(blobs, sdistlists,
-                        chainlists, project_settings, lastit, k, distto, 2
+                    find_chains_in_sdistlists_recursively(
+                        blobs,
+                        sdistlists,
+                        chainlists,
+                        project_settings,
+                        lastit,
+                        k,
+                        distto,
+                        2,
                     )
 
     return chainlists
 
 
-def find_chains_in_sdistlists_recursively(blobs, sdistlists, chainlists,
-    project_settings, lastit, k, fr, i):
+def find_chains_in_sdistlists_recursively(
+    blobs, sdistlists, chainlists, project_settings, lastit, k, fr, i
+):
     """Helper function to find chains recursively.
 
     Should be called by itself and find_chains_in_sdistlists() only.
@@ -175,8 +216,14 @@ def find_chains_in_sdistlists_recursively(blobs, sdistlists, chainlists,
             lastit[i] = distto
             # increase common counter and go to next level
             find_chains_in_sdistlists_recursively(
-                blobs, sdistlists, chainlists, project_settings,
-                lastit, k, distto, i+1
+                blobs,
+                sdistlists,
+                chainlists,
+                project_settings,
+                lastit,
+                k,
+                distto,
+                i + 1,
             )
 
 
@@ -192,23 +239,29 @@ def is_blob_chain_appropriate_as_barcode(blobchain, MCHIPS, check_distance=None)
     # check absolute distance if needed
     if check_distance:
         for j in range(MCHIPS - 1):
-            if get_distance(blobchain[j], blobchain[j+1]) > check_distance:
+            if get_distance(blobchain[j], blobchain[j + 1]) > check_distance:
                 return False
 
     # check for good order according to distance between blobs
     for j in range(MCHIPS - 2):
-        for jj in range(j+2, MCHIPS):
-            d12 = get_distance(blobchain[j], blobchain[j+1])  # 1,2
-            d1x = get_distance(blobchain[j], blobchain[jj])   # 1,3
-            d2x = get_distance(blobchain[j+1], blobchain[jj]) # 2,3
+        for jj in range(j + 2, MCHIPS):
+            d12 = get_distance(blobchain[j], blobchain[j + 1])  # 1,2
+            d1x = get_distance(blobchain[j], blobchain[jj])  # 1,3
+            d2x = get_distance(blobchain[j + 1], blobchain[jj])  # 2,3
             if d1x < d12 or d1x < d2x:
                 return False
 
     # bad angle: do not store (too small angle in the middle)
     for j in range(1, MCHIPS - 1):
-        v1 = (blobchain[j-1].centerx - blobchain[j].centerx, blobchain[j-1].centery - blobchain[j].centery)
-        v2 = (blobchain[j+1].centerx - blobchain[j].centerx, blobchain[j+1].centery - blobchain[j].centery)
-        av12 = ((v1[0]**2 + v1[1]**2)**0.5) * ((v2[0]**2 + v2[1]**2)**0.5)
+        v1 = (
+            blobchain[j - 1].centerx - blobchain[j].centerx,
+            blobchain[j - 1].centery - blobchain[j].centery,
+        )
+        v2 = (
+            blobchain[j + 1].centerx - blobchain[j].centerx,
+            blobchain[j + 1].centery - blobchain[j].centery,
+        )
+        av12 = ((v1[0] ** 2 + v1[1] ** 2) ** 0.5) * ((v2[0] ** 2 + v2[1] ** 2) ** 0.5)
         if not av12:
             return False
         angle = acos(min(max((v1[0] * v2[0] + v1[1] * v2[1]) / av12, -1), 1))
@@ -241,7 +294,8 @@ def find_clusters_in_sdistlists(blobs, sdistlists, level=0):
     # iterate all blobs
     for i in range(len(blobs)):
         # skip ones that has already been clustered
-        if clusterindex[i] > -1: continue
+        if clusterindex[i] > -1:
+            continue
         # create new cluster
         clusternum += 1
         clusterlist.append([])
@@ -250,18 +304,21 @@ def find_clusters_in_sdistlists(blobs, sdistlists, level=0):
         clusterlist[clusternum].append(i)
         for j in sdistlists[i][0] if not level else sdistlists[i][0] + sdistlists[i][1]:
             # skip ones that has already been clustered
-            if clusterindex[j] > -1: continue
+            if clusterindex[j] > -1:
+                continue
             # store blob in current cluster
             clusterindex[j] = clusternum
             clusterlist[clusternum].append(j)
-            find_clusters_in_sdistlists_recursively(blobs, sdistlists, level,
-                    clusterlist, clusterindex, clusternum, j)
+            find_clusters_in_sdistlists_recursively(
+                blobs, sdistlists, level, clusterlist, clusterindex, clusternum, j
+            )
 
     return (clusterlist, clusterindex)
 
 
-def find_clusters_in_sdistlists_recursively(blobs, sdistlists, level,
-        clusterlist, clusterindex, clusternum, j):
+def find_clusters_in_sdistlists_recursively(
+    blobs, sdistlists, level, clusterlist, clusterindex, clusternum, j
+):
     """Helper function to find clusters recursively.
 
     Should be called by itself and find_clusters_in_sdistlists() only.
@@ -275,13 +332,15 @@ def find_clusters_in_sdistlists_recursively(blobs, sdistlists, level,
     """
     for jj in sdistlists[j][0] if not level else sdistlists[j][0] + sdistlists[j][1]:
         # skip ones that has already been clustered
-        if clusterindex[jj] > -1: continue
+        if clusterindex[jj] > -1:
+            continue
         # store blob in current cluster
         clusterindex[jj] = clusternum
         clusterlist[clusternum].append(jj)
         # call self to recursively find all cluster members
-        find_clusters_in_sdistlists_recursively(blobs, sdistlists, level,
-                clusterlist, clusterindex, clusternum, jj)
+        find_clusters_in_sdistlists_recursively(
+            blobs, sdistlists, level, clusterlist, clusterindex, clusternum, jj
+        )
 
 
 def barcodeindices_not_deleted(barcodeindices, barcodes, mfix=None):
@@ -323,7 +382,8 @@ def update_blob_barcodeindices(barcode, k, i, blobs):
     """Update blob's barcodeindices from barcode's blobindices."""
     ki = BarcodeIndex(k, i)
     for blobi in barcode.blobindices:
-        if blobi is None: continue
+        if blobi is None:
+            continue
         if blobi not in blobs[blobi].barcodeindices:
             blobs[blobi].barcodeindices.append(ki)
 

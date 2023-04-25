@@ -2,8 +2,12 @@ try:
     import trajognize.corr.util
     import trajognize.corr.corr
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "..")
+        ),
+    )
     import trajognize.corr.corr
     import trajognize.corr.util
 

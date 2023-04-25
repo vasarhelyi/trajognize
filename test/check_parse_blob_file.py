@@ -14,23 +14,27 @@ from glob import glob
 try:
     import trajognize
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "..")
+        ),
+    )
     import trajognize
 
 # check bad arguments
-if len(sys.argv) > 2 or (len(sys.argv)>1 and sys.argv[1] == '--help'):
+if len(sys.argv) > 2 or (len(sys.argv) > 1 and sys.argv[1] == "--help"):
     exit(__doc__, 2)
 
 # get input path
 path = trajognize.util.get_path_as_first_arg(sys.argv)
-path += '*/OUT/*.blobs'
+path += "*/OUT/*.blobs"
 print("# Using data: %s" % path)
 
 # list files and check for error
 files = glob(path)
 if not files:
-    exit('ERROR: No files found on input path', 1)
+    exit("ERROR: No files found on input path", 1)
 
 # print filenames and good lines
 i = 0
@@ -41,9 +45,10 @@ for inputfile in files:
     print("Parsing input file #%d: '%s'..." % (i, tail))
     start = time.perf_counter()
     color_blobs, md_blobs, rat_blobs = trajognize.parse.parse_blob_file(inputfile)
-    if color_blobs is None and md_blobs is None and rat_blobs is None: continue
+    if color_blobs is None and md_blobs is None and rat_blobs is None:
+        continue
     end = time.perf_counter()
-    print("  time elapsed: %.2gs" % (end-start))
+    print("  time elapsed: %.2gs" % (end - start))
     print("  %d BLOB lines" % len(color_blobs))
     print("  %d MD lines" % len(rat_blobs))
     print("  %d RAT lines" % len(md_blobs))

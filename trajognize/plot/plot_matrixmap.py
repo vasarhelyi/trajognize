@@ -9,8 +9,12 @@ import spgm
 try:
     import trajognize.parse
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "../..")
+        ),
+    )
     import trajognize.parse
 
 
@@ -20,12 +24,12 @@ def add_sum_to_matrix_file(inputfile, outputfile):
 
     def writesumline():
         # print last matrix sum column line
-        out.write("sum") # header
+        out.write("sum")  # header
         sum[0] = 0
         for i in range(1, len(data)):
             sum[0] += sum[i]
-            out.write("\t%f" % sum[i]) # sum columns
-        out.write("\t%f\n" % sum[0]) # sum sum
+            out.write("\t%f" % sum[i])  # sum columns
+        out.write("\t%f\n" % sum[0])  # sum sum
 
     startnewblock = True
     writesum = False
@@ -33,11 +37,13 @@ def add_sum_to_matrix_file(inputfile, outputfile):
     data = []
     out = open(outputfile, "w")
     out.write("# This is a post-processed file created from '%s'\n" % inputfile)
-    out.write("# Sum values for all columns and rows are added to all matrices. Comments are unchanged.\n\n")
+    out.write(
+        "# Sum values for all columns and rows are added to all matrices. Comments are unchanged.\n\n"
+    )
     for line in open(inputfile, "r"):
         strippedline = line.strip()
-    	# copy empty and comment lines (that also start a new block in file)
-        if strippedline.startswith('#') or not strippedline:
+        # copy empty and comment lines (that also start a new block in file)
+        if strippedline.startswith("#") or not strippedline:
             startnewblock = True
             if writesum:
                 writesumline()
@@ -52,14 +58,15 @@ def add_sum_to_matrix_file(inputfile, outputfile):
             startnewblock = False
             out.write("%s\tsum\n" % line)
             # reset sum for new data matrix
-            sum = [0 for i in range(len(line.split('\t')))]
+            sum = [0 for i in range(len(line.split("\t")))]
             continue
         # parse data lines and add row sum to end
-        data = line.split('\t')
-        writesum = True # set flag
+        data = line.split("\t")
+        writesum = True  # set flag
         sum[0] = 0
         for i in range(1, len(data)):
-            if data[i] != data[i]: continue # skip nan
+            if data[i] != data[i]:
+                continue  # skip nan
             sum[0] += float(data[i])
             sum[i] += float(data[i])
         out.write("%s\t%1.12g\n" % (line, sum[0]))
@@ -98,8 +105,17 @@ call "%(plotpath)s/gnucall_matrixmap_2_plot.gnu" %(index)d
 """
 
 
-def get_gnuplot_script(inputfile, inputfilesum, colsumfile, outputfile,
-        id_count, headerline, index, exp, cbrange):
+def get_gnuplot_script(
+    inputfile,
+    inputfilesum,
+    colsumfile,
+    outputfile,
+    id_count,
+    headerline,
+    index,
+    exp,
+    cbrange,
+):
     """Return .gnu script body as string."""
     data = {
         "inputfile": inputfile,
@@ -112,7 +128,7 @@ def get_gnuplot_script(inputfile, inputfilesum, colsumfile, outputfile,
         "exp": exp,
         "rangemin": 0,
         "rangemax": 0,
-        "plotpath": os.path.split(os.path.abspath(__file__))[0]
+        "plotpath": os.path.split(os.path.abspath(__file__))[0],
     }
     if cbrange is None or cbrange[0] is None or cbrange[1] is None:
         data["iscb"] = "#"
@@ -126,12 +142,49 @@ def get_gnuplot_script(inputfile, inputfilesum, colsumfile, outputfile,
 def main(argv=[]):
     """Create a heatmap-type plot for squared pairwise interaction matrices."""
     # parse arguments
-    argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__)
-    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", required=True, help="file to plot, as output of trajognize.stat pairwise statistics (.txt), e.g. nearestneighbor, fqobj, aa")
-    argparser.add_argument("-n", "--index", metavar="INDEX", dest="index", type=int, required=True, help="the paragraph (index) number to plot")
-    argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="optional output directory to write the results to")
-    argparser.add_argument("-l", "--label", metavar="STR", dest="label", help="optional label to put on plot as extra title line")
-    argparser.add_argument("-cb", "--cbrange", metavar="NUM", dest="cbrange", nargs=2, type=float, help="optional data cbrange to plot")
+    argparser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__
+    )
+    argparser.add_argument(
+        "-i",
+        "--inputfile",
+        metavar="FILE",
+        dest="inputfile",
+        required=True,
+        help="file to plot, as output of trajognize.stat pairwise statistics (.txt), e.g. nearestneighbor, fqobj, aa",
+    )
+    argparser.add_argument(
+        "-n",
+        "--index",
+        metavar="INDEX",
+        dest="index",
+        type=int,
+        required=True,
+        help="the paragraph (index) number to plot",
+    )
+    argparser.add_argument(
+        "-o",
+        "--outputpath",
+        metavar="PATH",
+        dest="outputpath",
+        help="optional output directory to write the results to",
+    )
+    argparser.add_argument(
+        "-l",
+        "--label",
+        metavar="STR",
+        dest="label",
+        help="optional label to put on plot as extra title line",
+    )
+    argparser.add_argument(
+        "-cb",
+        "--cbrange",
+        metavar="NUM",
+        dest="cbrange",
+        nargs=2,
+        type=float,
+        help="optional data cbrange to plot",
+    )
     options = argparser.parse_args(argv)
     # check arguments
     inputfile = options.inputfile
@@ -142,12 +195,13 @@ def main(argv=[]):
         outdir = os.path.join(head, plotdir)
     else:
         outdir = options.outputpath
-    if not os.path.isdir(outdir): os.makedirs(outdir)
+    if not os.path.isdir(outdir):
+        os.makedirs(outdir)
     # parse name (header)
     data = trajognize.parse.parse_stat_output_file(inputfile, index)
     headerline = data[0]
     name = headerline[0]
-    outputfilecommon = os.path.join(outdir, tail + '__' + name)
+    outputfilecommon = os.path.join(outdir, tail + "__" + name)
     # add col and row sum to inputfilesum
     inputfilesum = outputfilecommon + ".inputfilesum"
     colsumfile = outputfilecommon + ".colsumfile"
@@ -158,9 +212,18 @@ def main(argv=[]):
     gnufile = outputfilecommon + ".gnu"
     outputfile = outputfilecommon + ".png"
     # write gnuplot script
-    script = get_gnuplot_script(inputfile, inputfilesum, colsumfile, outputfile,
-        id_count, " ".join(headerline), index, exp, options.cbrange)
-    with open(gnufile, 'w') as f:
+    script = get_gnuplot_script(
+        inputfile,
+        inputfilesum,
+        colsumfile,
+        outputfile,
+        id_count,
+        " ".join(headerline),
+        index,
+        exp,
+        options.cbrange,
+    )
+    with open(gnufile, "w") as f:
         f.write(script)
     # call gnuplot
     try:
@@ -168,16 +231,20 @@ def main(argv=[]):
     except WindowsError:
         print("  Error plotting '%s': gnuplot is not available on Windows" % name)
     # create SPGM picture description
-    spgm.create_picture_description(outputfile,
-           [name, exp] + [options.label] if options.label is not None else [],
-           inputfile, gnufile)
+    spgm.create_picture_description(
+        outputfile,
+        [name, exp] + [options.label] if options.label is not None else [],
+        inputfile,
+        gnufile,
+    )
 
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:])) # pass only real params to main
+        sys.exit(main(sys.argv[1:]))  # pass only real params to main
     except Exception as ex:
         print(ex, file=sys.stderr)
         import traceback
+
         traceback.print_exc(ex)
         sys.exit(1)

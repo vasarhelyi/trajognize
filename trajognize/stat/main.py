@@ -7,12 +7,14 @@ import os
 import sys
 import argparse
 import datetime
+
 # imports from base class
 import trajognize
 
 # imports from self subclass
 from . import util
 from . import experiments
+
 
 def main(argv=[]):
     """Main code. Execute as 'bin/stat [options]' or as 'trajognize.stat.main(["option1", "value1", ...])'.
@@ -46,20 +48,120 @@ def main(argv=[]):
     # create stat dictionary from implemented stat functions and classes
     stats = util.get_stat_dict()
     # parse command line arguments
-    argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=main.__doc__, add_help=False)
-    argparser.add_argument("-h", "--help", metavar="HELP", nargs='?', const=[], choices=["stats"]+sorted(stats.keys()), help="Without arguments show this help and exit. Optional arguments for help topics: %s." % (["stats"]+sorted(stats.keys())))
-    argparser.add_argument("-f", "--force", dest="force", action="store_true", default=False, help="force overwrite of output files")
-    argparser.add_argument("-i", "--inputfile", metavar="FILE", dest="inputfile", required=False, help="define barcode input file name (.blobs.barcodes)")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", dest="projectfile", required=False, help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
-    argparser.add_argument("-e", "--entrytimesfile", metavar="FILE", dest="entrytimesfile", help="define entry times input file name (.dat, .txt)")
-    argparser.add_argument("-k", "--calibfile", metavar="FILE", dest="calibfile", help="define space calibration input file name (.xml)")
-    argparser.add_argument("-o", "--outputpath", metavar="PATH", dest="outputpath", help="define output path for .barcodes.stat_*.zip output files")
-    argparser.add_argument("-n", "--framenum", metavar="NUM", dest="framenum", help="define max frames to read (used for debug reasons)")
-    argparser.add_argument("-s", "--statistics", metavar="stat", dest="statistics", nargs='+', choices=sorted(stats.keys()), default=sorted(stats.keys()), help="Define only some of the statistics to run. Possible values: %s" % sorted(stats.keys()))
-    argparser.add_argument("-ns", "--nostatistics", metavar="stat", dest="nostatistics", nargs='+', choices=sorted(stats.keys()), default=[], help="Define some of the statistics not to run. Possible values: %s" % sorted(stats.keys()))
-    argparser.add_argument("-sci", "--subclassindex", metavar="INDEX", dest="subclassindex", nargs='+', type=int, help="Define only some of the stat subclasses to run. Works bugfree only if a single stat is selected.")
-    argparser.add_argument("-d", "--dailyoutput", dest="dailyoutput", action="store_true", default=False, help="Store output separated for days. This is kind of a hack and should be used only with heatmaps.")
-    argparser.add_argument("-sub", "--subtitle", dest="subtitle", action="store_true", default=False, help="create subtitle output")
+    argparser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=main.__doc__,
+        add_help=False,
+    )
+    argparser.add_argument(
+        "-h",
+        "--help",
+        metavar="HELP",
+        nargs="?",
+        const=[],
+        choices=["stats"] + sorted(stats.keys()),
+        help="Without arguments show this help and exit. Optional arguments for help topics: %s."
+        % (["stats"] + sorted(stats.keys())),
+    )
+    argparser.add_argument(
+        "-f",
+        "--force",
+        dest="force",
+        action="store_true",
+        default=False,
+        help="force overwrite of output files",
+    )
+    argparser.add_argument(
+        "-i",
+        "--inputfile",
+        metavar="FILE",
+        dest="inputfile",
+        required=False,
+        help="define barcode input file name (.blobs.barcodes)",
+    )
+    argparser.add_argument(
+        "-p",
+        "--projectfile",
+        metavar="FILE",
+        dest="projectfile",
+        required=False,
+        help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.",
+    )
+    argparser.add_argument(
+        "-e",
+        "--entrytimesfile",
+        metavar="FILE",
+        dest="entrytimesfile",
+        help="define entry times input file name (.dat, .txt)",
+    )
+    argparser.add_argument(
+        "-k",
+        "--calibfile",
+        metavar="FILE",
+        dest="calibfile",
+        help="define space calibration input file name (.xml)",
+    )
+    argparser.add_argument(
+        "-o",
+        "--outputpath",
+        metavar="PATH",
+        dest="outputpath",
+        help="define output path for .barcodes.stat_*.zip output files",
+    )
+    argparser.add_argument(
+        "-n",
+        "--framenum",
+        metavar="NUM",
+        dest="framenum",
+        help="define max frames to read (used for debug reasons)",
+    )
+    argparser.add_argument(
+        "-s",
+        "--statistics",
+        metavar="stat",
+        dest="statistics",
+        nargs="+",
+        choices=sorted(stats.keys()),
+        default=sorted(stats.keys()),
+        help="Define only some of the statistics to run. Possible values: %s"
+        % sorted(stats.keys()),
+    )
+    argparser.add_argument(
+        "-ns",
+        "--nostatistics",
+        metavar="stat",
+        dest="nostatistics",
+        nargs="+",
+        choices=sorted(stats.keys()),
+        default=[],
+        help="Define some of the statistics not to run. Possible values: %s"
+        % sorted(stats.keys()),
+    )
+    argparser.add_argument(
+        "-sci",
+        "--subclassindex",
+        metavar="INDEX",
+        dest="subclassindex",
+        nargs="+",
+        type=int,
+        help="Define only some of the stat subclasses to run. Works bugfree only if a single stat is selected.",
+    )
+    argparser.add_argument(
+        "-d",
+        "--dailyoutput",
+        dest="dailyoutput",
+        action="store_true",
+        default=False,
+        help="Store output separated for days. This is kind of a hack and should be used only with heatmaps.",
+    )
+    argparser.add_argument(
+        "-sub",
+        "--subtitle",
+        dest="subtitle",
+        action="store_true",
+        default=False,
+        help="create subtitle output",
+    )
 
     # if arguments are passed to main(argv), parse them
     if argv:
@@ -101,34 +203,50 @@ def main(argv=[]):
     # output path
     if options.outputpath is None:
         (options.outputpath, tail) = os.path.split(options.inputfile)
-        print("  WARNING! No output path is specified! Default is input file directory: '%s'" % options.outputpath)
+        print(
+            "  WARNING! No output path is specified! Default is input file directory: '%s'"
+            % options.outputpath
+        )
     else:
         print("  Using output path: '%s'" % options.outputpath)
     # dailyoutput
     if options.dailyoutput:
-        print("  WARNING: option '-d' specified, output is written on a daily basis. Use -d in statsum also to parse daily output data.")
+        print(
+            "  WARNING: option '-d' specified, output is written on a daily basis. Use -d in statsum also to parse daily output data."
+        )
     # check output file
-    outputfilecommon = os.path.join(options.outputpath, os.path.split(options.inputfile)[1])
+    outputfilecommon = os.path.join(
+        options.outputpath, os.path.split(options.inputfile)[1]
+    )
     if options.force:
         print("  WARNING: option '-f' specified, forcing overwrite of output files.")
     # frame num
     if options.framenum is not None:
         options.framenum = int(options.framenum)
-        print("  WARNING: debug option '-n' specified, reading only %d frames." % options.framenum)
+        print(
+            "  WARNING: debug option '-n' specified, reading only %d frames."
+            % options.framenum
+        )
     # subtitles
     if options.subtitle:
         if options.dailyoutput:
-            print("  ERROR:  dailyoutput and subtitle params cannot be specified at the same time!")
+            print(
+                "  ERROR:  dailyoutput and subtitle params cannot be specified at the same time!"
+            )
             return
         print("  option -sub specified, creating subtitle files.")
     # statistics - get difference of stat and nostat
-    options.statistics = sorted(list(set(options.statistics).difference(set(options.nostatistics))))
+    options.statistics = sorted(
+        list(set(options.statistics).difference(set(options.nostatistics)))
+    )
     print("  Calculating statistics:", options.statistics)
     # TODO: maybe check subclassindex
     phase.end_phase()
 
     phase.start_phase("Reading project settings file...")
-    project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(
+        options.projectfile
+    )
     if project_settings is None:
         print("  ERROR parsing project settings file")
         return
@@ -155,7 +273,10 @@ def main(argv=[]):
             print("  ERROR parsing entrytimes file")
             return
     if entrytimes:
-        print("  %d entrytime dates read, e.g. first is (%s)" % (len(entrytimes), next(iter(entrytimes.values()))))
+        print(
+            "  %d entrytime dates read, e.g. first is (%s)"
+            % (len(entrytimes), next(iter(entrytimes.values())))
+        )
     else:
         print("  entrytimes are empty")
     phase.end_phase()
@@ -167,7 +288,9 @@ def main(argv=[]):
 
     # parse input barcode file
     phase.start_phase("Reading input barcode file...")
-    barcodes = trajognize.parse.parse_barcode_file(options.inputfile, colorids, 0, options.framenum)
+    barcodes = trajognize.parse.parse_barcode_file(
+        options.inputfile, colorids, 0, options.framenum
+    )
     if barcodes is None:
         print("  empty barcode file found. Exiting.")
         return
@@ -176,19 +299,28 @@ def main(argv=[]):
 
     # parse input log file
     phase.start_phase("Reading input log file...")
-    inputfile = options.inputfile # this is needed for the automatic execution of stat_calculate functions...
+    inputfile = (
+        options.inputfile
+    )  # this is needed for the automatic execution of stat_calculate functions...
     head, tail = os.path.split(inputfile)
-    inputfile_log = inputfile[:-15] # remove '.blobs.barcodes'
-    inputfile_log += '.log'
+    inputfile_log = inputfile[:-15]  # remove '.blobs.barcodes'
+    inputfile_log += ".log"
     if len(project_settings.all_light) > 1:
         (light_log, cage_log) = trajognize.parse.parse_log_file(inputfile_log)
     else:
         # in most projects we use only a single lighting condition, let it be NIGHTLIGHT
         # in most projects we do not use cage correction, let it be the center value
-        light_log = {0: 'NIGHTLIGHT'}
-        cage_log = {0: [project_settings.image_size.x/2, project_settings.image_size.y/2, 0, 90]}
+        light_log = {0: "NIGHTLIGHT"}
+        cage_log = {
+            0: [
+                project_settings.image_size.x / 2,
+                project_settings.image_size.y / 2,
+                0,
+                90,
+            ]
+        }
     if light_log is None and cage_log is None:
-        print("  reading input log file failed. Exiting.""")
+        print("  reading input log file failed. Exiting." "")
         return
     print("  %d LED switches parsed" % len(light_log))
     print("  %d CAGE coordinates parsed" % len(cage_log))
@@ -197,7 +329,10 @@ def main(argv=[]):
     # get days for dailyoutput (current and next if we are around midnight)
     if options.dailyoutput:
         dailyoutput = True
-        days = [str(starttime.date()), str((starttime + datetime.timedelta(days=1)).date())]
+        days = [
+            str(starttime.date()),
+            str((starttime + datetime.timedelta(days=1)).date()),
+        ]
     else:
         dailyoutput = False
         days = [""]
@@ -227,19 +362,30 @@ def main(argv=[]):
         for subclassindex in subclassindices:
             substat = util.get_substat(stat, subclasses, subclassindex)
             phase.start_phase("Calculating %s statistic..." % substat)
-            outputfiles = [trajognize.util.add_subdir_to_filename(outputfilecommon +
-                    util.get_stat_fileext_zipped(substat), day) for day in days]
+            outputfiles = [
+                trajognize.util.add_subdir_to_filename(
+                    outputfilecommon + util.get_stat_fileext_zipped(substat), day
+                )
+                for day in days
+            ]
             breakit = False
             for outputfile in outputfiles:
                 if os.path.isfile(outputfile) and not options.force:
-                    print("  Output file '%s' already exists, add '-f' to force overwrite. Now skipping.\n" % util.get_stat_fileext_zipped(substat))
+                    print(
+                        "  Output file '%s' already exists, add '-f' to force overwrite. Now skipping.\n"
+                        % util.get_stat_fileext_zipped(substat)
+                    )
                     breakit = True
-            if breakit: continue
+            if breakit:
+                continue
             # prepare subtitle file
             if options.subtitle:
                 outputdir = os.path.split(outputfiles[0])[0]
-                if not os.path.isdir(outputdir): os.mkdir(outputdir)
-                subtitlefile = open(outputfilecommon + util.get_stat_fileext(substat) + '.srt', 'w')
+                if not os.path.isdir(outputdir):
+                    os.mkdir(outputdir)
+                subtitlefile = open(
+                    outputfilecommon + util.get_stat_fileext(substat) + ".srt", "w"
+                )
             else:
                 subtitlefile = None
             # do the actual stat calculation
@@ -247,14 +393,19 @@ def main(argv=[]):
             # close subtitle file if applicable
             if options.subtitle:
                 subtitlefile.close()
-            if not dailyoutput: statobjects = [statobjects]
+            if not dailyoutput:
+                statobjects = [statobjects]
             for i, statobject in enumerate(statobjects):
                 if not statobject.files:
                     continue
-                print("  %s stat%s version: %d" % (stat, " (%s)" % days[i] if days[i] else "", statobject.version))
+                print(
+                    "  %s stat%s version: %d"
+                    % (stat, " (%s)" % days[i] if days[i] else "", statobject.version)
+                )
                 statobject.print_status()
                 outputdir = os.path.split(outputfiles[i])[0]
-                if not os.path.isdir(outputdir): os.mkdir(outputdir)
+                if not os.path.isdir(outputdir):
+                    os.mkdir(outputdir)
                 trajognize.util.save_object(statobject, outputfiles[i])
             phase.end_phase()
 

@@ -13,7 +13,10 @@ import trajognize.init
 
 # imports from self subclass
 from . import init
-from . import stat # this is only needed to have functions in the namespace, nothing is used directly...
+from . import (
+    stat,
+)  # this is only needed to have functions in the namespace, nothing is used directly...
+
 
 def get_chosen_barcodes(barcodes, mfix=None):
     """Return list of chosen barcodes from list of barcodes on current frame.
@@ -37,10 +40,10 @@ def get_mfi(barcode):
     """Return mfix_type index for a given barcode (or -1 on error)."""
     if barcode.mfix & trajognize.init.MFix.CHOSEN:
         if barcode.mfix & trajognize.init.MFix.VIRTUAL:
-            return init.mfix_types.index('VIRTUAL')
+            return init.mfix_types.index("VIRTUAL")
         else:
-            return init.mfix_types.index('REAL')
-    return -1 # which is VIRTUAL as well
+            return init.mfix_types.index("REAL")
+    return -1  # which is VIRTUAL as well
 
 
 def get_stat_fileext(stat, exp=None, asext=True):
@@ -54,11 +57,15 @@ def get_stat_fileext(stat, exp=None, asext=True):
     if exp is not None:
         # if exp is possibly a day for dailyoutput, e.g. 2010-07-10
         # TODO: this is a bad ass hack I know and works for max. 1000 years only...
-        if exp.startswith('2') and exp.find("-") != -1 and len(exp) == 10:
+        if exp.startswith("2") and exp.find("-") != -1 and len(exp) == 10:
             expstr = "day"
         else:
             expstr = "exp"
-    return "%sstat_%s%s" % ("." if asext else "", stat, "" if exp is None else "__%s_%s" % (expstr, exp))
+    return "%sstat_%s%s" % (
+        "." if asext else "",
+        stat,
+        "" if exp is None else "__%s_%s" % (expstr, exp),
+    )
 
 
 def get_stat_fileext_zipped(stat):
@@ -77,7 +84,7 @@ def get_stat_from_filename(inputfile):
                       *.blobs.barcodes.stat_[statname].zip
 
     """
-    match = re.match(r'.*\.blobs\.barcodes\.stat_(.*)\.zip$', inputfile)
+    match = re.match(r".*\.blobs\.barcodes\.stat_(.*)\.zip$", inputfile)
     if match:
         return match.group(1)
     return None
@@ -94,7 +101,7 @@ def get_substat(stat, subclasses, subclassindex):
     if subclasses is None:
         return stat
     else:
-        return stat + '.' + subclasses[subclassindex]
+        return stat + "." + subclasses[subclassindex]
 
 
 def print_stats_help(stats, statlist=None, fileobj=None):
@@ -110,14 +117,31 @@ def print_stats_help(stats, statlist=None, fileobj=None):
     if statlist is None:
         statlist = sorted(stats)
     for stat in statlist:
-        trajognize.util.print_underlined("'%s' statistic description" % stat, 1, fileobj)
-        print("init: {}".format(stats[stat]['init']), file=fileobj)
-        print(getattr(sys.modules['trajognize.stat.init'], stats[stat]['init'][0]).__doc__, file=fileobj)
-        if stats[stat]['subf'] is not None:
-            print("subf: {}".format(stats[stat]['subf']), file=fileobj)
-            print(getattr(sys.modules['trajognize.stat.stat'], stats[stat]['subf'][0]).__doc__, file=fileobj)
-        print("calc: {}".format(stats[stat]['calc']), file=fileobj)
-        print(getattr(sys.modules['trajognize.stat.stat'], stats[stat]['calc'][0]).__doc__, file=fileobj)
+        trajognize.util.print_underlined(
+            "'%s' statistic description" % stat, 1, fileobj
+        )
+        print("init: {}".format(stats[stat]["init"]), file=fileobj)
+        print(
+            getattr(
+                sys.modules["trajognize.stat.init"], stats[stat]["init"][0]
+            ).__doc__,
+            file=fileobj,
+        )
+        if stats[stat]["subf"] is not None:
+            print("subf: {}".format(stats[stat]["subf"]), file=fileobj)
+            print(
+                getattr(
+                    sys.modules["trajognize.stat.stat"], stats[stat]["subf"][0]
+                ).__doc__,
+                file=fileobj,
+            )
+        print("calc: {}".format(stats[stat]["calc"]), file=fileobj)
+        print(
+            getattr(
+                sys.modules["trajognize.stat.stat"], stats[stat]["calc"][0]
+            ).__doc__,
+            file=fileobj,
+        )
 
 
 def get_stat_dict():
@@ -135,14 +159,27 @@ def get_stat_dict():
     """
     # get all corresponding functions
     def is_statfunc(f):
-        return inspect.isfunction(f) and f.__module__ == 'trajognize.stat.stat' and f.__name__.startswith("calculate_")
+        return (
+            inspect.isfunction(f)
+            and f.__module__ == "trajognize.stat.stat"
+            and f.__name__.startswith("calculate_")
+        )
+
     statfunction_list = inspect.getmembers(trajognize.stat.stat, is_statfunc)
+
     def is_subclassfunc(f):
-        return inspect.isfunction(f) and f.__module__ == 'trajognize.stat.stat' and f.__name__.startswith("subclasses_")
+        return (
+            inspect.isfunction(f)
+            and f.__module__ == "trajognize.stat.stat"
+            and f.__name__.startswith("subclasses_")
+        )
+
     subclassfunction_list = inspect.getmembers(trajognize.stat.stat, is_subclassfunc)
     subclassfunction_names = [s[0] for s in subclassfunction_list]
+
     def is_statclass(c):
-        return inspect.isclass(c) and c.__module__ == 'trajognize.stat.init'
+        return inspect.isclass(c) and c.__module__ == "trajognize.stat.init"
+
     class_list = inspect.getmembers(trajognize.stat.init, is_statclass)
     # get class names
     classnames = [c[0] for c in class_list]
@@ -150,7 +187,7 @@ def get_stat_dict():
     stats = dict()
     for f in statfunction_list:
         # get stat name
-        stat = f[0][len("calculate_"):]
+        stat = f[0][len("calculate_") :]
         # get class name
         classname_lower = stat
         # get subclass names
@@ -166,11 +203,24 @@ def get_stat_dict():
             i = classnames_lower.index(classname_lower)
             c = class_list[i]
             stats[stat] = {
-                'init': [classnames[i], inspect.getargspec(c[1].__init__)[0][1:]],
-                'calc': [f[0], inspect.getargspec(f[1])[0] if inspect.getargspec(f[1])[3] is None else inspect.getargspec(f[1])[0][:-len(inspect.getargspec(f[1])[3])]],
-                'write': ["write_results", inspect.getargspec(c[1].write_results)[0][1:]],
-                'writedaily': ["write_dailyoutput_results", inspect.getargspec(c[1].write_dailyoutput_results)[0][1:]],
-                'subf': subclassfunction,
+                "init": [classnames[i], inspect.getargspec(c[1].__init__)[0][1:]],
+                "calc": [
+                    f[0],
+                    inspect.getargspec(f[1])[0]
+                    if inspect.getargspec(f[1])[3] is None
+                    else inspect.getargspec(f[1])[0][
+                        : -len(inspect.getargspec(f[1])[3])
+                    ],
+                ],
+                "write": [
+                    "write_results",
+                    inspect.getargspec(c[1].write_results)[0][1:],
+                ],
+                "writedaily": [
+                    "write_dailyoutput_results",
+                    inspect.getargspec(c[1].write_dailyoutput_results)[0][1:],
+                ],
+                "subf": subclassfunction,
             }
     return stats
 
@@ -186,13 +236,20 @@ def init_stat(stats, stat, f_back=1):
     """
     caller_namespace = inspect.stack()[f_back][0].f_locals
     try:
-        real_params = [caller_namespace[param_name] for param_name in stats[stat]['init'][1]]
+        real_params = [
+            caller_namespace[param_name] for param_name in stats[stat]["init"][1]
+        ]
     except KeyError:
-        print("TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!" % stats[stat]['init'][0])
+        print(
+            "TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!"
+            % stats[stat]["init"][0]
+        )
         raise
     finally:
         del caller_namespace
-    return getattr(sys.modules['trajognize.stat.init'], stats[stat]['init'][0])(*real_params)
+    return getattr(sys.modules["trajognize.stat.init"], stats[stat]["init"][0])(
+        *real_params
+    )
 
 
 def calculate_stat(stats, stat, f_back=1):
@@ -206,13 +263,20 @@ def calculate_stat(stats, stat, f_back=1):
     """
     caller_namespace = inspect.stack()[f_back][0].f_locals
     try:
-        real_params = [caller_namespace[param_name] for param_name in stats[stat]['calc'][1]]
+        real_params = [
+            caller_namespace[param_name] for param_name in stats[stat]["calc"][1]
+        ]
     except KeyError:
-        print("TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!" % stats[stat]['calc'][0])
+        print(
+            "TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!"
+            % stats[stat]["calc"][0]
+        )
         raise
     finally:
         del caller_namespace
-    return getattr(sys.modules['trajognize.stat.stat'], stats[stat]['calc'][0])(*real_params)
+    return getattr(sys.modules["trajognize.stat.stat"], stats[stat]["calc"][0])(
+        *real_params
+    )
 
 
 def subclasses_stat(stats, stat, f_back=1):
@@ -224,18 +288,25 @@ def subclasses_stat(stats, stat, f_back=1):
     :param f_back: number of frames to jump back in caller stack
 
     """
-    if stats[stat]['subf'] is None:
+    if stats[stat]["subf"] is None:
         return None
 
     caller_namespace = inspect.stack()[f_back][0].f_locals
     try:
-        real_params = [caller_namespace[param_name] for param_name in stats[stat]['subf'][1]]
+        real_params = [
+            caller_namespace[param_name] for param_name in stats[stat]["subf"][1]
+        ]
     except KeyError:
-        print("TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!" % stats[stat]['calc'][0])
+        print(
+            "TODO: define parameters passed to '%s' in caller namespace with the same name as in function def!"
+            % stats[stat]["calc"][0]
+        )
         raise
     finally:
         del caller_namespace
-    return getattr(sys.modules['trajognize.stat.stat'], stats[stat]['subf'][0])(*real_params)
+    return getattr(sys.modules["trajognize.stat.stat"], stats[stat]["subf"][0])(
+        *real_params
+    )
 
 
 def write_stat(stats, stat, object, f_back=1):
@@ -250,10 +321,15 @@ def write_stat(stats, stat, object, f_back=1):
     """
     caller_namespace = inspect.stack()[f_back][0].f_locals
     try:
-        real_params = [caller_namespace[param_name] for param_name in stats[stat]['write'][1]]
+        real_params = [
+            caller_namespace[param_name] for param_name in stats[stat]["write"][1]
+        ]
 
     except KeyError:
-        print("TODO: define parameters passed to %s in caller namespace with the same name as in function def!" % stats[stat]['write'][0])
+        print(
+            "TODO: define parameters passed to %s in caller namespace with the same name as in function def!"
+            % stats[stat]["write"][0]
+        )
         raise
     finally:
         del caller_namespace
@@ -272,16 +348,23 @@ def write_dailyoutput_stat(stats, stat, object, f_back=1):
     """
     caller_namespace = inspect.stack()[f_back][0].f_locals
     try:
-        real_params = [caller_namespace[param_name] for param_name in stats[stat]['writedaily'][1]]
+        real_params = [
+            caller_namespace[param_name] for param_name in stats[stat]["writedaily"][1]
+        ]
     except KeyError:
-        print("TODO: define parameters passed to %s in caller namespace with the same name as in function def!" % stats[stat]['writedaily'][0])
+        print(
+            "TODO: define parameters passed to %s in caller namespace with the same name as in function def!"
+            % stats[stat]["writedaily"][0]
+        )
         raise
     finally:
         del caller_namespace
     return object.write_dailyoutput_results(*real_params)
 
 
-def get_subtitle_string(subtitleindex, sec, msg, color="#ffffff", x=None, y=None, imx=1920, imy=1080):
+def get_subtitle_string(
+    subtitleindex, sec, msg, color="#ffffff", x=None, y=None, imx=1920, imy=1080
+):
     """Return a string to write to a subtitle file."""
     lines = [""]
     # subtitleindex
@@ -289,22 +372,21 @@ def get_subtitle_string(subtitleindex, sec, msg, color="#ffffff", x=None, y=None
     # timing
     m, s = divmod(sec, 60)
     h, m = divmod(m, 60)
-    fromtime = "%d:%02d:%02d.%03d" % (h, m, int(s), int((s-int(s))*1000))
-    m, s = divmod(sec+1, 60)
+    fromtime = "%d:%02d:%02d.%03d" % (h, m, int(s), int((s - int(s)) * 1000))
+    m, s = divmod(sec + 1, 60)
     h, m = divmod(m, 60)
-    totime = "%d:%02d:%02d.%03d" % (h, m, int(s), int((s-int(s))*1000))
+    totime = "%d:%02d:%02d.%03d" % (h, m, int(s), int((s - int(s)) * 1000))
     lines.append("%s --> %s" % (fromtime, totime))
     # pos and color
     if x is not None and y is not None:
-        pos = '{\\pos(%d,%d)}' % ( \
-                round( x * 384 / imx ),
-                round( y * 288 / imy + 8))
+        pos = "{\\pos(%d,%d)}" % (round(x * 384 / imx), round(y * 288 / imy + 8))
     else:
         pos = ""
     lines.append('%s<font color="%s">%s</font>' % (pos, color, msg))
     lines.append("")
-    #return result
+    # return result
     return "\n".join(lines)
+
 
 def distance_from_line(p, a, b):
     """Calculate closest distance from point to a line segment.
@@ -322,8 +404,8 @@ def distance_from_line(p, a, b):
     if line_length < 0.00000001:
         return 9999
 
-    u = (p.x - a.x)*(b.x - a.x) + (p.y - a.y)*(b.y - a.y)
-    u /= (line_length * line_length)
+    u = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)
+    u /= line_length * line_length
 
     if (u < 0.00001) or (u > 1):
         # closest point does not fall within the line segment,
@@ -337,11 +419,12 @@ def distance_from_line(p, a, b):
         iy = a.y + u * (b.y - a.y)
         return hypot(p.x - ix, p.y - iy)
 
+
 def distance_from_polygon(pos, poly):
     """Return the closest distance between a point and
     an arbitrary polygon (consisting of points defining line segments)."""
-    return min(distance_from_line(pos, poly[i-1], poly[i]) \
-            for i in range(len(poly)))
+    return min(distance_from_line(pos, poly[i - 1], poly[i]) for i in range(len(poly)))
+
 
 def is_inside_polygon(pos, poly):
     """Return true if pos is inside poly.
@@ -350,13 +433,13 @@ def is_inside_polygon(pos, poly):
     n = len(poly)
     inside = False
     p1x, p1y = poly[0]
-    for i in range(n+1):
-        p2x,p2y = poly[i % n]
+    for i in range(n + 1):
+        p2x, p2y = poly[i % n]
         if pos.y > min(p1y, p2y):
             if pos.y <= max(p1y, p2y):
                 if pos.x <= max(p1x, p2x):
                     if p1y != p2y:
-                        xints = (pos.y - p1y)*(p2x - p1x)/(p2y - p1y) + p1x
+                        xints = (pos.y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
                     if p1x == p2x or pos.x <= xints:
                         inside = not inside
         p1x, p1y = p2x, p2y

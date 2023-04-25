@@ -11,8 +11,9 @@ class MFix(IntEnum):
     """mFIX values of barcodes.
     All can be bitwise OR-ed, some are mutually exclusive.
     """
+
     #: mfix = 0: final deletion, do not use for any reason!!!
-    #ZERO = 0
+    # ZERO = 0
     #: mfix value when a barcode is fully found (i.e. all blobs are found in it)
     FULLFOUND = 1
     #: mfix value for multiple barcodes simultaneously having the same ID
@@ -36,9 +37,11 @@ class MFix(IntEnum):
     #: temporary mfix used for any debugging reason to see where it took effect during visualization
     DUMMY_LAST = 1024
 
+
 ################################################################################
 class TrajState(IntEnum):
     """possible state values of trajectories (and conflicts)."""
+
     #: enum for a deleted trajectory
     DELETED = 0
     #: enum for a trajectory that is not yet deleted/chosen, but exists
@@ -50,26 +53,33 @@ class TrajState(IntEnum):
     #: enum for a trajectory that was false detection and color has changed
     CHANGEDID = 4
 
+
 ################################################################################
 # named tuples for shapes
 # (0,0)=(top, left) >0, v90, <180, ^270
 
-Point = namedtuple('Point','x y')
-Circle = namedtuple('Circle','x y r a1 a2') # arc1 and arc2 should be in CW [deg] from -->
-Ellipse = namedtuple('Ellipse','x y a b o')
-Rectangle = namedtuple('Rectangle','x y w h')
+Point = namedtuple("Point", "x y")
+Circle = namedtuple(
+    "Circle", "x y r a1 a2"
+)  # arc1 and arc2 should be in CW [deg] from -->
+Ellipse = namedtuple("Ellipse", "x y a b o")
+Rectangle = namedtuple("Rectangle", "x y w h")
 
 
 ################################################################################
 # named tuples for blob file input
-ColorBlob = namedtuple('ColorBlob','color centerx centery radius barcodeindices')
-ColorBlobE = namedtuple('ColorBlobE','color centerx centery radius axisA axisB orientation barcodeindices') # extended type introduced for PROJECT_FISH
+ColorBlob = namedtuple("ColorBlob", "color centerx centery radius barcodeindices")
+ColorBlobE = namedtuple(
+    "ColorBlobE", "color centerx centery radius axisA axisB orientation barcodeindices"
+)  # extended type introduced for PROJECT_FISH
 
-MDBlob = namedtuple('MDBlob','centerx centery axisA axisB orientation')
-RatBlob = namedtuple('RatBlob','centerx centery axisA axisB orientation')
+MDBlob = namedtuple("MDBlob", "centerx centery axisA axisB orientation")
+RatBlob = namedtuple("RatBlob", "centerx centery axisA axisB orientation")
 
 # named tuples for color codes and other useful things
-BarcodeIndex = namedtuple('BarcodeIndex','k i') # k = coloridindex, i = second (final) index
+BarcodeIndex = namedtuple(
+    "BarcodeIndex", "k i"
+)  # k = coloridindex, i = second (final) index
 
 
 ################################################################################
@@ -77,9 +87,22 @@ class Variables:
     """A class for all dynamic variables as a common placeholder for quick
     load and save operations at the middle of execution.
     """
-    __slots__ = ('colorids', 'project_settings', 'color_blobs', 'md_blobs',
-            'rat_blobs', 'barcodes', 'sdistlists', 'tdistlists', 'clusterlists',
-            'clusterindices', 'mdindices', 'trajectories', 'trajsonframe')
+
+    __slots__ = (
+        "colorids",
+        "project_settings",
+        "color_blobs",
+        "md_blobs",
+        "rat_blobs",
+        "barcodes",
+        "sdistlists",
+        "tdistlists",
+        "clusterlists",
+        "clusterindices",
+        "mdindices",
+        "trajectories",
+        "trajsonframe",
+    )
 
     def __init__(self):
         """Empty initialization."""
@@ -135,16 +158,27 @@ class Barcode:
     the index (coloridindex) in the array holding this object.
 
     """
-    # Keep memory requirements low by preventing the creation of instance dictionaries.
-    __slots__ = ('centerx', 'centery', 'orientation', 'mfix', 'blobindices')
 
-    def __init__(self, centerx=0, centery=0, orientation=0, mfix=0, MCHIPS=3,
-            blobindices=[]):
-        self.centerx = centerx               # [pixel]
-        self.centery = centery               # [pixel]
-        self.orientation = orientation       # [rad]
-        self.mfix = mfix                     # nobody expects the Spanish inquisition!
-        self.blobindices = list(blobindices) if blobindices else [None] * MCHIPS # create new list
+    # Keep memory requirements low by preventing the creation of instance dictionaries.
+    __slots__ = ("centerx", "centery", "orientation", "mfix", "blobindices")
+
+    def __init__(
+        self,
+        centerx=0.0,
+        centery=0.0,
+        orientation=0.0,
+        mfix=0,
+        MCHIPS=3,
+        blobindices=[],
+    ):
+        self.centerx = centerx  # [pixel]
+        self.centery = centery  # [pixel]
+        self.orientation = orientation  # [rad]
+        self.mfix = mfix  # nobody expects the Spanish inquisition!
+        self.blobindices = (
+            list(blobindices) if blobindices else [None] * MCHIPS
+        )  # create new list
+
 
 class Trajectory:
     """A trajectory, consisting of barcodes of the same ID on consecutive frames.
@@ -157,49 +191,70 @@ class Trajectory:
     because it can be calculated as firstframe + list index.
 
     """
+
     # Keep memory requirements low by preventing the creation of instance dictionaries.
-    __slots__ = ('k', 'firstframe', 'barcodeindices', 'fullfound_count', 'fullnocluster_count',
-            'colorblob_count', 'sharesblob_count', 'offset_count', 'state')
+    __slots__ = (
+        "k",
+        "firstframe",
+        "barcodeindices",
+        "fullfound_count",
+        "fullnocluster_count",
+        "colorblob_count",
+        "sharesblob_count",
+        "offset_count",
+        "state",
+    )
 
     def __init__(self, firstframe, coloridindex, MCHIPS):
-        self.k = coloridindex # coloridindex of the trajectory
+        self.k = coloridindex  # coloridindex of the trajectory
         self.firstframe = firstframe
         self.barcodeindices = []
-        self.fullfound_count = 0 # number of fullfound barcodes
-        self.fullnocluster_count = 0 # number of fullfound barcodes that are not part of a larger cluster
-        self.colorblob_count = [0 for x in range(MCHIPS)] # number of found blobs at a given position in the barcode
-        self.sharesblob_count = 0 # number of barcodes that share blobs with other barcodes
-        self.offset_count = 0 # arbitrary count that modifies traj score. Could decrease or increase.
+        self.fullfound_count = 0  # number of fullfound barcodes
+        self.fullnocluster_count = (
+            0  # number of fullfound barcodes that are not part of a larger cluster
+        )
+        self.colorblob_count = [
+            0 for x in range(MCHIPS)
+        ]  # number of found blobs at a given position in the barcode
+        self.sharesblob_count = (
+            0  # number of barcodes that share blobs with other barcodes
+        )
+        self.offset_count = (
+            0  # arbitrary count that modifies traj score. Could decrease or increase.
+        )
         self.state = TrajState.INITIALIZED
 
 
 class Connections:
     """Object used by connect_chosen_trajs(), containing all info about possible
     good connections between two chosen trajs."""
+
     def __init__(self, fromframelimit):
-        self.data = [] # list of possible connections with (k,i) traj elements
+        self.data = []  # list of possible connections with (k,i) traj elements
         self.fromframelimit = fromframelimit
         self.recursionlimitreached = False
 
 
 class Conflict:
     """A conflict object."""
-    __slots__ = ('ctype', 'cwith', 'firstframe', 'barcodeindices', 'state')
+
+    __slots__ = ("ctype", "cwith", "firstframe", "barcodeindices", "state")
 
     def __init__(self, ctype, firstframe, cwith=None):
-        self.ctype = ctype # conflict type (string so far)
-        self.firstframe = firstframe # start of conflict (int)
-        self.cwith = cwith # conflict with (list of coloridindices)
-        self.barcodeindices = [] # barcodes involved
-        self.state = TrajState.INITIALIZED # state is defined for trajs but could be used here as well
+        self.ctype = ctype  # conflict type (string so far)
+        self.firstframe = firstframe  # start of conflict (int)
+        self.cwith = cwith  # conflict with (list of coloridindices)
+        self.barcodeindices = []  # barcodes involved
+        self.state = (
+            TrajState.INITIALIZED
+        )  # state is defined for trajs but could be used here as well
 
 
 class MetaTraj:
     """A meta-trajectory, consisting of consecutive trajectories."""
-    __slots__ = ('trajs', 'score')
+
+    __slots__ = ("trajs", "score")
 
     def __init__(self, trajs):
         self.trajs = trajs
         self.score = 0
-
-

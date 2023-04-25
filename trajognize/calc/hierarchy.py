@@ -34,22 +34,24 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
     """
     n = len(W)
     if isinstance(W, dict):
-        keys = list(W.keys()) # keys of input data dict
+        keys = list(W.keys())  # keys of input data dict
     elif isinstance(W, list):
-        keys = list(range(n)) # indices in the input data list matrix
+        keys = list(range(n))  # indices in the input data list matrix
     else:
         raise NotImplementedError("unhandled type of object W")
 
-    ordering = collections.defaultdict() # ordering[ID] = order value (source bottom, sink top)
+    ordering = (
+        collections.defaultdict()
+    )  # ordering[ID] = order value (source bottom, sink top)
 
     order_next_pos = 0
     order_next_neg = -1
     sources = []
     sinks = []
-    indegrees = collections.defaultdict() # [ID]
-    outdegrees = collections.defaultdict() # [ID]
-    instrengths = collections.defaultdict() # [ID]
-    outstrengths = collections.defaultdict() # [ID]
+    indegrees = collections.defaultdict()  # [ID]
+    outdegrees = collections.defaultdict()  # [ID]
+    instrengths = collections.defaultdict()  # [ID]
+    outstrengths = collections.defaultdict()  # [ID]
     nodes_left = n
 
     # initialize values
@@ -85,14 +87,16 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
             sinks.append(j)
 
     # sort initial sources and sinks
-    sources.sort(key=lambda x: outstrengths[x] - instrengths[x], reverse=True) # descending
-    sinks.sort(key=lambda x: outstrengths[x] - instrengths[x]) # ascending
+    sources.sort(
+        key=lambda x: outstrengths[x] - instrengths[x], reverse=True
+    )  # descending
+    sinks.sort(key=lambda x: outstrengths[x] - instrengths[x])  # ascending
 
     # While we have any nodes left...
     while nodes_left:
         # (1) Remove the sources one by one
         while sources:
-            j = sources.pop(0) # TODO: any ordering for independent sources?
+            j = sources.pop(0)  # TODO: any ordering for independent sources?
             # Add the node to the ordering
             ordering[j] = order_next_pos
             order_next_pos += 1
@@ -102,9 +106,10 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
             outdegrees[j] = -1
             # Get the neighbors and decrease their degrees
             for k in keys:
-                if W[j][k] > max_noedge_value: # k = neighbor below
+                if W[j][k] > max_noedge_value:  # k = neighbor below
                     # Already removed, continue
-                    if indegrees[k] <= 0: continue
+                    if indegrees[k] <= 0:
+                        continue
                     indegrees[k] -= 1
                     instrengths[k] -= W[j][k]
                     if not indegrees[k]:
@@ -112,10 +117,11 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
 
         # (1) Remove the sinks one by one
         while sinks:
-            j = sinks.pop(0) # TODO: any ordering for independent sinks?
+            j = sinks.pop(0)  # TODO: any ordering for independent sinks?
             # Maybe the vertex became sink and source at the same time, hence it
             # was already removed in the previous iteration. Check it.
-            if indegrees[j] < 0: continue
+            if indegrees[j] < 0:
+                continue
             # Add the node to the ordering
             ordering[j] = order_next_neg
             order_next_neg -= 1
@@ -125,21 +131,22 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
             outdegrees[j] = -1
             # Get the neighbors and decrease their degrees
             for k in keys:
-                if W[k][j] > max_noedge_value: # k = neighbor above
+                if W[k][j] > max_noedge_value:  # k = neighbor above
                     # Already removed, continue
-                    if outdegrees[k] <= 0: continue
+                    if outdegrees[k] <= 0:
+                        continue
                     outdegrees[k] -= 1
                     outstrengths[k] -= W[k][j]
                     if not outdegrees[k]:
                         sinks.append(k)
 
-
         # (3) No more sources or sinks. Find the node with the largest
         # difference between its out-strength and in-strength
         v = None
-        maxdiff = -float('Inf')
+        maxdiff = -float("Inf")
         for j in keys:
-            if outdegrees[j] < 0: continue
+            if outdegrees[j] < 0:
+                continue
             diff = outstrengths[j] - instrengths[j]
             if diff > maxdiff:
                 maxdiff = diff
@@ -154,18 +161,20 @@ def feedback_arc_set_eades(W, max_noedge_value=0):
             outdegrees[v] = -1
             # Remove outgoing edges
             for k in keys:
-                if W[v][k] > max_noedge_value: # k = neighbor below
+                if W[v][k] > max_noedge_value:  # k = neighbor below
                     # Already removed, continue
-                    if indegrees[k] <= 0: continue
+                    if indegrees[k] <= 0:
+                        continue
                     indegrees[k] -= 1
                     instrengths[k] -= W[v][k]
                     if not indegrees[k]:
                         sources.append(k)
             # Remove incoming edges
             for k in keys:
-                if W[k][v] > max_noedge_value: # k = neighbor above
+                if W[k][v] > max_noedge_value:  # k = neighbor above
                     # Already removed, continue
-                    if outdegrees[k] <= 0: continue
+                    if outdegrees[k] <= 0:
+                        continue
                     outdegrees[k] -= 1
                     outstrengths[k] -= W[k][v]
                     if not outdegrees[k]:
@@ -211,13 +220,13 @@ def dominance_transitivity(W, idorder=None, max_noedge_value=0):
     lower = 0
     if idorder is None:
         if isinstance(W, dict):
-            idorder = list(W.keys()) # TODO: this case is not defined well!!!
+            idorder = list(W.keys())  # TODO: this case is not defined well!!!
         elif isinstance(W, list):
             idorder = list(range(n))
         else:
             raise NotImplementedError("unhandled type of object W")
-    for j in range(0, n - 1): # from
-        for k in range(j + 1, n): # to
+    for j in range(0, n - 1):  # from
+        for k in range(j + 1, n):  # to
             if W[idorder[j]][idorder[k]] > max_noedge_value:
                 upper += W[idorder[j]][idorder[k]]
             if W[idorder[k]][idorder[j]] > max_noedge_value:
@@ -233,7 +242,7 @@ def dominance_transitivity(W, idorder=None, max_noedge_value=0):
         return upper / (upper + lower)
 
 
-def decompose_CD(W, idorder=None, s_index_power = 1):
+def decompose_CD(W, idorder=None, s_index_power=1):
     """Calculate Common - Dominant matrix decomposition
 
     Warning: works well for positive matrices
@@ -259,7 +268,7 @@ def decompose_CD(W, idorder=None, s_index_power = 1):
     n = len(W)
     if idorder is None:
         if isinstance(W, dict):
-            idorder = list(W.keys()) # TODO: this case is not defined well!!!
+            idorder = list(W.keys())  # TODO: this case is not defined well!!!
         elif isinstance(W, list):
             idorder = list(range(n))
         else:
@@ -275,28 +284,28 @@ def decompose_CD(W, idorder=None, s_index_power = 1):
         for j in idorder:
             # check for NaN
             if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
-                D[i][j] = float('nan')
-                C[i][j] = float('nan')
-                R[i][j] = float('nan')
+                D[i][j] = float("nan")
+                C[i][j] = float("nan")
+                R[i][j] = float("nan")
                 continue
             # D and C
             if W[i][j] > W[j][i]:
-                D[i][j] = W[i][j] - W[j][i] # max - min
-                C[i][j] = W[j][i] # min
-                k = W[i][j] # max
+                D[i][j] = W[i][j] - W[j][i]  # max - min
+                C[i][j] = W[j][i]  # min
+                k = W[i][j]  # max
             else:
                 D[i][j] = 0
-                C[i][j] = W[i][j] # min
-                k = W[j][i] # max
+                C[i][j] = W[i][j]  # min
+                k = W[j][i]  # max
             # R
             if i != j and k:
                 R[i][j] = C[i][j] * C[i][j] / k
             else:
                 R[i][j] = 0
             # s_index
-            if i!= j:
-                s_index[0] += C[i][j]**s_index_power
-                s_index[1] += W[i][j]**s_index_power
+            if i != j:
+                s_index[0] += C[i][j] ** s_index_power
+                s_index[1] += W[i][j] ** s_index_power
 
     # s_index correction
     if not s_index[1]:
@@ -333,20 +342,22 @@ def BBS_scale_score(W):
         raise NotImplementedError("unhandled type of object W")
 
     # params for each ID
-    wins = dict([(i, 0) for i in idorder]) # wins
-    loses = wins.copy()                    # loses
-    all = wins.copy()                      # all agonistic encounters
+    wins = dict([(i, 0) for i in idorder])  # wins
+    loses = wins.copy()  # loses
+    all = wins.copy()  # all agonistic encounters
 
     # other params
-    errorlimit = 1e-6 # TODO: what is the error limit to reach???
-    error = errorlimit + 1 # > errorlimit for sure
+    errorlimit = 1e-6  # TODO: what is the error limit to reach???
+    error = errorlimit + 1  # > errorlimit for sure
     iteration = 0
 
     # calculate wins and loses
     for i in idorder:
         for j in idorder:
-            if i == j: continue
-            if W[i][j] != W[i][j]: continue # nan excluded
+            if i == j:
+                continue
+            if W[i][j] != W[i][j]:
+                continue  # nan excluded
             wins[i] += W[i][j]
             loses[j] += W[i][j]
 
@@ -358,7 +369,7 @@ def BBS_scale_score(W):
     scores = {}
     for i in idorder:
         if all[i]:
-            scores[i] = math.sqrt(2 * math.pi) * (wins[i] - all[i]/2) / all[i]
+            scores[i] = math.sqrt(2 * math.pi) * (wins[i] - all[i] / 2) / all[i]
         else:
             scores[i] = 0
     olds = scores.copy()
@@ -370,8 +381,10 @@ def BBS_scale_score(W):
         for i in idorder:
             k = 0
             for j in idorder:
-                if i == j: continue
-                if W[i][j] != W[i][j] or W[j][i] != W[j][i]: continue # nan excluded
+                if i == j:
+                    continue
+                if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
+                    continue  # nan excluded
                 if W[i][j] or W[j][i]:
                     means[i] += scores[j]
                     k += 1
@@ -379,7 +392,7 @@ def BBS_scale_score(W):
                 means[i] /= k
         # calculate new scale scores and error
         oldolds = olds.copy()  # store old old
-        olds = scores.copy() # store old
+        olds = scores.copy()  # store old
         error = 0
         for i in idorder:
             # calculate new s
@@ -392,7 +405,7 @@ def BBS_scale_score(W):
         # debug
         # print("BBS iteration %d, total error = %g" % (iteration, error))
 
-    #if error <= errorlimit:
+    # if error <= errorlimit:
     #    print("BBS iteration %d, error limit of %g reached" % (iteration, errorlimit))
 
     ############################
@@ -403,12 +416,15 @@ def BBS_scale_score(W):
     j = 0
     k = 0
     for i in idorder:
-        if not all[i]: continue
+        if not all[i]:
+            continue
         j += 1
         k += scores[i]
-    if j: k /= j
+    if j:
+        k /= j
     for i in idorder:
-        if not all[i]: continue
+        if not all[i]:
+            continue
         scores[i] -= k
 
     return scores
@@ -444,57 +460,66 @@ def deVries_modified_Davids_score(W, mode=4):
         raise NotImplementedError("unhandled type of object W")
 
     # params for each ID
-    wins = dict([(i, 0) for i in idorder]) # wins
-    loses = wins.copy()                    # loses
-    wins2 = wins.copy()                    # weighted wins
-    loses2 = wins.copy()                   # weighted loses
-    all = wins.copy()                      # all agonistic encounters
+    wins = dict([(i, 0) for i in idorder])  # wins
+    loses = wins.copy()  # loses
+    wins2 = wins.copy()  # weighted wins
+    loses2 = wins.copy()  # weighted loses
+    all = wins.copy()  # all agonistic encounters
 
     # calculate Dij (old: Pij) and Dji (old: Pji) for all IDs
     nans = 0
     for i in idorder:
         for j in idorder:
-            if i == j: continue
+            if i == j:
+                continue
             if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
                 nans += 1
                 continue
             n = W[i][j] + W[j][i]
-            if mode in [0, 2, 4]: # original David's score
+            if mode in [0, 2, 4]:  # original David's score
                 if n:
                     wins[i] += W[i][j] / n
                     loses[i] += W[j][i] / n
-            elif mode in [1, 3]: # modified David's score
+            elif mode in [1, 3]:  # modified David's score
                 if n != -1:
                     wins[i] += (W[i][j] + 0.5) / (n + 1)
                     loses[i] += (W[j][i] + 0.5) / (n + 1)
     nans /= 2
-    if nans: print("Warning: there are %d not number elements, normDS calculation will be somewhat wrong..." % nans)
+    if nans:
+        print(
+            "Warning: there are %d not number elements, normDS calculation will be somewhat wrong..."
+            % nans
+        )
 
     # calculate weighted Dij (old: Pij) and Dji (old: Pji) for all IDs
     for i in idorder:
         for j in idorder:
-            if i == j: continue
-            if W[i][j] != W[i][j] or W[j][i] != W[j][i]: continue
+            if i == j:
+                continue
+            if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
+                continue
             n = W[i][j] + W[j][i]
-            if mode in [0, 2, 4]: # original David's score
+            if mode in [0, 2, 4]:  # original David's score
                 if n:
                     wins2[i] += wins[i] * W[i][j] / n
                     loses2[i] += loses[i] * W[j][i] / n
-            elif mode in [1, 3]: # modified David's score
+            elif mode in [1, 3]:  # modified David's score
                 if n != -1:
                     wins2[i] += wins[i] * (W[i][j] + 0.5) / (n + 1)
-                    loses2[i] += loses[i]* (W[j][i] + 0.5) / (n + 1)
+                    loses2[i] += loses[i] * (W[j][i] + 0.5) / (n + 1)
 
     # calculate modified David's score and normalized modified David's score
     n = len(idorder)
-    DS = {}     # David's score
-    normDS = {} # Normalized David's score
-    minDS = float('inf')
+    DS = {}  # David's score
+    normDS = {}  # Normalized David's score
+    minDS = float("inf")
     maxDS = -minDS
     for i in idorder:
         DS[i] = wins[i] + wins2[i] - loses[i] - loses2[i]
-        if DS[i] < minDS: minDS = DS[i]
-        if DS[i] > maxDS: maxDS = DS[i]
+        if DS[i] < minDS:
+            minDS = DS[i]
+        if DS[i] > maxDS:
+            maxDS = DS[i]
     for i in idorder:
         if mode in [2, 3]:
             normDS[i] = (DS[i] + n * (n - 1) / 2 - nans) / n
@@ -536,15 +561,17 @@ def Lindquist_dominance_index(W):
         raise NotImplementedError("unhandled type of object W")
 
     # params for each ID
-    wins = dict([(i, 0) for i in idorder]) # wins
-    loses = wins.copy()                    # loses
-    scores = wins.copy()                   # scale scores
+    wins = dict([(i, 0) for i in idorder])  # wins
+    loses = wins.copy()  # loses
+    scores = wins.copy()  # scale scores
 
     # calculate total number of events for all IDs
     for i in idorder:
         for j in idorder:
-            if i == j: continue
-            if W[i][j] != W[i][j] or W[j][i] != W[j][i]: continue
+            if i == j:
+                continue
+            if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
+                continue
             wins[i] += W[i][j]
             loses[j] += W[i][j]
 
@@ -587,11 +614,14 @@ def row_sum(W):
     # calculate total number of events for all IDs
     for i in idorder:
         for j in idorder:
-            if i == j: continue
-            if W[i][j] != W[i][j] or W[j][i] != W[j][i]: continue
+            if i == j:
+                continue
+            if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
+                continue
             rowsum[i] += W[i][j]
     # return rowsum dict
     return rowsum
+
 
 def win_above_average(W):
     """Return the number of columns for each row that have
@@ -619,11 +649,14 @@ def win_above_average(W):
     n = 0
     for i in idorder:
         for j in idorder:
-            if i == j: continue
-            if W[i][j] != W[i][j] or W[j][i] != W[j][i]: continue
+            if i == j:
+                continue
+            if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
+                continue
             avgW += W[i][j]
             n += 1
-    if n: avgW /= n
+    if n:
+        avgW /= n
     # initialize output
     wins = {}
     for i in idorder:
@@ -631,11 +664,14 @@ def win_above_average(W):
     # calculate number of pairwise winning above threshold fight
     for i in idorder:
         for j in idorder:
-            if i == j: continue
-            if W[i][j] != W[i][j] or W[j][i] != W[j][i]: continue
+            if i == j:
+                continue
+            if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
+                continue
             if W[i][j] > avgW:
                 wins[i] += 1
     return wins
+
 
 def lose_above_average(W):
     """Return the number of rows for each column that have
@@ -663,11 +699,14 @@ def lose_above_average(W):
     n = 0
     for i in idorder:
         for j in idorder:
-            if i == j: continue
-            if W[i][j] != W[i][j] or W[j][i] != W[j][i]: continue
+            if i == j:
+                continue
+            if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
+                continue
             avgW += W[i][j]
             n += 1
-    if n: avgW /= n
+    if n:
+        avgW /= n
     # initialize output
     loses = {}
     for i in idorder:
@@ -675,8 +714,10 @@ def lose_above_average(W):
     # calculate number of pairwise winning above threshold fight
     for i in idorder:
         for j in idorder:
-            if i == j: continue
-            if W[i][j] != W[i][j] or W[j][i] != W[j][i]: continue
+            if i == j:
+                continue
+            if W[i][j] != W[i][j] or W[j][i] != W[j][i]:
+                continue
             if W[i][j] > avgW:
                 loses[j] += 1
     return loses

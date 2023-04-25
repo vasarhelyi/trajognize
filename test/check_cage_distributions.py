@@ -17,26 +17,38 @@ from math import cos, acos, pi, sqrt
 try:
     import trajognize
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "..")
+        ),
+    )
     import trajognize
 
 # parse command line arguments
-argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
-argparser.add_argument("-i", "--inputpath", dest="inputpath", help="define blob input path to have blob files at [PATH]*/OUT/*.blobs", metavar="PATH")
+argparser = argparse.ArgumentParser(
+    formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__
+)
+argparser.add_argument(
+    "-i",
+    "--inputpath",
+    dest="inputpath",
+    help="define blob input path to have blob files at [PATH]*/OUT/*.blobs",
+    metavar="PATH",
+)
 args = argparser.parse_args()
 
 # get input path
 path = trajognize.util.get_path_as_first_arg((None, args.inputpath))
-path += '*/OUT/*.log'
+path += "*/OUT/*.log"
 print("# Using data: %s" % path)
 
 # list files and check for error
 files = glob(path)
 if not files:
-    exit('ERROR: No files found on input path', 1)
+    exit("ERROR: No files found on input path", 1)
 
-#initialize variables
+# initialize variables
 cagecenter_all_n = 0
 cagecenter_all_avg = [0.0, 0.0, 0.0, 0.0]
 cagecenter_all_std = [0.0, 0.0, 0.0, 0.0]
@@ -52,14 +64,21 @@ for inputfile in files:
 
         print("\nParsing input file #%d: '%s'..." % (ii, tail))
         (light_log, cage_log) = trajognize.parse.parse_log_file(inputfile)
-        if light_log is None and cage_log is None: continue
+        if light_log is None and cage_log is None:
+            continue
         light_at_frame = trajognize.util.param_at_frame(light_log)
         cage_at_frame = trajognize.util.param_at_frame(cage_log)
         print("  %d LED switches parsed" % len(light_log))
         print("  %d CAGE coordinates parsed" % len(cage_log))
-        lastframe = int(subprocess.run(['tail', '-1', inputfile], 
-            stdout=subprocess.PIPE, encoding="utf-8", check=True).stdout.split(None, 1)[0])
-        print("  %d frames will be iterated" % (lastframe+1))
+        lastframe = int(
+            subprocess.run(
+                ["tail", "-1", inputfile],
+                stdout=subprocess.PIPE,
+                encoding="utf-8",
+                check=True,
+            ).stdout.split(None, 1)[0]
+        )
+        print("  %d frames will be iterated" % (lastframe + 1))
 
         print("Calculating cage center distribution...")
         light_at_frame.reset()
@@ -68,7 +87,7 @@ for inputfile in files:
         cagecenter_this_avg = [0.0, 0.0, 0.0, 0.0]
         cagecenter_this_std = [0.0, 0.0, 0.0, 0.0]
 
-        for currentframe in range(lastframe+1):
+        for currentframe in range(lastframe + 1):
             # get cage
             cagecenter = cage_at_frame(currentframe)
             # check for nan
@@ -76,13 +95,14 @@ for inputfile in files:
             for i in range(4):
                 if cagecenter[i] != cagecenter[i]:
                     cont = True
-            if cont: continue
+            if cont:
+                continue
 
             # get light
             lightstr = light_at_frame(currentframe)
-            if lightstr in ('DAYLIGHT', 'EXTRALIGHT'):
+            if lightstr in ("DAYLIGHT", "EXTRALIGHT"):
                 light = 0
-            elif lightstr in ('NIGHTLIGHT', 'STRANGELIGHT'):
+            elif lightstr in ("NIGHTLIGHT", "STRANGELIGHT"):
                 light = 1
             else:
                 raise ValueError("unknown lightstr: {}".format(lightstr))
@@ -97,24 +117,41 @@ for inputfile in files:
                 this_prevavg = cagecenter_this_avg[i]
                 all_prevavg = cagecenter_all_avg[i]
                 # avg
-                cagecenter_this_avg[i] = this_prevavg + (cagecenter[i] - this_prevavg)/cagecenter_this_n
-                cagecenter_all_avg[i] = all_prevavg + (cagecenter[i] - all_prevavg)/cagecenter_all_n
+                cagecenter_this_avg[i] = (
+                    this_prevavg + (cagecenter[i] - this_prevavg) / cagecenter_this_n
+                )
+                cagecenter_all_avg[i] = (
+                    all_prevavg + (cagecenter[i] - all_prevavg) / cagecenter_all_n
+                )
                 # std * n
-                cagecenter_this_std[i] += (cagecenter[i] - this_prevavg)*(cagecenter[i] - cagecenter_this_avg[i])
-                cagecenter_all_std[i] += (cagecenter[i] - all_prevavg)*(cagecenter[i] - cagecenter_all_avg[i])
+                cagecenter_this_std[i] += (cagecenter[i] - this_prevavg) * (
+                    cagecenter[i] - cagecenter_this_avg[i]
+                )
+                cagecenter_all_std[i] += (cagecenter[i] - all_prevavg) * (
+                    cagecenter[i] - cagecenter_all_avg[i]
+                )
         # print results
-        if not cagecenter_this_n: cagecenter_this_n = 1 # avoid division by zero
-        print("  cage coordinates for this file:\n"  \
-              "    center_x:         %g +- %g\n"     \
-              "    center_y:         %g +- %g\n"     \
-              "    horizontal_angle: %g +- %g\n"     \
-              "    vertical_angle:   %g +- %g" % ( \
-                cagecenter_this_avg[0],sqrt(cagecenter_this_std[0]/cagecenter_this_n),
-                cagecenter_this_avg[1],sqrt(cagecenter_this_std[1]/cagecenter_this_n),
-                cagecenter_this_avg[2],sqrt(cagecenter_this_std[2]/cagecenter_this_n),
-                cagecenter_this_avg[3],sqrt(cagecenter_this_std[3]/cagecenter_this_n)))
+        if not cagecenter_this_n:
+            cagecenter_this_n = 1  # avoid division by zero
+        print(
+            "  cage coordinates for this file:\n"
+            "    center_x:         %g +- %g\n"
+            "    center_y:         %g +- %g\n"
+            "    horizontal_angle: %g +- %g\n"
+            "    vertical_angle:   %g +- %g"
+            % (
+                cagecenter_this_avg[0],
+                sqrt(cagecenter_this_std[0] / cagecenter_this_n),
+                cagecenter_this_avg[1],
+                sqrt(cagecenter_this_std[1] / cagecenter_this_n),
+                cagecenter_this_avg[2],
+                sqrt(cagecenter_this_std[2] / cagecenter_this_n),
+                cagecenter_this_avg[3],
+                sqrt(cagecenter_this_std[3] / cagecenter_this_n),
+            )
+        )
 
-        print("  time elapsed: %gs" % (time.perf_counter()-start))
+        print("  time elapsed: %gs" % (time.perf_counter() - start))
         sys.stdout.flush()
 
     except KeyboardInterrupt:
@@ -122,13 +159,22 @@ for inputfile in files:
         break
 
 # print global results
-if not cagecenter_all_n: cagecenter_all_n = 1 # avoid division by zero
-print("\nCage coordinates for all files:\n"  \
-      "  center_x:         %g +- %g\n"     \
-      "  center_y:         %g +- %g\n"     \
-      "  horizontal_angle: %g +- %g\n"     \
-      "  vertical_angle:   %g +- %g" % ( \
-        cagecenter_all_avg[0],sqrt(cagecenter_all_std[0]/cagecenter_all_n),
-        cagecenter_all_avg[1],sqrt(cagecenter_all_std[1]/cagecenter_all_n),
-        cagecenter_all_avg[2],sqrt(cagecenter_all_std[2]/cagecenter_all_n),
-        cagecenter_all_avg[3],sqrt(cagecenter_all_std[3]/cagecenter_all_n)))
+if not cagecenter_all_n:
+    cagecenter_all_n = 1  # avoid division by zero
+print(
+    "\nCage coordinates for all files:\n"
+    "  center_x:         %g +- %g\n"
+    "  center_y:         %g +- %g\n"
+    "  horizontal_angle: %g +- %g\n"
+    "  vertical_angle:   %g +- %g"
+    % (
+        cagecenter_all_avg[0],
+        sqrt(cagecenter_all_std[0] / cagecenter_all_n),
+        cagecenter_all_avg[1],
+        sqrt(cagecenter_all_std[1] / cagecenter_all_n),
+        cagecenter_all_avg[2],
+        sqrt(cagecenter_all_std[2] / cagecenter_all_n),
+        cagecenter_all_avg[3],
+        sqrt(cagecenter_all_std[3] / cagecenter_all_n),
+    )
+)

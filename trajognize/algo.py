@@ -25,7 +25,7 @@ def calculate_running_avg(new, k, prevavg, prevstd):
 
     """
     avg = prevavg + (new - prevavg) / k
-    std = prevstd + (new - prevavg) * (new-avg)
+    std = prevstd + (new - prevavg) * (new - avg)
 
     return (avg, std)
 
@@ -59,10 +59,12 @@ def get_angle_deg(a, b):
         angle -= 360
     return angle if angle < 180 else 360 - angle
 
+
 def get_distance(a, b):
     """Calculate the distance between two blobs or barcodes -
     anything that has .centerx and .centery parameters."""
     return hypot(a.centerx - b.centerx, a.centery - b.centery)
+
 
 def get_blob_center_on_barcode(barcode, position, AVG_INRAT_DIST):
     """Calculate the center of a blob on a barcode at a given position."""
@@ -74,14 +76,14 @@ def get_blob_center_on_barcode(barcode, position, AVG_INRAT_DIST):
 
     return (centerx, centery)
 
+
 def get_distance_at_position(barcode, position, blob, AVG_INRAT_DIST):
     """Calculate the distance between a blob at a given position on a barcode
     and a blob."""
-    centerx, centery = get_blob_center_on_barcode(barcode, position,
-        AVG_INRAT_DIST
-    )
+    centerx, centery = get_blob_center_on_barcode(barcode, position, AVG_INRAT_DIST)
 
     return hypot(centerx - blob.centerx, centery - blob.centery)
+
 
 def is_point_inside_ellipse(point, ellipse, mul=1.2):
     """Return true if point center is contained by ellipse (e.g. md blob over barcode/blob).
@@ -108,7 +110,10 @@ def is_point_inside_ellipse(point, ellipse, mul=1.2):
     x = dx * cos(ellipse.orientation) - dy * sin(ellipse.orientation)
     y = dx * sin(ellipse.orientation) + dy * cos(ellipse.orientation)
     # check if within equation of ellipse
-    if x*x/ellipse.axisA/ellipse.axisA + y*y/ellipse.axisB/ellipse.axisB <= mul*mul:
+    if (
+        x * x / ellipse.axisA / ellipse.axisA + y * y / ellipse.axisB / ellipse.axisB
+        <= mul * mul
+    ):
         return True
     else:
         return False

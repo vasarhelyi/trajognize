@@ -27,8 +27,12 @@ try:
     import trajognize.util
     import trajognize.corr.util
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "../..")
+        ),
+    )
     import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
@@ -42,7 +46,7 @@ def get_categories_from_filename(filename):
     stat_dist24hobj.monday__exp_seventh_G1_G2_G3_G4_females.zip
 
     """
-    match = re.match(r'^stat_dist24hobj\.(.*)__exp_(.*)\.zip$', filename)
+    match = re.match(r"^stat_dist24hobj\.(.*)__exp_(.*)\.zip$", filename)
     if match:
         weekday = match.group(1)
         exp = match.group(2)
@@ -51,13 +55,14 @@ def get_categories_from_filename(filename):
         return (None, None)
 
 
-class AvgDist24hObj():
+class AvgDist24hObj:
     """Temporary storage class for 24h time distribution of barcodes around food
     and around feeding time.
 
     Object inherited from trajognize.stat.init.Dist24hObj
 
     """
+
     def __init__(self, id_count):
         """Initialize with zero elements.
 
@@ -73,20 +78,22 @@ class AvgDist24hObj():
         self.minutes_of_feeding = 120
         # initialize data
         #: one bin for all minutes, all objects, all colorids + sum
-        self.avg = numpy.zeros(( \
-                id_count+1,
-                self.minutes_of_feeding),
-                dtype=numpy.float)
+        self.avg = numpy.zeros(
+            (id_count + 1, self.minutes_of_feeding), dtype=numpy.float
+        )
         #: one bin for all minutes, all objects, all colorids + sum
-        self.stv = numpy.zeros(( \
-                id_count+1,
-                self.minutes_of_feeding),
-                dtype=numpy.float)
+        self.stv = numpy.zeros(
+            (id_count + 1, self.minutes_of_feeding), dtype=numpy.float
+        )
         #: one bin for all minutes, all objects, all colorids + sum
-        self.num = numpy.zeros(( \
-                id_count+1, # note that num is the same for all IDs, but matrix manipulation is simpler like this.
-                self.minutes_of_feeding),
-                dtype=numpy.int)
+        self.num = numpy.zeros(
+            (
+                id_count
+                + 1,  # note that num is the same for all IDs, but matrix manipulation is simpler like this.
+                self.minutes_of_feeding,
+            ),
+            dtype=numpy.int,
+        )
 
     def __add__(self, X):
         """Add another avgdist24hobj object to self with the '+' and '+=' operators.
@@ -102,8 +109,11 @@ class AvgDist24hObj():
         # get combined values
         num = self.num + X.num
         avg = numpy.where(num != 0, (self.num * self.avg + X.num * X.avg) / num, 0)
-        stv = numpy.where(num != 0, (self.stv + X.stv) +
-                (self.num * X.num) * ((self.avg - X.avg)**2) / num, 0)
+        stv = numpy.where(
+            num != 0,
+            (self.stv + X.stv) + (self.num * X.num) * ((self.avg - X.avg) ** 2) / num,
+            0,
+        )
         # store them
         self.num = num
         self.avg = avg
@@ -118,15 +128,27 @@ class AvgDist24hObj():
         self.stv[-1][:] = 0
         for k in klist:
             num = self.num[-1] + self.num[k]
-            avg = numpy.where(num != 0, (self.num[-1] * self.avg[-1] + self.num[k] * self.avg[k]) / num, 0)
-            stv = numpy.where(num != 0, (self.stv[-1] + self.stv[k]) +
-                    (self.num[-1] * self.num[k]) * ((self.avg[-1] - self.avg[k])**2) / num, 0)
+            avg = numpy.where(
+                num != 0,
+                (self.num[-1] * self.avg[-1] + self.num[k] * self.avg[k]) / num,
+                0,
+            )
+            stv = numpy.where(
+                num != 0,
+                (self.stv[-1] + self.stv[k])
+                + (self.num[-1] * self.num[k])
+                * ((self.avg[-1] - self.avg[k]) ** 2)
+                / num,
+                0,
+            )
             # store them
             self.num[-1] = num
             self.avg[-1] = avg
             self.stv[-1] = stv
         # assuming that this is already defined...
-        self.std[-1] = numpy.where(self.num[-1] != 0, numpy.sqrt(self.stv[-1] / self.num[-1]), 0)
+        self.std[-1] = numpy.where(
+            self.num[-1] != 0, numpy.sqrt(self.stv[-1] / self.num[-1]), 0
+        )
 
     def write_results(self, outputfile, colorids, exps, exp, substat):
         """Saves the contents of self to a file (possibly as a summarized stat).
@@ -141,17 +163,21 @@ class AvgDist24hObj():
         # calculate standard deviation from standard variance
         self.std = numpy.where(self.num != 0, numpy.sqrt(self.stv / self.num), 0)
         # write results
-        for group in exps[exp]['groups']:
+        for group in exps[exp]["groups"]:
             # get sorted names and colorid indices
             allnames = [colorids[k] for k in range(len(colorids))]
-            names = sorted(exps[exp]['groups'][group])
+            names = sorted(exps[exp]["groups"][group])
             klist = [allnames.index(name) for name in names]
             # calculate group sum
             self.calculate_group_sum(klist)
             # write results
-            obj = 'food' # hehe
-            outputfile.write("# Time distribution of barcodes around 'food', before and during all feeding times averaged over days (except friday).\n")
-            outputfile.write("# Output bin size is one minute, range is from 1h before feeding time (0h-1h) to end of feeding time (1h-2h) on a given day\n")
+            obj = "food"  # hehe
+            outputfile.write(
+                "# Time distribution of barcodes around 'food', before and during all feeding times averaged over days (except friday).\n"
+            )
+            outputfile.write(
+                "# Output bin size is one minute, range is from 1h before feeding time (0h-1h) to end of feeding time (1h-2h) on a given day\n"
+            )
             outputfile.write("# Multiple feeding times of a day are averaged\n")
             outputfile.write("# IDs are ordered alphabetically.\n")
             outputfile.write("# this is group %s\n\n" % group)
@@ -163,15 +189,20 @@ class AvgDist24hObj():
             outputfile.write("\t".join(s) + "\n")
             # write all minute bins (120)
             for bin in range(self.minutes_of_feeding):
-                s = ["%02d:%02d:00" % (bin/60, bin%60)]
+                s = ["%02d:%02d:00" % (bin / 60, bin % 60)]
                 for k in klist:
-                    s.append("%g\t%g" % (self.avg[k,bin], self.std[k,bin]))
-                s.append("%g\t%g\t%d" % (self.avg[-1,bin], self.std[-1,bin], self.num[-1,bin]))
+                    s.append("%g\t%g" % (self.avg[k, bin], self.std[k, bin]))
+                s.append(
+                    "%g\t%g\t%d"
+                    % (self.avg[-1, bin], self.std[-1, bin], self.num[-1, bin])
+                )
                 outputfile.write("\t".join(s) + "\n")
             outputfile.write("\n\n")
             outputfile.flush()
 
-    def write_corroutput(self, statsum_basedir, colorids, exps, exp, corrfiles, substat):
+    def write_corroutput(
+        self, statsum_basedir, colorids, exps, exp, corrfiles, substat
+    ):
         """Saves the contents of self to a correlation file.
 
         :param statsum_basedir: base directory where statsum results are written
@@ -183,36 +214,41 @@ class AvgDist24hObj():
         :param substat: name of the virtual subclass statistics (e.g. avgfooddist24hobj.alldays)
 
         """
-        for group in exps[exp]['groups']:
+        for group in exps[exp]["groups"]:
             # get sorted names and colorid indices
             allnames = [colorids[k] for k in range(len(colorids))]
-            names = sorted(exps[exp]['groups'][group])
+            names = sorted(exps[exp]["groups"][group])
             klist = [allnames.index(name) for name in names]
             # initialize corr file
             headerline = trajognize.corr.util.strids2headerline(names, False)
-            corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, "exp_%s" % exp, group, False)
+            corrfile = trajognize.corr.util.get_corr_filename(
+                statsum_basedir, "exp_%s" % exp, group, False
+            )
             if corrfile not in corrfiles:
                 if os.path.isfile(corrfile):
                     os.remove(corrfile)
                 corrfiles.append(corrfile)
             # write cumulative average to corr file
-            corrline = "\t".join([substat + "_cumul"] +
-                    ["%g" % sum(self.avg[k,60:]) for k in klist])
+            corrline = "\t".join(
+                [substat + "_cumul"] + ["%g" % sum(self.avg[k, 60:]) for k in klist]
+            )
             trajognize.corr.util.add_corr_line(corrfile, headerline, corrline)
             # write time when 1-2-3 minute feeding accumulates
-            for minute in [1,2,3]:
+            for minute in [1, 2, 3]:
                 data = []
                 for k in klist:
                     x = 0
-                    for i in range(60,120):
-                        x += self.avg[k,i]
+                    for i in range(60, 120):
+                        x += self.avg[k, i]
                         if x >= minute:
-                            data.append(i-60+1)
+                            data.append(i - 60 + 1)
                             break
                     else:
-                        data.append(float('inf'))
-                corrline = "\t".join([substat + "_t%dmin" % minute] +
-                        ["%g" % data[i] for i in range(len(data))])
+                        data.append(float("inf"))
+                corrline = "\t".join(
+                    [substat + "_t%dmin" % minute]
+                    + ["%g" % data[i] for i in range(len(data))]
+                )
                 trajognize.corr.util.add_corr_line(corrfile, headerline, corrline)
 
 
@@ -227,10 +263,14 @@ def main(argv=[]):
     if len(argv) == 3:
         experiment = argv[2]
     else:
-        experiment = '*'
-#    inputfiles = glob.glob(os.path.join(inputdir, "statsum_dist24hobj.*", "stat_dist24hobj.*__exp_%s.zip" % experiment))
-    inputfiles = glob.glob(os.path.join(inputdir, "stat_dist24hobj.*__exp_%s.zip" % experiment))
-    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+        experiment = "*"
+    #    inputfiles = glob.glob(os.path.join(inputdir, "statsum_dist24hobj.*", "stat_dist24hobj.*__exp_%s.zip" % experiment))
+    inputfiles = glob.glob(
+        os.path.join(inputdir, "stat_dist24hobj.*__exp_%s.zip" % experiment)
+    )
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(
+        projectfile
+    )
     if project_settings is None:
         print("Could not load project settings.")
         return
@@ -245,12 +285,14 @@ def main(argv=[]):
     for inputfile in inputfiles:
         tail = os.path.split(inputfile)[1]
         (weekday, exp) = get_categories_from_filename(tail)
-        if exp == 'all' or weekday == 'friday' or weekday == 'alldays':
+        if exp == "all" or weekday == "friday" or weekday == "alldays":
             print("  skipping", tail)
             continue
         print("  gathering info from", tail)
         # initialize empty object
-        dist24hobj = trajognize.stat.init.Dist24hObj(project_settings.object_types, id_count)
+        dist24hobj = trajognize.stat.init.Dist24hObj(
+            project_settings.object_types, id_count
+        )
         # add new object (so that we have latest methods from latest version)
         dist24hobj += trajognize.util.load_object(inputfile)
         database[exp][weekday] = dist24hobj
@@ -260,51 +302,62 @@ def main(argv=[]):
         return
     outputdir = os.path.join(inputdir, os.path.splitext(os.path.split(__file__)[1])[0])
     print("Writing results to .txt files in", outputdir)
-    food_index = project_settings.object_types.index('food')
+    food_index = project_settings.object_types.index("food")
     if not os.path.isdir(outputdir):
         os.makedirs(outputdir)
     for exp in database:
-        print(' ', exp)
+        print(" ", exp)
         alltemp = AvgDist24hObj(id_count)
         for weekday in database[exp]:
-            print('   ', weekday)
+            print("   ", weekday)
             data = database[exp][weekday]
             wft = project_settings.weekly_feeding_times[weekday]
             temp = AvgDist24hObj(id_count)
             temp2 = AvgDist24hObj(id_count)
-            outputfile = open(os.path.join(outputdir,
-                    "calc_avgfooddist24hobj.%s__exp_%s.txt" % (weekday, exp)), 'w')
+            outputfile = open(
+                os.path.join(
+                    outputdir, "calc_avgfooddist24hobj.%s__exp_%s.txt" % (weekday, exp)
+                ),
+                "w",
+            )
             if temp.version != data.version:
-                raise TypeError("Version mismatch (temp.version=%d, data.version=%d)" %
-                        (temp.version, data.version))
+                raise TypeError(
+                    "Version mismatch (temp.version=%d, data.version=%d)"
+                    % (temp.version, data.version)
+                )
             for x in wft:
                 # start is 1 hour before feeding ([hour] -> [minute])
-                start = x[0]*60 - 60
+                start = x[0] * 60 - 60
                 # end is feeding end
-                end = x[0]*60 + x[1]*60
+                end = x[0] * 60 + x[1] * 60
                 # get data from original database
-                temp2.avg = data.avg[:,food_index,start:end]
-                temp2.stv = data.stv[:,food_index,start:end]
-                temp2.num = data.num[:,food_index,start:end]
+                temp2.avg = data.avg[:, food_index, start:end]
+                temp2.stv = data.stv[:, food_index, start:end]
+                temp2.num = data.num[:, food_index, start:end]
                 # add to daily average
                 temp += temp2
                 # add to allday average
                 alltemp += temp2
             substat = "avgfooddist24hobj.%s" % weekday
             temp.write_results(outputfile, colorids, exps, exp, substat)
-        print('    alldays')
+        print("    alldays")
         substat = "avgfooddist24hobj.alldays"
-        outputfile = open(os.path.join(outputdir,
-                "calc_avgfooddist24hobj.alldays__exp_%s.txt" % exp), 'w')
+        outputfile = open(
+            os.path.join(outputdir, "calc_avgfooddist24hobj.alldays__exp_%s.txt" % exp),
+            "w",
+        )
         alltemp.write_results(outputfile, colorids, exps, exp, substat)
-        alltemp.write_corroutput(statsum_basedir, colorids, exps, exp, corrfiles, substat.replace('.', '_'))
+        alltemp.write_corroutput(
+            statsum_basedir, colorids, exps, exp, corrfiles, substat.replace(".", "_")
+        )
 
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:])) # pass only real params to main
+        sys.exit(main(sys.argv[1:]))  # pass only real params to main
     except Exception as ex:
         print(ex, file=sys.stderr)
         import traceback
+
         traceback.print_exc(ex)
         sys.exit(1)

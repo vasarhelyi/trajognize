@@ -10,8 +10,8 @@ from .util import mfix2str_allascomment
 from .algo_blob import barcodeindices_not_deleted
 
 # global output file handlers - we do not want to open them on every frame separately
-oft = []       # barcode text file
-oftlog = []    # log file
+oft = []  # barcode text file
+oftlog = []  # log file
 
 
 def barcode_textfile_init(filename, barcodes):
@@ -28,12 +28,14 @@ def barcode_textfile_init(filename, barcodes):
     global oft
     if os.path.isfile(filename):
         os.remove(filename)
-    oft = open(filename, 'w')
+    oft = open(filename, "w")
     oft.write("# number of IDs: %d\n" % len(barcodes[0]))
     oft.write("# number of frames: %d\n" % len(barcodes))
     oft.write(mfix2str_allascomment())
-    oft.write('# fix width format: framenum barcodenum {ID centerx centery xWorld yWorld orientation mFix} {...\n')
-    oft.write('\n')
+    oft.write(
+        "# fix width format: framenum barcodenum {ID centerx centery xWorld yWorld orientation mFix} {...\n"
+    )
+    oft.write("\n")
 
 
 def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
@@ -52,7 +54,10 @@ def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
 
     global oft
     # get list of barcodes to be written
-    barcodeindices = [[BarcodeIndex(k,x) for x in range(len(barcodes[k]))] for k in range(len(barcodes))]
+    barcodeindices = [
+        [BarcodeIndex(k, x) for x in range(len(barcodes[k]))]
+        for k in range(len(barcodes))
+    ]
     if not deleted:
         for k in range(len(barcodes)):
             barcodeindices[k] = barcodeindices_not_deleted(barcodeindices[k], barcodes)
@@ -66,8 +71,19 @@ def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
         strid = colorids[k]
         for ki in barcodeindices[k]:
             barcode = barcodes[ki.k][ki.i]
-            oft.write("\t%s\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%d" % (strid, barcode.centerx, barcode.centery, 0, 0, degrees(barcode.orientation), barcode.mfix))
-    oft.write('\n')
+            oft.write(
+                "\t%s\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%d"
+                % (
+                    strid,
+                    barcode.centerx,
+                    barcode.centery,
+                    0,
+                    0,
+                    degrees(barcode.orientation),
+                    barcode.mfix,
+                )
+            )
+    oft.write("\n")
 
 
 def barcode_textfile_writeall(barcodes, colorids, deleted=True):
@@ -107,11 +123,15 @@ def logfile_init(filename):
     global oftlog
     if os.path.isfile(filename):
         os.remove(filename)
-    oftlog = open(filename, 'w')
-    oftlog.write("# trajognize log file created on %s\n\n" % str(datetime.datetime.now()))
+    oftlog = open(filename, "w")
+    oftlog.write(
+        "# trajognize log file created on %s\n\n" % str(datetime.datetime.now())
+    )
     oftlog.write("# Log file format: frame warningtype params\n")
     oftlog.write("# Log file entry types:\n")
-    oftlog.write("#   NUB blobcount list_of_blob_indices -- not used blob indices (pointing to .blobs file)\n")
+    oftlog.write(
+        "#   NUB blobcount list_of_blob_indices -- not used blob indices (pointing to .blobs file)\n"
+    )
     oftlog.write("\n")
 
 
@@ -166,7 +186,7 @@ def logfile_close():
     oftlog.close()
 
 
-def matrixfile_write(outputfile, W, name = "", idorder=None):
+def matrixfile_write(outputfile, W, name="", idorder=None):
     """Print a data matrix.
 
     Keyword arguments:
@@ -177,9 +197,11 @@ def matrixfile_write(outputfile, W, name = "", idorder=None):
     """
     n = len(W)
     if isinstance(W, dict):
-        if idorder is None: idorder = list(W) # TODO: this case is not defined well!!!
+        if idorder is None:
+            idorder = list(W)  # TODO: this case is not defined well!!!
     elif isinstance(W, list):
-        if idorder is None: idorder = range(n)
+        if idorder is None:
+            idorder = range(n)
     else:
         raise NotImplementedError("unhandled type of object W")
 

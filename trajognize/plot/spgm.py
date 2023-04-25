@@ -17,9 +17,10 @@ NEWLINE = "<br />"
 MULTILINE = "\n>"
 ENDOFLINE = "\n"
 
+
 def _change_path(filename):
     """Change path of filename on atlasz to one on hal.
-    
+
     Function assumes that statsum_* directories are the first level that are common,
     which can be found in a directory on atlasz named as PATH_TO_REMOVE.
     """
@@ -32,7 +33,7 @@ def _change_path(filename):
     return os.path.join(PATH_TO_ADD, tokens[i])
 
 
-def create_gallery_description(path, text, mode='w'):
+def create_gallery_description(path, text, mode="w"):
     """Create gallery description in a given directory.
 
     :param path: full path of the gallery
@@ -42,11 +43,11 @@ def create_gallery_description(path, text, mode='w'):
     """
     galfile = os.path.join(path, GAL_DESC_FILE)
     f = open(galfile, mode)
-    if mode == 'a':
+    if mode == "a":
         f.write("<br \>Post processed results added:<br \>\n")
     f.write(text + "\n")
     f.close()
-    
+
 
 def create_picture_description(filename, textlist, sourcefile=None, gnufile=None):
     """Add picture description for a given filename (with full path).
@@ -61,10 +62,10 @@ def create_picture_description(filename, textlist, sourcefile=None, gnufile=None
     head, tail = os.path.split(filename)
     picfile = os.path.join(head, PIC_DESC_FILE)
     if not os.path.isfile(picfile):
-        f = open(picfile, 'w')
+        f = open(picfile, "w")
         f.write(PIC_DESC_PREFIX)
     else:
-        f = open(picfile, 'a')
+        f = open(picfile, "a")
     f.write(PIC_DESC_TEMPLATE % (tail, NEWLINE.join(textlist)))
     if sourcefile is not None or gnufile is not None:
         f.write(NEWLINE)
@@ -94,5 +95,3 @@ def remove_picture_descriptions(path):
     picfile = os.path.join(path, PIC_DESC_FILE)
     if os.path.isfile(picfile):
         os.remove(picfile)
-        
-

@@ -16,11 +16,13 @@ __author__ = "Gabor Vasarhelyi"
 __email__ = "gabor.vasarhelyi@ttk.elte.hu"
 __version__ = "0.1"
 
+
 def main(argv=[]):
     if argv:
         cli(argv)
     else:
         sys.exit(cli(argv))
+
 
 if __name__ == "__main__":
     main(argv)

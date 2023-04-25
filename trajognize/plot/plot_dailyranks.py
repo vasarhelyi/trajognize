@@ -25,8 +25,12 @@ try:
     import trajognize.calc.hierarchy
     import trajognize.stat.experiments
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "../..")
+        ),
+    )
     import trajognize.parse
     import trajognize.calc.hierarchy
     import trajognize.stat.experiments
@@ -60,8 +64,19 @@ plot %(dailyvalidtimes_plot)s, \\
 """
 
 
-def get_gnuplot_script(inputfile, outputfile, outputfileabsgrad, name, maxcol,
-        exp, datatype, index, pdstr, dvt_init, dvt_plot):
+def get_gnuplot_script(
+    inputfile,
+    outputfile,
+    outputfileabsgrad,
+    name,
+    maxcol,
+    exp,
+    datatype,
+    index,
+    pdstr,
+    dvt_init,
+    dvt_plot,
+):
     """Return .gnu script body as string."""
     data = {
         "inputfile": inputfile,
@@ -90,15 +105,22 @@ def get_categories_from_name(name):
     movavgfqobj_nightlight_food_group_G2L_day_4_F
 
     """
-    match = re.match(r'^(.*)_(.*)_(.*)_group_(.*)_day_([0-9A-Z]*)', name)
+    match = re.match(r"^(.*)_(.*)_(.*)_group_(.*)_day_([0-9A-Z]*)", name)
     if match:
-        return (match.group(1), match.group(2), match.group(3), match.group(4), int(match.group(5)))
+        return (
+            match.group(1),
+            match.group(2),
+            match.group(3),
+            match.group(4),
+            int(match.group(5)),
+        )
     else:
         return (None, None, None, None, None)
 
 
 def main(argv=[]):
     """Main entry point of the script."""
+
     def writedata(data, localname):
         # write header
         f.write("%s\t%s\tabsgrad_avg\tabsgrad_std\n" % (localname, "\t".join(strids)))
@@ -109,7 +131,7 @@ def main(argv=[]):
             for strid in strids:
                 f.write("\t%g" % data[key][strid][i])
                 if i:
-                    absgrad.append(abs(data[key][strid][i] - data[key][strid][i-1]))
+                    absgrad.append(abs(data[key][strid][i] - data[key][strid][i - 1]))
                 else:
                     absgrad.append(abs(data[key][strid][i] - 0))
             f.write("\t%g\t%g\n" % (numpy.mean(absgrad), numpy.std(absgrad)))
@@ -118,16 +140,26 @@ def main(argv=[]):
     def writegnu(localname, index):
         # write .gnu
         (localhead, localtail) = os.path.split(outputfilecommon)
-        gnufile = os.path.join(localhead, localtail.replace("dailyranks", localname) + ".gnu")
+        gnufile = os.path.join(
+            localhead, localtail.replace("dailyranks", localname) + ".gnu"
+        )
         outputfile = gnufile[:-4] + ".png"
         outputfileabsgrad = gnufile[:-4] + "_absgrad.png"
         name = "%s_%s_%s_group_%s" % (localname, datatype, object, group)
-        maxcol = len(strids)+1
-        script = get_gnuplot_script(txtfile, outputfile, outputfileabsgrad, name,
-                    maxcol, exp, datatype, index,
-                    plot.get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
-                    *plot.get_gnuplot_dailyvalidtimes_strs(exps, exp[4:]))
-        with open(gnufile, 'w') as f:
+        maxcol = len(strids) + 1
+        script = get_gnuplot_script(
+            txtfile,
+            outputfile,
+            outputfileabsgrad,
+            name,
+            maxcol,
+            exp,
+            datatype,
+            index,
+            plot.get_gnuplot_paintdate_str(exps, exp[4:], paintdates),
+            *plot.get_gnuplot_dailyvalidtimes_strs(exps, exp[4:])
+        )
+        with open(gnufile, "w") as f:
             f.write(script)
         try:
             subprocess.call(["gnuplot", gnufile])
@@ -135,27 +167,30 @@ def main(argv=[]):
             print("  Error plotting '%s': gnuplot is not available on Windows" % name)
         # create SPGM picture description
         spgm.create_picture_description(outputfile, [name, exp], txtfile, gnufile)
-        spgm.create_picture_description(outputfileabsgrad,
-                [name, "absgrad data", exp], txtfile, gnufile)
-
+        spgm.create_picture_description(
+            outputfileabsgrad, [name, "absgrad data", exp], txtfile, gnufile
+        )
 
     if len(argv) < 2:
         print(__doc__)
         return
     projectfile = argv[0]
-    if sys.platform.startswith('win'):
+    if sys.platform.startswith("win"):
         inputfiles = glob.glob(argv[1])
     else:
         inputfiles = argv[1:]
 
-    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(
+        projectfile
+    )
     if project_settings is None:
         print("Could not load project settings.")
         return
     exps = project_settings.experiments
 
-    paintdates = trajognize.parse.parse_paintdates(os.path.join(
-        os.path.dirname(trajognize.__file__), '../misc/paintdates.dat'))
+    paintdates = trajognize.parse.parse_paintdates(
+        os.path.join(os.path.dirname(trajognize.__file__), "../misc/paintdates.dat")
+    )
     for inputfile in inputfiles:
         # reordered file should be the input
         (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
@@ -171,12 +206,14 @@ def main(argv=[]):
             # get categories
             name = alldata[index][0][0]
             (datatype, light, object, group, day) = get_categories_from_name(name)
-            i = index // 3 # F, C, D
+            i = index // 3  # F, C, D
             # symmetry, transitivity
             if name.startswith(datatype) and name.endswith("_F"):
                 # calculate dominance indices
                 datadict = plot.convert_matrixdata_to_dict(alldata[index])
-                normDS = trajognize.calc.hierarchy.deVries_modified_Davids_score(datadict)
+                normDS = trajognize.calc.hierarchy.deVries_modified_Davids_score(
+                    datadict
+                )
                 BBS = trajognize.calc.hierarchy.BBS_scale_score(datadict)
                 LDI = trajognize.calc.hierarchy.Lindquist_dominance_index(datadict)
                 # add new idorder entry for all Dominant parts
@@ -197,7 +234,9 @@ def main(argv=[]):
                         dailyLDI[key][strid] = []
                     # small error checking on correct day order
                     if day != len(dailyranks[key][strid]):
-                        raise ValueError("day: {}, dailyranks[key]: {}".format(day, dailyranks[key]))
+                        raise ValueError(
+                            "day: {}, dailyranks[key]: {}".format(day, dailyranks[key])
+                        )
                     # add new rank to daily list
                     dailyranks[key][strid].append(j)
                     dailynormDS[key][strid].append(normDS[strid])
@@ -210,15 +249,22 @@ def main(argv=[]):
             strids = sorted(dailyranks[key])
             # define output directory
             outdir = os.path.join(head, plotdir, exp, group, light, object, datatype)
-            if not os.path.isdir(outdir): os.makedirs(outdir)
-            outputfilecommon = os.path.join(outdir, "dailyranks__%s__%s_%s_%s_group_%s" % \
-                    (exp, datatype, light, object, group))
+            if not os.path.isdir(outdir):
+                os.makedirs(outdir)
+            outputfilecommon = os.path.join(
+                outdir,
+                "dailyranks__%s__%s_%s_%s_group_%s"
+                % (exp, datatype, light, object, group),
+            )
             # write .txt
             txtfile = outputfilecommon + ".txt"
             f = open(txtfile, "w")
             # write comments
-            f.write("# This is a post processed file containing dominance indices and ID ranks\n"
-                    "# of Eades-ordered %s matrices for each day in the given experiment.\n" % datatype)
+            f.write(
+                "# This is a post processed file containing dominance indices and ID ranks\n"
+                "# of Eades-ordered %s matrices for each day in the given experiment.\n"
+                % datatype
+            )
             f.write("# Experiment = %s\n" % exp)
             f.write("# Datatype = %s\n" % datatype)
             f.write("# Light = %s\n" % light)
@@ -236,19 +282,24 @@ def main(argv=[]):
             writegnu("dailyLDI", 3)
 
     # create SPGM gallery description
-    spgm.create_gallery_description(os.path.join(head, plotdir), """Plotted daily ranks and dominance indices
+    spgm.create_gallery_description(
+        os.path.join(head, plotdir),
+        """Plotted daily ranks and dominance indices
         of the individuals based on the positions in the Eades-ordered matrices.
         The following dominance indices are calculated: normDS, LDI, BBS
         Results are shown for dailyfqobj, movavgfqobj and cumulfqobj.
 
         Paint dates are indicated by gray vertical boxes in the background.
-        Days and dailyvalidtimes are indicated at the top of the daily plots.""")
+        Days and dailyvalidtimes are indicated at the top of the daily plots.""",
+    )
+
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:])) # pass only real params to main
+        sys.exit(main(sys.argv[1:]))  # pass only real params to main
     except Exception as ex:
         print(ex, file=sys.stderr)
         import traceback
+
         traceback.print_exc(ex)
         sys.exit(1)

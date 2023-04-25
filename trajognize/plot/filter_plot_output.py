@@ -23,27 +23,34 @@ Note 2:
 """
 
 import glob, os, sys, argparse, socket
+
 try:
     import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.stat.util
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "../..")
+        ),
+    )
     import trajognize.settings
     import trajognize.stat.experiments
     import trajognize.stat.init
     import trajognize.stat.util
 
 # dirs to exclude from search
-ignoredirs = ['corr', 'SYMLINK__', 'dailyoutput', 'dist24h']
-gooddirs = ['statsum', 'meassum']
-goodexts = ['.png']
-linkdirprefix = 'SYMLINK__FILTER/SYMLINK__'
+ignoredirs = ["corr", "SYMLINK__", "dailyoutput", "dist24h"]
+gooddirs = ["statsum", "meassum"]
+goodexts = [".png"]
+linkdirprefix = "SYMLINK__FILTER/SYMLINK__"
+
 
 def lower(list):
     return [x.lower() for x in list]
+
 
 def is_filter_exclusive(filters, subs, strcontains=False, allfilters=[]):
     """Return True if filter is exclusive, i.e. given list does not contain any
@@ -56,7 +63,9 @@ def is_filter_exclusive(filters, subs, strcontains=False, allfilters=[]):
             return False
         else:
             # if it contains something else from the same category, it is exclusive
-            if not allfilters or True in [s.find(f) != -1 for s in subs for f in allfilters]:
+            if not allfilters or True in [
+                s.find(f) != -1 for s in subs for f in allfilters
+            ]:
                 return True
             else:
                 return False
@@ -75,7 +84,7 @@ def is_filter_exclusive(filters, subs, strcontains=False, allfilters=[]):
 def create_symlink_name(allexps, allgroups, alllights, allrealvirts, name):
     """Create a short version of the filename for symlink name."""
     for exp in allexps:
-        name = name.replace("exp_%s" % exp, "e%d" % exps[exp]['number'])
+        name = name.replace("exp_%s" % exp, "e%d" % exps[exp]["number"])
     for group in allgroups:
         name = name.replace("group_%s" % group, group)
     for light in alllights:
@@ -91,37 +100,146 @@ def create_symlink_name(allexps, allgroups, alllights, allrealvirts, name):
 def main(argv=[]):
     """Main entry point of the script."""
     # print help if no arguments given
-    if not argv and len(sys.argv) <= 1: argv.append('-h')
+    if not argv and len(sys.argv) <= 1:
+        argv.append("-h")
 
     # create stat dictionary from implemented stat functions and classes
     stats = trajognize.stat.util.get_stat_dict()
     # collect all possible values for each filter
-    allstats = sorted(list(stats.keys()) + ['bodymass', 'wounds'])
+    allstats = sorted(list(stats.keys()) + ["bodymass", "wounds"])
     alllights = sorted(list(["DAYLIGHT", "NIGHTLIGHT"]))
-    allrealvirts = sorted(list(trajognize.stat.init.mfix_types) + ['ANY'])
+    allrealvirts = sorted(list(trajognize.stat.init.mfix_types) + ["ANY"])
 
     # TODO: this script does not work now as we cannot get exps, obj, etc
     # choices before we know what the project settings will be...
     # rewrite next time we need it
 
     # parse command line arguments
-    argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
-    argparser.add_argument("-i", "--inputpath", metavar="PATH", required=True, dest="inputpath", default='', help="define input path with statsum output")
-    argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
-    argparser.add_argument("-v", "--verboseonly", dest="verbose_only", action="store_true", default=False, help="Do not create real symlinks, only print output.")
-    argparser.add_argument("-m", "--maxsymlinks", metavar="num", dest="max_symlinks", type=int, default=100, help="Maximum number of symlinks to create.")
+    argparser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__
+    )
+    argparser.add_argument(
+        "-i",
+        "--inputpath",
+        metavar="PATH",
+        required=True,
+        dest="inputpath",
+        default="",
+        help="define input path with statsum output",
+    )
+    argparser.add_argument(
+        "-p",
+        "--projectfile",
+        metavar="FILE",
+        required=True,
+        dest="projectfile",
+        help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.",
+    )
+    argparser.add_argument(
+        "-v",
+        "--verboseonly",
+        dest="verbose_only",
+        action="store_true",
+        default=False,
+        help="Do not create real symlinks, only print output.",
+    )
+    argparser.add_argument(
+        "-m",
+        "--maxsymlinks",
+        metavar="num",
+        dest="max_symlinks",
+        type=int,
+        default=100,
+        help="Maximum number of symlinks to create.",
+    )
     # filters
-    argparser.add_argument("-s", "--statistics", metavar="stat", dest="statistics", nargs="+", choices=allstats, default=[], help="Filter for statistics. Possible values: %s" % allstats)
-    argparser.add_argument("-e", "--experiments", metavar="exp", dest="experiments", nargs="+", choices=allexps, default=[], help="Filter for experiments. Possible values: %s" % allexps)
-    argparser.add_argument("-g", "--groups", metavar="group", dest="groups", nargs="+", choices=allgroups, default=[], help="Filter for groups. Possible values: %s" % allgroups)
-    argparser.add_argument("-l", "--lights", metavar="light", dest="lights", nargs="+", choices=alllights, default=[], help="Filter for light. Possible values: %s" % alllights)
-    argparser.add_argument("-r", "--realvirt", metavar="realvirt", dest="realvirts", nargs="+", choices=allrealvirts, default=[], help="Filter for realvirt. Possible values: %s" % allrealvirts)
-    argparser.add_argument("-o", "--objects", metavar="object", dest="objects", nargs="+", choices=allobjects, default=[], help="Filter for objects. Possible values: %s" % allobjects)
-    argparser.add_argument("-n", "--names", metavar="name", dest="names", nargs="+", choices=allnames, default=[], help="Filter for names. Possible values: %s" % allnames)
+    argparser.add_argument(
+        "-s",
+        "--statistics",
+        metavar="stat",
+        dest="statistics",
+        nargs="+",
+        choices=allstats,
+        default=[],
+        help="Filter for statistics. Possible values: %s" % allstats,
+    )
+    argparser.add_argument(
+        "-e",
+        "--experiments",
+        metavar="exp",
+        dest="experiments",
+        nargs="+",
+        choices=allexps,
+        default=[],
+        help="Filter for experiments. Possible values: %s" % allexps,
+    )
+    argparser.add_argument(
+        "-g",
+        "--groups",
+        metavar="group",
+        dest="groups",
+        nargs="+",
+        choices=allgroups,
+        default=[],
+        help="Filter for groups. Possible values: %s" % allgroups,
+    )
+    argparser.add_argument(
+        "-l",
+        "--lights",
+        metavar="light",
+        dest="lights",
+        nargs="+",
+        choices=alllights,
+        default=[],
+        help="Filter for light. Possible values: %s" % alllights,
+    )
+    argparser.add_argument(
+        "-r",
+        "--realvirt",
+        metavar="realvirt",
+        dest="realvirts",
+        nargs="+",
+        choices=allrealvirts,
+        default=[],
+        help="Filter for realvirt. Possible values: %s" % allrealvirts,
+    )
+    argparser.add_argument(
+        "-o",
+        "--objects",
+        metavar="object",
+        dest="objects",
+        nargs="+",
+        choices=allobjects,
+        default=[],
+        help="Filter for objects. Possible values: %s" % allobjects,
+    )
+    argparser.add_argument(
+        "-n",
+        "--names",
+        metavar="name",
+        dest="names",
+        nargs="+",
+        choices=allnames,
+        default=[],
+        help="Filter for names. Possible values: %s" % allnames,
+    )
     # any further filter that should be or should not be part of the results
-    argparser.add_argument("-d", "--include", dest="include", nargs="+", default=[], help="List any further words that should be part of the results")
-    argparser.add_argument("-x", "--exclude", dest="exclude", nargs="+", default=[], help="List any further words that should NOT be part of the results")
-
+    argparser.add_argument(
+        "-d",
+        "--include",
+        dest="include",
+        nargs="+",
+        default=[],
+        help="List any further words that should be part of the results",
+    )
+    argparser.add_argument(
+        "-x",
+        "--exclude",
+        dest="exclude",
+        nargs="+",
+        default=[],
+        help="List any further words that should NOT be part of the results",
+    )
 
     # if arguments are passed to main(argv), parse them
     if argv:
@@ -131,7 +249,9 @@ def main(argv=[]):
         options = argparser.parse_args()
 
     # get project settings
-    project_settings = trajognize.settings.import_trajognize_settings_from_file(options.projectfile)
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(
+        options.projectfile
+    )
     if project_settings is None:
         print("Could not load project settings.")
         return
@@ -142,9 +262,9 @@ def main(argv=[]):
     allgroups = set()
     allnames = set()
     for exp in exps:
-        for group in exps[exp]['groups']:
+        for group in exps[exp]["groups"]:
             allgroups.add(group)
-            allnames.update(exps[exp]['groups'][group])
+            allnames.update(exps[exp]["groups"][group])
     allgroups = sorted(list(allgroups))
     allnames = sorted(list(allnames))
 
@@ -152,7 +272,7 @@ def main(argv=[]):
     if options.names:
         for exp in options.experiments if options.experiments else allexps:
             for name in options.names:
-                group = exps[exp]['groupid'][name]
+                group = exps[exp]["groupid"][name]
                 if group not in options.groups:
                     print(group, "group added to host", name, "in", exp)
                     options.groups.append(group)
@@ -162,58 +282,87 @@ def main(argv=[]):
     print("Using input path: '%s'" % options.inputpath)
     print("Using output path: '%s'\n" % outdir)
 
-
     print("Finding matches for the given filter...", end=" ")
     symlinks = []
     # check files that match filter
     for root, subfolders, files in os.walk(options.inputpath):
-        roottail = root[len(options.inputpath)+1:]
+        roottail = root[len(options.inputpath) + 1 :]
         # ignore dirs that need to be ignored
-        if True in [roottail.find(x) != -1 for x in ignoredirs]: continue
+        if True in [roottail.find(x) != -1 for x in ignoredirs]:
+            continue
         # check good dirs
-        if True not in [roottail.startswith(x) for x in gooddirs]: continue
+        if True not in [roottail.startswith(x) for x in gooddirs]:
+            continue
         # only parse dirs that do not contain any more subfolders
-        if subfolders: continue
+        if subfolders:
+            continue
         # only parse dirs that end with a plot dir before categorization
         p = roottail.find("plot_")
-        if p == -1: continue
+        if p == -1:
+            continue
         # create list of subdirs
         subs = [s.lower() for s in roottail[p:].split(os.sep) if s]
         presubs = [s for s in roottail[:p].split(os.sep) if s] + [subs[0]]
         del subs[0]
         # check filters
         for prefix in gooddirs:
-            if not is_filter_exclusive(["%s_%s" % (prefix, x.lower()) for x in options.statistics], presubs):
+            if not is_filter_exclusive(
+                ["%s_%s" % (prefix, x.lower()) for x in options.statistics], presubs
+            ):
                 break
         else:
             continue
-        if is_filter_exclusive(["exp_%s" % x.lower() for x in options.experiments], subs): continue
-        if is_filter_exclusive(lower(options.groups), subs, False, lower(allgroups)): continue
-        if is_filter_exclusive(lower(options.lights), subs, False, lower(alllights)): continue
-        if is_filter_exclusive(lower(options.realvirts), subs, False, lower(allrealvirts)): continue
-        if is_filter_exclusive(lower(options.objects), subs): continue
+        if is_filter_exclusive(
+            ["exp_%s" % x.lower() for x in options.experiments], subs
+        ):
+            continue
+        if is_filter_exclusive(lower(options.groups), subs, False, lower(allgroups)):
+            continue
+        if is_filter_exclusive(lower(options.lights), subs, False, lower(alllights)):
+            continue
+        if is_filter_exclusive(
+            lower(options.realvirts), subs, False, lower(allrealvirts)
+        ):
+            continue
+        if is_filter_exclusive(lower(options.objects), subs):
+            continue
         # name filter comes later, because it is part of the file name not the directory name
         # futher general filters
-        if options.exclude and not is_filter_exclusive(lower(options.exclude), [roottail], True): continue
-        if options.include and is_filter_exclusive(lower(options.include), [roottail], True): continue
+        if options.exclude and not is_filter_exclusive(
+            lower(options.exclude), [roottail], True
+        ):
+            continue
+        if options.include and is_filter_exclusive(
+            lower(options.include), [roottail], True
+        ):
+            continue
 
         # check files in the current filtered directory
         for filename in files:
             # include only files with proper extension
-            if not os.path.splitext(filename)[1] in goodexts: continue
+            if not os.path.splitext(filename)[1] in goodexts:
+                continue
             # exclude thumbnails
-            if filename.startswith("_thb_"): continue
+            if filename.startswith("_thb_"):
+                continue
             # apply name filter
-            if is_filter_exclusive(options.names, [filename], True, allnames): continue # TODO: names need more sophisticated filter
+            if is_filter_exclusive(options.names, [filename], True, allnames):
+                continue  # TODO: names need more sophisticated filter
             # apply general filters
-            if options.exclude and not is_filter_exclusive(lower(options.exclude), [filename], True): continue
-            if options.include and is_filter_exclusive(lower(options.include), [filename], True): continue
+            if options.exclude and not is_filter_exclusive(
+                lower(options.exclude), [filename], True
+            ):
+                continue
+            if options.include and is_filter_exclusive(
+                lower(options.include), [filename], True
+            ):
+                continue
             # create symlink name
-            symhead = '-'.join(presubs)
+            symhead = "-".join(presubs)
             symtail = create_symlink_name(filename)
             # absolute paths
             src = os.path.join(root, filename)
-            dst = os.path.join(outdir, symhead + '-' + symtail)
+            dst = os.path.join(outdir, symhead + "-" + symtail)
             # relative paths (make sure working directory is outdir when creating symlinks)
             dst = os.path.split(dst)[1]
             src = os.path.relpath(src, outdir)
@@ -221,7 +370,9 @@ def main(argv=[]):
             symlinks.append((src, dst))
             print(len(symlinks), end=" ")
             if len(symlinks) > options.max_symlinks and not options.verbose_only:
-                print("\nERROR: Too many matches found, exiting without creating symlinks.")
+                print(
+                    "\nERROR: Too many matches found, exiting without creating symlinks."
+                )
                 return
 
     if options.verbose_only:
@@ -244,15 +395,16 @@ def main(argv=[]):
             print
             os.system("ln -v -s %s %s" % x)
         # set permission to all files from SYMLINK__FILTER
-        if socket.gethostname() in ['biolfiz1', 'hal']:
+        if socket.gethostname() in ["biolfiz1", "hal"]:
             os.system("chmod -R ug+rwX %s" % os.path.split(outdir)[0])
 
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:])) # pass only real params to main
+        sys.exit(main(sys.argv[1:]))  # pass only real params to main
     except Exception as ex:
         print(ex, file=sys.stderr)
         import traceback
+
         traceback.print_exc(ex)
         sys.exit(1)

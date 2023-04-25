@@ -1,15 +1,22 @@
 """This is a file for some common functions for plotting."""
 
 import subprocess, os, sys, re, inspect, collections
+
 try:
     import trajognize.stat.experiments
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "../..")
+        ),
+    )
     import trajognize.stat.experiments
 
 
-GNUPLOT_TEMPLATE_PAINTDATE = """set obj rect from %g, graph 0 to %g, graph 1 fc lt -1 fs solid 0.2 noborder"""
+GNUPLOT_TEMPLATE_PAINTDATE = (
+    """set obj rect from %g, graph 0 to %g, graph 1 fc lt -1 fs solid 0.2 noborder"""
+)
 
 GNUPLOT_TEMPLATE_DAILYVALIDTIMES_INIT = """
 days(x) = word("Mon Tue Wed Thu Fri Sat Sun", int(x+1))
@@ -27,37 +34,49 @@ GNUPLOT_TEMPLATE_DAILYVALIDTIMES_PLOT = """"%s"  u ($1-startDayOfExp):7 axes x1y
      "" u ($1-startDayOfExp):(10000):(days($3)) with labels axes x1y2 rotate right"""
 
 
-def get_gnuplot_paintdate_str(exps, exp, paintdates, template=GNUPLOT_TEMPLATE_PAINTDATE):
+def get_gnuplot_paintdate_str(
+    exps, exp, paintdates, template=GNUPLOT_TEMPLATE_PAINTDATE
+):
     """Prepare paintdate strings for gnuplot."""
     pdlist = []
     for t in paintdates:
-        if t >= exps[exp]['start'] and t <= exps[exp]['stop']:
+        if t >= exps[exp]["start"] and t <= exps[exp]["stop"]:
             day = trajognize.stat.experiments.get_days_since_start(exps[exp], t)
-            pdlist.append(template % (day-0.5, day+0.5))
+            pdlist.append(template % (day - 0.5, day + 0.5))
     return "\n".join(pdlist)
 
 
 def get_gnuplot_dailyvalidtimes_strs(exps, exp):
     """Prepare paintdate strings for gnuplot."""
-    startDayOfExp = (exps[exp]['start'].date() - exps['first_A1_A2_B1_B2']['start'].date()).days
-    endDayOfExp = (exps[exp]['stop'].date() - exps['first_A1_A2_B1_B2']['start'].date()).days
+    startDayOfExp = (
+        exps[exp]["start"].date() - exps["first_A1_A2_B1_B2"]["start"].date()
+    ).days
+    endDayOfExp = (
+        exps[exp]["stop"].date() - exps["first_A1_A2_B1_B2"]["start"].date()
+    ).days
     init_str = GNUPLOT_TEMPLATE_DAILYVALIDTIMES_INIT % (startDayOfExp, endDayOfExp)
     plot_str = GNUPLOT_TEMPLATE_DAILYVALIDTIMES_PLOT % os.path.join(
-            os.path.dirname(trajognize.__file__), '../misc/dailyallkindofthings.dat')
+        os.path.dirname(trajognize.__file__), "../misc/dailyallkindofthings.dat"
+    )
     return (init_str, plot_str)
 
 
 def grep_headers_from_file(inputfile, headerstart):
     """Get header lines from trajognize.stat output .txt files."""
-    headerlines = subprocess.run(["grep", "^%s" % headerstart, inputfile],
-        stdout=subprocess.PIPE, encoding="utf-8", check=True).stdout.split('\n')
-    return [line.split('\t') for line in headerlines if line]
+    headerlines = subprocess.run(
+        ["grep", "^%s" % headerstart, inputfile],
+        stdout=subprocess.PIPE,
+        encoding="utf-8",
+        check=True,
+    ).stdout.split("\n")
+    return [line.split("\t") for line in headerlines if line]
 
 
 def get_exp_from_filename(inputfile):
     """Get experiment from trajognize.stat output .txt/.dat files."""
-    match = re.match(r'^(stat|calc|meas)_.*__(exp_.*)\.(txt|dat)$',
-            os.path.split(inputfile)[1])
+    match = re.match(
+        r"^(stat|calc|meas)_.*__(exp_.*)\.(txt|dat)$", os.path.split(inputfile)[1]
+    )
     if match:
         return match.group(2)
     else:
@@ -66,8 +85,7 @@ def get_exp_from_filename(inputfile):
 
 def get_day_from_filename(inputfile):
     """Get experiment from trajognize.statsum dailyoutput .txt/.dat files."""
-    match = re.match(r'^stat_.*__day_(.*)\.(txt|dat)$',
-            os.path.split(inputfile)[1])
+    match = re.match(r"^stat_.*__day_(.*)\.(txt|dat)$", os.path.split(inputfile)[1])
     if match:
         return match.group(1)
     else:
@@ -81,11 +99,10 @@ def get_stat_from_filename(inputfile):
     stat_aa__exp_all.txt
 
     """
-    match = re.match(r'^stat_(.*)__.*\.(txt|dat)$',
-            os.path.split(inputfile)[1])
+    match = re.match(r"^stat_(.*)__.*\.(txt|dat)$", os.path.split(inputfile)[1])
     if match:
         substat = match.group(1)
-        i = substat.find('.')
+        i = substat.find(".")
         if i > 0:
             return substat[:i]
         else:
@@ -124,7 +141,6 @@ def convert_matrixdata_to_dict(strdata):
     data = collections.defaultdict(collections.defaultdict)
     for i in range(n):
         for j in range(n):
-            x = float(strdata[i+1][j+1])
+            x = float(strdata[i + 1][j + 1])
             data[strids[i]][strids[j]] = x
     return data
-

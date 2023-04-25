@@ -8,14 +8,13 @@ project instances.
 
 
 from abc import ABCMeta, abstractmethod
-from collections import namedtuple
 from datetime import datetime
 import importlib.util
 from itertools import chain
-from typing import Iterable, Dict, List, Tuple, Union
+from typing import Iterable
 import os
 
-from trajognize.init import Point, Circle, Rectangle
+from trajognize.init import Point
 
 
 def import_trajognize_settings_from_file(filename):
@@ -38,24 +37,28 @@ def import_trajognize_settings_from_file(filename):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     for name, obj in module.__dict__.items():
-        if type(obj).__name__ == "ABCMeta" and \
-                name != "TrajognizeSettingsBase" and \
-                issubclass(obj, TrajognizeSettingsBase):
+        if (
+            type(obj).__name__ == "ABCMeta"
+            and name != "TrajognizeSettingsBase"
+            and issubclass(obj, TrajognizeSettingsBase)
+        ):
             return obj()
 
     return None
 
 
-class AASettings():
+class AASettings:
     """Class containing parameters of the approach-avoidance statistic."""
-    def __init__(self,
-        distance_threshold=400, #200 # [px]
-        approacher_velocity_threshold=3, # [px/frame]
-        avoider_velocity_threshold=3, # [px/frame]
-        min_event_count=3, # 1 <= min_event_count <= min_event_length
+
+    def __init__(
+        self,
+        distance_threshold=400,  # 200 # [px]
+        approacher_velocity_threshold=3,  # [px/frame]
+        avoider_velocity_threshold=3,  # [px/frame]
+        min_event_count=3,  # 1 <= min_event_count <= min_event_length
         cos_approacher_threshold=0.8,
         cos_avoider_threshold=0.5,
-        min_event_length=10
+        min_event_length=10,
     ):
         self.distance_threshold = distance_threshold
         self.approacher_velocity_threshold = approacher_velocity_threshold
@@ -66,32 +69,34 @@ class AASettings():
         self.min_event_length = min_event_length
 
 
-class FindBestTrajectoriesSettings():
+class FindBestTrajectoriesSettings:
     """Class containing parameters for find_best_trajectories() in
     algo_trajectory.py"""
-    def __init__(self,
+
+    def __init__(
+        self,
         might_be_bad_score_threshold=100,
         might_be_bad_sum_good_score_threshold=200,
         good_for_sure_score_threshold=500,
         good_score_threshold=100,
-        framelimit=1500
+        framelimit=1500,
     ):
         self.might_be_bad_score_threshold = might_be_bad_score_threshold
-        self.might_be_bad_sum_good_score_threshold = might_be_bad_sum_good_score_threshold
+        self.might_be_bad_sum_good_score_threshold = (
+            might_be_bad_sum_good_score_threshold
+        )
         self.good_for_sure_score_threshold = good_for_sure_score_threshold
         self.good_score_threshold = good_score_threshold
         self.framelimit = framelimit
 
 
-class ExperimentInitializer():
+class ExperimentInitializer:
     """Class for initializing experiments."""
 
     def __init__(self, experiments, get_wall_polygons):
         """Constructor. Experiments is a dict defined as in
         TrajognizeSettingsBase.experiment."""
-        self._experiments = self._initialize_experiments(
-            experiments, get_wall_polygons
-        )
+        self._experiments = self._initialize_experiments(experiments, get_wall_polygons)
 
     def _initialize_experiments(self, experiments, get_wall_polygons):
         """This functions should be called once on init to add some important
@@ -100,22 +105,28 @@ class ExperimentInitializer():
         # add lookup table to get group identifiers for strids quickly
         for name in experiments:
             experiment = experiments[name]
-            experiment['name'] = name
-            experiment['groupid'] = dict()
-            experiment['wall'] = dict() # flat ground territory without cage + home
-            experiment['wallall'] = dict() # full territory including cage + home
-            experiment['area'] = dict() # flat ground territory without cage + home
-            experiment['areaall'] = dict() # full territory including cage + home
+            experiment["name"] = name
+            experiment["groupid"] = dict()
+            experiment["wall"] = dict()  # flat ground territory without cage + home
+            experiment["wallall"] = dict()  # full territory including cage + home
+            experiment["area"] = dict()  # flat ground territory without cage + home
+            experiment["areaall"] = dict()  # full territory including cage + home
             colorids = []
-            for group in experiment['groups']:
-                colorids += experiment['groups'][group]
-                for strid in experiment['groups'][group]:
-                    experiment['groupid'][strid] = group
-                (experiment['wall'][group], experiment['wallall'][group]) = \
-                    get_wall_polygons(experiments[name], group)
-                experiment['area'][group] = self._get_polygonlist_area(experiment['wall'][group])
-                experiment['areaall'][group] = self._get_polygonlist_area(experiment['wallall'][group])
-            experiment['colorids'] = sorted(list(set(colorids)))
+            for group in experiment["groups"]:
+                colorids += experiment["groups"][group]
+                for strid in experiment["groups"][group]:
+                    experiment["groupid"][strid] = group
+                (
+                    experiment["wall"][group],
+                    experiment["wallall"][group],
+                ) = get_wall_polygons(experiments[name], group)
+                experiment["area"][group] = self._get_polygonlist_area(
+                    experiment["wall"][group]
+                )
+                experiment["areaall"][group] = self._get_polygonlist_area(
+                    experiment["wallall"][group]
+                )
+            experiment["colorids"] = sorted(list(set(colorids)))
 
         # TODO: add anything else that is useful to have in the experiments dict itself
 
@@ -131,8 +142,13 @@ class ExperimentInitializer():
             summarized area of all polys in list
 
         """
-        return sum(0.5 * abs(sum(x0 * y1 - x1 * y0
-            for ((x0, y0), (x1, y1)) in zip(p, p[1:] + [p[0]])))
+        return sum(
+            0.5
+            * abs(
+                sum(
+                    x0 * y1 - x1 * y0 for ((x0, y0), (x1, y1)) in zip(p, p[1:] + [p[0]])
+                )
+            )
             for p in polys
         )
 
@@ -158,20 +174,27 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         # define number of colors (colorid base) based on color names.
         self._MBASE = len(self.color_names)
         # define color lookup table (int -> char)
-        self._int2color_lookup = "".join([self.color_names[i].upper()[0]
-            for i in range(self._MBASE)
-        ])
+        self._int2color_lookup = "".join(
+            [self.color_names[i].upper()[0] for i in range(self._MBASE)]
+        )
         # define color lookup table (char -> int)
-        self._color2int_lookup = dict([(self.color_names[i].upper()[0], i)
-            for i in range(self._MBASE)
-        ])
+        self._color2int_lookup = dict(
+            [(self.color_names[i].upper()[0], i) for i in range(self._MBASE)]
+        )
         # initialize experiments
-        self.experiments = ExperimentInitializer(self.experiments,
-            self.get_wall_polygons).asdict()
+        self.experiments = ExperimentInitializer(
+            self.experiments, self.get_wall_polygons
+        ).asdict()
         # initialize colorids
-        self._colorids = sorted(list(set(chain.from_iterable(
-            exp['colorids'] for exp in self.experiments.values()
-        ))))
+        self._colorids = sorted(
+            list(
+                set(
+                    chain.from_iterable(
+                        exp["colorids"] for exp in self.experiments.values()
+                    )
+                )
+            )
+        )
 
     def color2int(self, color: str) -> int:
         """Return the index of the color initial within your color names."""
@@ -262,13 +285,13 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         Leave it empty like below if you do not know why this is relevant.
         """
         return {
-            'monday':    [],
-            'tuesday':   [],
-            'wednesday': [],
-            'thursday':  [],
-            'friday':    [],
-            'saturday':  [],
-            'sunday':    [],
+            "monday": [],
+            "tuesday": [],
+            "wednesday": [],
+            "thursday": [],
+            "friday": [],
+            "saturday": [],
+            "sunday": [],
         }
 
     @property
@@ -308,9 +331,12 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         Return:
             filename with full path pointing to unique output to be created
         """
-        return os.path.join(outputpath,
-            os.path.split(os.path.split(os.path.split(inputfile)[0])[0])[1] + "__" +
-            os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt"
+        return os.path.join(
+            outputpath,
+            os.path.split(os.path.split(os.path.split(inputfile)[0])[0])[1]
+            + "__"
+            + os.path.splitext(os.path.split(inputfile)[1])[0]
+            + ".txt",
         )
 
     def get_wall_polygons(self, experiment: dict, group: str):
@@ -334,8 +360,8 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         # define better if needed, this is the full image frame
 
         # top left
-        polys[i].append(Point(0,0))
-        polysall[i].append(Point(0,0))
+        polys[i].append(Point(0, 0))
+        polysall[i].append(Point(0, 0))
         # top right
         polys[i].append(Point(self.image_size.x, 0))
         polysall[i].append(Point(self.image_size.x, 0))
@@ -347,7 +373,6 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         polysall[i].append(Point(0, self.image_size.y))
 
         return (polys, polysall)
-
 
     ############################################################################
     # abstract methods that need project-specific instantiation
@@ -514,4 +539,3 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
                 defined separately, with the same object names as defined here.
         """
         ...
-

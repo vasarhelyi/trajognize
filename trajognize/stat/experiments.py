@@ -10,7 +10,16 @@ import math
 from trajognize.init import Point, Circle, Ellipse, Rectangle
 
 #: index for weekdays starting from saturday
-ordered_weekdays = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+ordered_weekdays = [
+    "saturday",
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+]
+
 
 def get_experiment(experiments, sometime, allonday=False):
     """Return the name of the experiments that were running at a given moment,
@@ -27,23 +36,24 @@ def get_experiment(experiments, sometime, allonday=False):
 
     """
     if allonday:
-        t1 = datetime.datetime.combine(sometime.date(), datetime.time(0,0,0))
+        t1 = datetime.datetime.combine(sometime.date(), datetime.time(0, 0, 0))
         explist1 = get_experiment(experiments, t1)
-        t2 = datetime.datetime.combine(sometime.date(), datetime.time(23,59,59))
+        t2 = datetime.datetime.combine(sometime.date(), datetime.time(23, 59, 59))
         explist2 = get_experiment(experiments, t2)
-        explist = sorted(list(set(explist1) | set(explist2)),
-            key=lambda a: experiments[a]['number'])
+        explist = sorted(
+            list(set(explist1) | set(explist2)), key=lambda a: experiments[a]["number"]
+        )
         return explist
 
     explist = []
     for name in experiments:
         experiment = experiments[name]
-        if sometime >= experiment['start'] and sometime <= experiment['stop']:
+        if sometime >= experiment["start"] and sometime <= experiment["stop"]:
             explist.append(name)
             # allow max 2 overlapping experiments (e.g. first + first_part_*)
             if len(explist) > 1:
                 # order according to experiment number
-                explist.sort(key=lambda a: experiments[a]['number'])
+                explist.sort(key=lambda a: experiments[a]["number"])
                 break
     return explist
 
@@ -56,7 +66,7 @@ def are_in_same_group(stridi, stridj, experiment):
     :param experiment: an experiment in which the check should be performed
 
     """
-    if experiment['groupid'][stridi] == experiment['groupid'][stridj]:
+    if experiment["groupid"][stridi] == experiment["groupid"][stridj]:
         return True
     else:
         return False
@@ -100,18 +110,20 @@ def is_wall_between(a, b, cage, use_cage):
         # special case: a and b are on a vertical line
         if a.centerx == b.centerx:
             x = a.centerx
-            y = cage[1] + (x - cage[0])*j
+            y = cage[1] + (x - cage[0]) * j
         # normal case
         else:
             i = float(b.centery - a.centery) / (b.centerx - a.centerx)
             # special case: lines are parallel -> return true if lines overlap
-            if i == j: # note that it could be < epsilon but it is not really important...
-                if a.centery == cage[1] - cage[0]*j + a.centerx*j:
+            if (
+                i == j
+            ):  # note that it could be < epsilon but it is not really important...
+                if a.centery == cage[1] - cage[0] * j + a.centerx * j:
                     return True
                 else:
                     continue
-            x = ((cage[1] - cage[0]*j) - (a.centery - a.centerx*i)) / (i-j)
-            y = i * x + (a.centery - a.centerx*i)
+            x = ((cage[1] - cage[0] * j) - (a.centery - a.centerx * i)) / (i - j)
+            y = i * x + (a.centery - a.centerx * i)
         # check wheter junction point is close to cage center and skip wall if so
         cx = math.hypot(cage[0] - x, cage[1] - y)
         if cx < 50:
@@ -168,10 +180,14 @@ def is_barcode_under_object(barcode, objectcenter, objectarea, image_size):
     (ofsx, ofsy) = queuing_center_offset(objectcenter, objectarea, image_size)
     # check for rectangles
     if isinstance(objectarea, Rectangle):
-        if barcode.centerx < (objectcenter.x + ofsx) - objectarea.w/2.0: return False
-        if barcode.centerx > (objectcenter.x + ofsx) + objectarea.w/2.0: return False
-        if barcode.centery < (objectcenter.y + ofsy) - objectarea.h/2.0: return False
-        if barcode.centery > (objectcenter.y + ofsy) + objectarea.h/2.0: return False
+        if barcode.centerx < (objectcenter.x + ofsx) - objectarea.w / 2.0:
+            return False
+        if barcode.centerx > (objectcenter.x + ofsx) + objectarea.w / 2.0:
+            return False
+        if barcode.centery < (objectcenter.y + ofsy) - objectarea.h / 2.0:
+            return False
+        if barcode.centery > (objectcenter.y + ofsy) + objectarea.h / 2.0:
+            return False
         return True
     # check for circles
     elif isinstance(objectarea, Circle):
@@ -190,7 +206,8 @@ def is_barcode_under_object(barcode, objectcenter, objectarea, image_size):
         else:
             raise NotImplementedError("unhandled type of 'objectcenter'")
         angle = math.degrees(math.atan2(dy, dx))
-        if angle < 0: angle += 360
+        if angle < 0:
+            angle += 360
         if a2 >= a1:
             if angle >= a1 and angle <= a2:
                 return True
@@ -212,16 +229,17 @@ def get_formatted_description(experiment, commentchar=None):
     :param commentchar: optional comment char to the beginning of each line
 
     """
-    output = "Experiment '%s'\n\n" \
-             "start: %s\n"      \
-             "stop: %s\n\n" % (experiment['name'],
-            experiment['start'], experiment['stop'])
+    output = (
+        "Experiment '%s'\n\n"
+        "start: %s\n"
+        "stop: %s\n\n" % (experiment["name"], experiment["start"], experiment["stop"])
+    )
 
-    for group in experiment['groups']:
-        output += "group %s: %s\n" % (group, experiment['groups'][group])
+    for group in experiment["groups"]:
+        output += "group %s: %s\n" % (group, experiment["groups"][group])
     output += "\n"
 
-    lines = experiment['description'].split('\n')
+    lines = experiment["description"].split("\n")
     for line in lines:
         line = line.strip()
         output += line + "\n"
@@ -235,7 +253,7 @@ def get_formatted_description(experiment, commentchar=None):
 
 def get_days_since_start(experiment, sometime):
     """Return number of days since the start of an experiment."""
-    return (sometime.date() - experiment['start'].date()).days
+    return (sometime.date() - experiment["start"].date()).days
 
 
 def get_day_offset(experiment):
@@ -243,9 +261,10 @@ def get_day_offset(experiment):
     to accomodate first experiment cut up parts... Works until you do not define
     an experiment name containing the string 'first_part'. Sorry..."""
 
-    if "first_part" in experiment['name']:
-        return (experiment['start'].date() -
-            experiments['first_A1_A2_B1_B2']['start'].date()
+    if "first_part" in experiment["name"]:
+        return (
+            experiment["start"].date()
+            - experiments["first_A1_A2_B1_B2"]["start"].date()
         ).days
     else:
         return 0
@@ -253,9 +272,10 @@ def get_day_offset(experiment):
 
 def get_dayrange_of_experiment(experiment):
     """Return a list of strings containing all days through an experiment."""
-    firstday = experiment['start'].date()
-    lastday = experiment['stop'].date()
-    dayrange = [str(firstday + datetime.timedelta(n))
+    firstday = experiment["start"].date()
+    lastday = experiment["stop"].date()
+    dayrange = [
+        str(firstday + datetime.timedelta(n))
         for n in range(int((lastday - firstday).days) + 1)
     ]
 
@@ -267,11 +287,14 @@ def get_dayrange_of_all_experiments(experiments):
     firstday = None
     lastday = None
     for exp in experiments.values():
-        if firstday is None or firstday > exp['start']: firstday = exp['start']
-        if lastday is None or lastday < exp['stop']: lastday = exp['stop']
+        if firstday is None or firstday > exp["start"]:
+            firstday = exp["start"]
+        if lastday is None or lastday < exp["stop"]:
+            lastday = exp["stop"]
     firstday = firstday.date()
     lastday = lastday.date()
-    dayrange = [str(firstday + datetime.timedelta(n))
+    dayrange = [
+        str(firstday + datetime.timedelta(n))
         for n in range(int((lastday - firstday).days) + 1)
     ]
 
@@ -285,10 +308,10 @@ def is_weekly_feeding_time(date, weekly_feeding_times, exclude_fridays=False):
     if not weekly_feeding_times:
         return False
 
-    weekday = date.strftime('%A').lower()
+    weekday = date.strftime("%A").lower()
     hour = date.hour
     # skip fridays because feeding is infinitely available on that day
-    if weekday == 'friday' and exclude_fridays:
+    if weekday == "friday" and exclude_fridays:
         return False
     # skip non feeding hours
     for start, duration in weekly_feeding_times[weekday]:

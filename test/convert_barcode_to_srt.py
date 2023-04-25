@@ -17,10 +17,15 @@ try:
     import trajognize
     import trajognize.stat
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "..")
+        ),
+    )
     import trajognize
     import trajognize.stat
+
 
 def get_label_color(mfix):
     """Deine color the same way as in ratognize.cpp more or less"""
@@ -35,6 +40,7 @@ def get_label_color(mfix):
 
     return color
 
+
 def main(argv=[]):
     """Main entry point."""
     if len(argv) != 2 or "-h" in argv or "--help" in argv:
@@ -44,7 +50,9 @@ def main(argv=[]):
     projectfile = argv[1]
 
     print("\nParsing project settings file...")
-    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(
+        projectfile
+    )
     if project_settings is None:
         return
     colorids = project_settings.colorids
@@ -59,26 +67,31 @@ def main(argv=[]):
     print("  %d barcode lines parsed" % len(barcodes))
 
     print("\nWriting subtitles...")
-    outputfile = open(inputfile + ".srt", 'w')
+    outputfile = open(inputfile + ".srt", "w")
     subtitleindex = 0
     for currentframe in range(len(barcodes)):
         for i in range(len(barcodes[currentframe])):
             for barcode in barcodes[currentframe][i]:
-                msg = trajognize.stat.util.get_subtitle_string(subtitleindex,
-                        currentframe/float(project_settings.FPS),
-                        colorids[i],
-                        get_label_color(barcode.mfix),
-                        barcode.centerx, barcode.centery,
-                        project_settings.image_size.x,
-                        project_settings.image_size.y)
+                msg = trajognize.stat.util.get_subtitle_string(
+                    subtitleindex,
+                    currentframe / float(project_settings.FPS),
+                    colorids[i],
+                    get_label_color(barcode.mfix),
+                    barcode.centerx,
+                    barcode.centery,
+                    project_settings.image_size.x,
+                    project_settings.image_size.y,
+                )
                 subtitleindex += 1
                 outputfile.write(msg)
 
+
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:])) # pass only real params to main
+        sys.exit(main(sys.argv[1:]))  # pass only real params to main
     except Exception as ex:
         print(ex, file=sys.stderr)
         import traceback
+
         traceback.print_exc(ex)
         sys.exit(1)

@@ -18,8 +18,12 @@ try:
     import trajognize.plot.plot
     import trajognize.plot.spgm
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "../..")
+        ),
+    )
     import trajognize.settings
     import trajognize.parse
     import trajognize.stat.init
@@ -34,7 +38,7 @@ def get_categories_from_name(name):
     heatmap.ORP_daylight_REAL
 
     """
-    match = re.match(r'^heatmap\.(.*)_(.*)_(.*)$', name)
+    match = re.match(r"^heatmap\.(.*)_(.*)_(.*)$", name)
     if match:
         strid = match.group(1)
         light = match.group(2)
@@ -52,7 +56,9 @@ def main(argv=[]):
     projectfile = argv[0]
     inputdir = argv[1]
     inputfiles = glob.glob(os.path.join(inputdir, "*/stat_heatmap.*__day_*.txt"))
-    project_settings = trajognize.settings.import_trajognize_settings_from_file(projectfile)
+    project_settings = trajognize.settings.import_trajognize_settings_from_file(
+        projectfile
+    )
     if project_settings is None:
         print("Could not load project settings.")
         return
@@ -84,32 +90,48 @@ def main(argv=[]):
 
     # write results
     # define output directory
-    (head, tail, plotdir) = trajognize.plot.plot.get_headtailplot_from_filename(inputfile)
+    (head, tail, plotdir) = trajognize.plot.plot.get_headtailplot_from_filename(
+        inputfile
+    )
     head = os.path.split(head)[0]
     tail = plotdir
     outdir = os.path.join(head, plotdir)
-    if not os.path.isdir(outdir): os.makedirs(outdir)
+    if not os.path.isdir(outdir):
+        os.makedirs(outdir)
     # iterate all experiments and groups
     for exp in exps:
-        for group in exps[exp]['groups']:
+        for group in exps[exp]["groups"]:
             # save output in text format with header
-            outputfile = os.path.join(outdir, tail + "__exp_%s__group_%s.txt" % (exp, group))
+            outputfile = os.path.join(
+                outdir, tail + "__exp_%s__group_%s.txt" % (exp, group)
+            )
             print("writing", os.path.split(outputfile)[1])
             outputfile = open(outputfile, "w")
-            outputfile.write(trajognize.stat.experiments.get_formatted_description(exps[exp], "#"))
+            outputfile.write(
+                trajognize.stat.experiments.get_formatted_description(exps[exp], "#")
+            )
             outputfile.write("\n")
-            outputfile.write("# This file contains heatmap dailyoutput results arranged in blocks of strids and days for all (light, realvirt, datatype) tuples\n")
-            outputfile.write("# Warning: due to the dailyoutput-type calculations, days at the edge of experiments contain data from neighboring experiments, too\n")
+            outputfile.write(
+                "# This file contains heatmap dailyoutput results arranged in blocks of strids and days for all (light, realvirt, datatype) tuples\n"
+            )
+            outputfile.write(
+                "# Warning: due to the dailyoutput-type calculations, days at the edge of experiments contain data from neighboring experiments, too\n"
+            )
             outputfile.write("\n")
             days = trajognize.stat.experiments.get_dayrange_of_experiment(exps[exp])
-            strids = sorted(exps[exp]['groups'][group])
-            for (light, realvirt, datatype) in itertools.product(lights, realvirts, datatypes):
-                outputfile.write("heatmap_dailyoutput_%s_%s_%s\t%s\tabsgrad_avg\tabsgrad_std\n" % (light, realvirt, datatype, "\t".join(strids)))
-                olddata = [0]*len(strids)
+            strids = sorted(exps[exp]["groups"][group])
+            for (light, realvirt, datatype) in itertools.product(
+                lights, realvirts, datatypes
+            ):
+                outputfile.write(
+                    "heatmap_dailyoutput_%s_%s_%s\t%s\tabsgrad_avg\tabsgrad_std\n"
+                    % (light, realvirt, datatype, "\t".join(strids))
+                )
+                olddata = [0] * len(strids)
                 for day in days:
                     absgrad = []
                     outputfile.write(day)
-                    for i,strid in enumerate(strids):
+                    for i, strid in enumerate(strids):
                         key = (strid, light, realvirt, day, datatype)
                         try:
                             outputfile.write("\t%g" % database[key])
@@ -117,26 +139,36 @@ def main(argv=[]):
                             olddata[i] = float(database[key])
                         except KeyError:
                             outputfile.write("\tnan")
-                    outputfile.write("\t%g\t%g\n" % (numpy.mean(absgrad), numpy.std(absgrad)))
+                    outputfile.write(
+                        "\t%g\t%g\n" % (numpy.mean(absgrad), numpy.std(absgrad))
+                    )
                 outputfile.write("\n\n")
 
     # create SPGM gallery description
-    trajognize.plot.spgm.create_gallery_description(head, """
+    trajognize.plot.spgm.create_gallery_description(
+        head,
+        """
             Summarized heatmap dailyoutput statistics.
-            """)
-    trajognize.plot.spgm.create_gallery_description(outdir, """
+            """,
+    )
+    trajognize.plot.spgm.create_gallery_description(
+        outdir,
+        """
             Summarized heatmap dailyoutput results separated for experiments and groups
             Warning: due to the dailyoutput-type calculations,
             days at the edge of experiments contain data from neighboring experiments, too.
 
             Absgrad data appeneded to the end of group data.
-            """)
+            """,
+    )
+
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:])) # pass only real params to main
+        sys.exit(main(sys.argv[1:]))  # pass only real params to main
     except Exception as ex:
         print(ex, file=sys.stderr)
         import traceback
+
         traceback.print_exc(ex)
         sys.exit(1)

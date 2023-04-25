@@ -14,14 +14,14 @@ exps = projectfile.experiments
 
 for exp in exps:
     vpython.graph.gdisplay(title=exp + "wall")
-    for group in exps[exp]['groups']:
-        for poly in exps[exp]['wall'][group]:
+    for group in exps[exp]["groups"]:
+        for poly in exps[exp]["wall"][group]:
             gcurve = vpython.graph.gcurve()
             gcurve.plot(pos=poly)
             gcurve.plot(pos=poly[0])
     vpython.graph.gdisplay(title=exp + "wallall")
-    for group in exps[exp]['groups']:
-        for poly in exps[exp]['wallall'][group]:
+    for group in exps[exp]["groups"]:
+        for poly in exps[exp]["wallall"][group]:
             gcurve = vpython.graph.gcurve()
             gcurve.plot(pos=poly)
             gcurve.plot(pos=poly[0])

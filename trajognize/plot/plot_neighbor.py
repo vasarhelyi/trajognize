@@ -19,8 +19,12 @@ try:
     import trajognize.parse
     import trajognize.corr.util
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "../..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "../..")
+        ),
+    )
     import trajognize.parse
     import trajognize.corr.util
 
@@ -66,17 +70,17 @@ def get_categories_from_name(name):
     neighbor_number_nightlight
 
     """
-    match = re.match(r'^neighbor_([a-zA-Z]*)_([a-zA-Z]*)', name)
+    match = re.match(r"^neighbor_([a-zA-Z]*)_([a-zA-Z]*)", name)
     if match:
         networknumber = match.group(1)
         light = match.group(2)
     else:
         return (None, None, None)
-    match = re.match(r'.*group_([0-9A-Z]*)', name)
+    match = re.match(r".*group_([0-9A-Z]*)", name)
     if match:
         group = match.group(1)
     else:
-        group = 'all'
+        group = "all"
     return (networknumber, light, group)
 
 
@@ -85,7 +89,7 @@ def main(argv=[]):
     if not argv:
         print(__doc__)
         return
-    if sys.platform.startswith('win'):
+    if sys.platform.startswith("win"):
         inputfiles = glob.glob(argv[0])
     else:
         inputfiles = argv
@@ -113,70 +117,104 @@ def main(argv=[]):
                 plot_matrixmap.main(["-i", inputfile, "-n", str(index), "-o", outdir])
             elif networknumber == "number":
                 maxcol = len(alldata[index][0])
-                outputfilecommon = os.path.join(outdir, tail + '__' + name)
+                outputfilecommon = os.path.join(outdir, tail + "__" + name)
                 gnufile = outputfilecommon + ".gnu"
                 outputfile = outputfilecommon + ".png"
-                script = get_gnuplot_script(inputfile, outputfile, name, index, maxcol, exp)
-                with open(gnufile, 'w') as f:
+                script = get_gnuplot_script(
+                    inputfile, outputfile, name, index, maxcol, exp
+                )
+                with open(gnufile, "w") as f:
                     f.write(script)
                 try:
                     subprocess.call(["gnuplot", gnufile])
                 except WindowsError:
-                    print("  Error plotting '%s': gnuplot is not available on Windows" % name)
+                    print(
+                        "  Error plotting '%s': gnuplot is not available on Windows"
+                        % name
+                    )
                 # create SPGM picture description
-                spgm.create_picture_description(outputfile, [name, exp], inputfile, gnufile)
+                spgm.create_picture_description(
+                    outputfile, [name, exp], inputfile, gnufile
+                )
             else:
-                raise NotImplementedError("unhandled networknumber: {}".format(networknumber))
+                raise NotImplementedError(
+                    "unhandled networknumber: {}".format(networknumber)
+                )
 
             # save output for correlation analysis
             if networknumber == "network":
-                headerline = trajognize.corr.util.strids2headerline(alldata[index][0][1:], True)
+                headerline = trajognize.corr.util.strids2headerline(
+                    alldata[index][0][1:], True
+                )
                 corrline = trajognize.corr.util.matrix2corrline(alldata[index])
-                corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, True)
+                corrfile = trajognize.corr.util.get_corr_filename(
+                    statsum_basedir, exp, group, True
+                )
                 if corrfile not in corrfiles:
                     if os.path.isfile(corrfile):
                         os.remove(corrfile)
                     corrfiles.append(corrfile)
                 trajognize.corr.util.add_corr_line(corrfile, headerline, corrline)
                 # convert pairparams to params (through calculating dominance indices) and save that as well
-                headerline, corrline = trajognize.corr.util.pairparams2params(headerline, corrline)
-                corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, False)
+                headerline, corrline = trajognize.corr.util.pairparams2params(
+                    headerline, corrline
+                )
+                corrfile = trajognize.corr.util.get_corr_filename(
+                    statsum_basedir, exp, group, False
+                )
                 if corrfile not in corrfiles:
                     if os.path.isfile(corrfile):
                         os.remove(corrfile)
                     corrfiles.append(corrfile)
                 trajognize.corr.util.add_corr_line(corrfile, headerline, corrline)
             elif networknumber == "number":
-                headerline = trajognize.corr.util.strids2headerline(alldata[index][0][1:], False)
+                headerline = trajognize.corr.util.strids2headerline(
+                    alldata[index][0][1:], False
+                )
                 # calculate correlation output as weighted avg number of neighbors
-                corrdata = [name] # [name[:name.find("_group")]]
+                corrdata = [name]  # [name[:name.find("_group")]]
                 for j in range(1, len(alldata[index][0])):
                     try:
-                        corrdata.append("%g" % numpy.average(range(len(alldata[index])-1),
-                                weights=[float(alldata[index][i][j]) for i in range(1, len(alldata[index]))]))
+                        corrdata.append(
+                            "%g"
+                            % numpy.average(
+                                range(len(alldata[index]) - 1),
+                                weights=[
+                                    float(alldata[index][i][j])
+                                    for i in range(1, len(alldata[index]))
+                                ],
+                            )
+                        )
                     except ZeroDivisionError:
-                        corrdata.append("nan") # TODO: or 0 ?
+                        corrdata.append("nan")  # TODO: or 0 ?
                 corrline = "\t".join(corrdata)
-                corrfile = trajognize.corr.util.get_corr_filename(statsum_basedir, exp, group, False)
+                corrfile = trajognize.corr.util.get_corr_filename(
+                    statsum_basedir, exp, group, False
+                )
                 if corrfile not in corrfiles:
                     if os.path.isfile(corrfile):
                         os.remove(corrfile)
                     corrfiles.append(corrfile)
                 trajognize.corr.util.add_corr_line(corrfile, headerline, corrline)
 
-
-
     # create SPGM gallery descriptions
-    spgm.create_gallery_description(head, "Neighbor networks and neighbor number distibutions")
-    spgm.create_gallery_description(os.path.join(head, plotdir), """Plotted results for neighbor matrices and neighbor number distributions.
+    spgm.create_gallery_description(
+        head, "Neighbor networks and neighbor number distibutions"
+    )
+    spgm.create_gallery_description(
+        os.path.join(head, plotdir),
+        """Plotted results for neighbor matrices and neighbor number distributions.
         Results are organized into subdirectories according to experiments, groups and light conditions.
-        """)
+        """,
+    )
+
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:])) # pass only real params to main
+        sys.exit(main(sys.argv[1:]))  # pass only real params to main
     except Exception as ex:
         print(ex, file=sys.stderr)
         import traceback
+
         traceback.print_exc(ex)
         sys.exit(1)

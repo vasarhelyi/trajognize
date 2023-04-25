@@ -31,8 +31,7 @@ plot "%(inputfile)s" index %(index)d u 1:(column(%(maxcol)d+1)) with lines
 """
 
 
-def get_gnuplot_script(inputfile, outputfile, outputfileall, name, index, maxcol,
-        exp):
+def get_gnuplot_script(inputfile, outputfile, outputfileall, name, index, maxcol, exp):
     """Return .gnu script body as string."""
     data = {
         "inputfile": inputfile,
@@ -51,7 +50,7 @@ def main(argv=[]):
     if not argv:
         print(__doc__)
         return
-    if sys.platform.startswith('win'):
+    if sys.platform.startswith("win"):
         inputfiles = glob.glob(argv[0])
     else:
         inputfiles = argv
@@ -63,7 +62,8 @@ def main(argv=[]):
         # define output directory
         (head, tail, plotdir) = plot.get_headtailplot_from_filename(inputfile)
         outdir = os.path.join(head, plotdir, exp)
-        if not os.path.isdir(outdir): os.makedirs(outdir)
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir)
         # if this is a new output directory, clear SPGM descriptions
         if outdir not in outdirs:
             spgm.remove_picture_descriptions(outdir)
@@ -71,39 +71,48 @@ def main(argv=[]):
         # plot all indices
         for index in range(len(headers)):
             name = headers[index][0]
-            maxcol = len(headers[index])-1
-            outputfilecommon = os.path.join(outdir, tail + '__' + name)
+            maxcol = len(headers[index]) - 1
+            outputfilecommon = os.path.join(outdir, tail + "__" + name)
             gnufile = outputfilecommon + ".gnu"
             outputfile = outputfilecommon + ".indiv.png"
             outputfileall = outputfilecommon + ".all.png"
-            script = get_gnuplot_script(inputfile, outputfile, outputfileall,
-                    name, index, maxcol, exp)
-            with open(gnufile, 'w') as f:
+            script = get_gnuplot_script(
+                inputfile, outputfile, outputfileall, name, index, maxcol, exp
+            )
+            with open(gnufile, "w") as f:
                 f.write(script)
             try:
                 subprocess.call(["gnuplot", gnufile])
             except WindowsError:
-                print("  Error plotting '%s': gnuplot is not available on Windows" % name)
+                print(
+                    "  Error plotting '%s': gnuplot is not available on Windows" % name
+                )
             # create SPGM picture description
-            spgm.create_picture_description(outputfile,
-                    [name, "individual data", exp], inputfile, gnufile)
-            spgm.create_picture_description(outputfileall,
-                    [name, "averaged data", exp], inputfile, gnufile)
+            spgm.create_picture_description(
+                outputfile, [name, "individual data", exp], inputfile, gnufile
+            )
+            spgm.create_picture_description(
+                outputfileall, [name, "averaged data", exp], inputfile, gnufile
+            )
 
     # create SPGM gallery descriptions
     spgm.create_gallery_description(head, "Distribution of acceleration")
-    spgm.create_gallery_description(os.path.join(head, plotdir), """Plotted results for acceleration distribution.
+    spgm.create_gallery_description(
+        os.path.join(head, plotdir),
+        """Plotted results for acceleration distribution.
         Results are categorized in subdirectories according to experiments.
         Two output types exist: one plot for individual distributions together,
         one for averaged distribution of all pateks.
-        """)
+        """,
+    )
 
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:])) # pass only real params to main
+        sys.exit(main(sys.argv[1:]))  # pass only real params to main
     except Exception as ex:
         print(ex, file=sys.stderr)
         import traceback
+
         traceback.print_exc(ex)
         sys.exit(1)

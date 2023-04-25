@@ -16,15 +16,42 @@ from math import pi
 try:
     import trajognize
 except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(sys.modules[__name__].__file__), "..")))
+    sys.path.insert(
+        0,
+        os.path.abspath(
+            os.path.join(os.path.dirname(sys.modules[__name__].__file__), "..")
+        ),
+    )
     import trajognize
 
 # parse command line arguments
-argparser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
-argparser.add_argument("-i", "--inputfile", metavar="FILE", required=True, dest="inputfile", help="define barcode input file name (.blobs.barcodes)")
-argparser.add_argument("-p", "--projectfile", metavar="FILE", required=True, dest="projectfile", help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.")
-argparser.add_argument("-n", "--framenum", metavar="NUM", dest="framenum", default=0, help="define frame to read")
+argparser = argparse.ArgumentParser(
+    formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__
+)
+argparser.add_argument(
+    "-i",
+    "--inputfile",
+    metavar="FILE",
+    required=True,
+    dest="inputfile",
+    help="define barcode input file name (.blobs.barcodes)",
+)
+argparser.add_argument(
+    "-p",
+    "--projectfile",
+    metavar="FILE",
+    required=True,
+    dest="projectfile",
+    help="define project settings file that contains a single TrajognizeSettingsBase class instantiation.",
+)
+argparser.add_argument(
+    "-n",
+    "--framenum",
+    metavar="NUM",
+    dest="framenum",
+    default=0,
+    help="define frame to read",
+)
 options = argparser.parse_args()
 
 # colorid file
@@ -35,7 +62,9 @@ print("  Using inputfile: '%s'" % options.inputfile)
 options.framenum = int(options.framenum)
 
 # read projectfile
-project_settings = trajognize.settings.import_trajognize_settings_from_file(args.projectfile)
+project_settings = trajognize.settings.import_trajognize_settings_from_file(
+    args.projectfile
+)
 if project_settings is None:
     print("Could not parse project settings file")
     sys.exit(1)
@@ -44,7 +73,9 @@ print("  Current project is: %s" % project_settings.project_name)
 
 # read barcode file line
 print("Reading frame", options.framenum)
-barcodes = trajognize.parse.parse_barcode_file(options.inputfile, colorids, options.framenum, options.framenum)
+barcodes = trajognize.parse.parse_barcode_file(
+    options.inputfile, colorids, options.framenum, options.framenum
+)
 if not barcodes:
     print("barcode file empty")
     sys.exit()
@@ -54,6 +85,14 @@ for k in range(len(colorids)):
     if not barcodes[0][k]:
         print(colorids[k])
     for barcode in barcodes[0][k]:
-        print("%s\t%d\t%d\t%d\t%s\t%s" % (colorids[k], int(barcode.centerx),
-                int(barcode.centery), int(barcode.orientation*180/pi),
-                trajognize.util.mfix2str(barcode.mfix), barcode.blobindices))
+        print(
+            "%s\t%d\t%d\t%d\t%s\t%s"
+            % (
+                colorids[k],
+                int(barcode.centerx),
+                int(barcode.centery),
+                int(barcode.orientation * 180 / pi),
+                trajognize.util.mfix2str(barcode.mfix),
+                barcode.blobindices,
+            )
+        )

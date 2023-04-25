@@ -23,6 +23,7 @@ def get_version_info():
     # TODO: add git revision
     return __version__
 
+
 # get_datetime_from_filename() is moved to settings.py as it is project-specific
 
 
@@ -35,7 +36,7 @@ def get_datetime_at_frame(starttime, currentframe, fps):
         fps(float): frames per second of the video
 
     """
-    return starttime + datetime.timedelta(0, currentframe/fps)
+    return starttime + datetime.timedelta(0, currentframe / fps)
 
 
 def is_entry_time(entrytimes, sometime):
@@ -49,9 +50,9 @@ def is_entry_time(entrytimes, sometime):
     key = sometime.date().isoformat()
     if key not in entrytimes.keys():
         return False
-    onemin = datetime.timedelta(0,60)
+    onemin = datetime.timedelta(0, 60)
     for times in entrytimes[key]:
-        if sometime >= times['from'] - onemin and sometime <= times['to'] + onemin:
+        if sometime >= times["from"] - onemin and sometime <= times["to"] + onemin:
             return True
     return False
 
@@ -67,7 +68,7 @@ def get_path_as_first_arg(argv):
     return path
 
 
-def exit(errorstr='', exitcode=0):
+def exit(errorstr="", exitcode=0):
     """Exit execution with given exitcode, printing an error string."""
     if errorstr:
         print(errorstr)
@@ -112,17 +113,17 @@ class Phase(object):
         """
         # if too slow (>5s for one iteration)
         now = time.perf_counter()
-        if now-self.lasttime >= 1:
-            print("%d:%.1fs" % (current, now-self.lasttime), end=" ")
+        if now - self.lasttime >= 1:
+            print("%d:%.1fs" % (current, now - self.lasttime), end=" ")
         self.lasttime = now
         # print percentage
-        if direction == 'forward':
+        if direction == "forward":
             if current * 100 >= self.phase_status * all:
                 print("%d%%" % self.phase_status, end=" ")
                 self.phase_status += 1
-        elif direction == 'backward':
-            if current * 100 <= (100-self.phase_status) * all:
-                print("%d%%" % (100-self.phase_status), end=" ")
+        elif direction == "backward":
+            if current * 100 <= (100 - self.phase_status) * all:
+                print("%d%%" % (100 - self.phase_status), end=" ")
                 self.phase_status += 1
         else:
             raise ValueError("unknown direction: {}".format(direction))
@@ -131,19 +132,25 @@ class Phase(object):
     def end_phase(self, userstr=None, main=False):
         """Calculate elapsed time since last start_phase() call and print it."""
         if main:
-            if userstr: print("  %s" % userstr)
+            if userstr:
+                print("  %s" % userstr)
             # print total elapsed time
-            print("Total time elapsed: %gs" % (time.perf_counter()-self.mainstarttime))
+            print(
+                "Total time elapsed: %gs" % (time.perf_counter() - self.mainstarttime)
+            )
         else:
             # if status was checked while running, print 'done' to the end
             if self.phase_status:
-                print('done')
+                print("done")
             # print userstring
-            if userstr: print("  %s" % userstr)
+            if userstr:
+                print("  %s" % userstr)
             # print memory usage
-            print("  memory used: %g MB" % (self.process.memory_info()[0] / 1024 / 1024))
+            print(
+                "  memory used: %g MB" % (self.process.memory_info()[0] / 1024 / 1024)
+            )
             # print elapsed time
-            print("  time elapsed: %gs\n" % (time.perf_counter()-self.starttime))
+            print("  time elapsed: %gs\n" % (time.perf_counter() - self.starttime))
         sys.stdout.flush()
 
 
@@ -158,7 +165,7 @@ def mfix2str(mfix):
     if s:
         return "|".join(s)
     else:
-        return '-'
+        return "-"
 
 
 def mfix2str_allascomment():
@@ -182,6 +189,7 @@ class param_at_frame(object):
     as some parameter for that frame and for frames until next key.
 
     """
+
     def __init__(self, param_log):
         self.param_log = param_log
         self.param_log_keys = list(sorted(param_log.keys(), key=int))
@@ -194,7 +202,7 @@ class param_at_frame(object):
 
     def __call__(self, currentframe):
         """Get param for current frame, assuming being inside forward iteration over all frames."""
-        for key in self.param_log_keys[self.startindex:]:
+        for key in self.param_log_keys[self.startindex :]:
             if key == currentframe:
                 return self.param_log[key]
             elif key > currentframe:
@@ -218,18 +226,18 @@ def print_underlined(string, emptylines=0, fileobj=None):
     indent = len(string) - len(string.lstrip())
     print(string, file=fileobj)
     if indent:
-        print(' '*(indent-1), file=fileobj, end=" ")
-    print('-' * (len(string)-indent), file=fileobj)
+        print(" " * (indent - 1), file=fileobj, end=" ")
+    print("-" * (len(string) - indent), file=fileobj)
     if emptylines:
-        print('\n'*(emptylines-1), file=fileobj)
+        print("\n" * (emptylines - 1), file=fileobj)
 
 
 def insert_commentchar_to_file(filename, commentchar):
     """Insert a comment character to all lines of a file."""
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         lines = f.readlines()
     lines = [commentchar + " " + line for line in lines]
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         f.writelines(lines)
 
 
@@ -240,10 +248,10 @@ def load_object(filename):
 
     """
     gc.disable()
-    if filename.endswith('.zip'):
-        f = gzip.GzipFile(filename, 'rb')
+    if filename.endswith(".zip"):
+        f = gzip.GzipFile(filename, "rb")
     else:
-        f = open(filename, 'rb')
+        f = open(filename, "rb")
     try:
         object = pickle.load(f)
     except EOFError:
@@ -254,17 +262,17 @@ def load_object(filename):
     return object
 
 
-def save_object(object, filename, protocol = pickle.HIGHEST_PROTOCOL):
+def save_object(object, filename, protocol=pickle.HIGHEST_PROTOCOL):
     """Save a (compressed) object to disk.
 
     :param filename: name of the .zip file to save to
 
     """
     gc.disable()
-    if filename.endswith('.zip'):
-        f = gzip.GzipFile(filename, 'wb')
+    if filename.endswith(".zip"):
+        f = gzip.GzipFile(filename, "wb")
     else:
-        f = open(filename, 'wb')
+        f = open(filename, "wb")
     pickle.dump(object, f, protocol)
     f.close()
     gc.enable()
@@ -274,10 +282,12 @@ def debug_filename(level):
     """Returns the filename of a debug object at the current debug level."""
     return "trajognize_debug_environment.%d" % level
 
+
 def add_subdir_to_filename(filename, subdir):
     """Add a subdirectory to a filename with full path."""
     head, tail = os.path.split(filename)
     return os.path.join(head, subdir, tail)
+
 
 def is_isogram(string):
     """Return True if string is an isogram (all letters appear only once)."""
