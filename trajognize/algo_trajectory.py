@@ -53,9 +53,18 @@ finalize_trajectories()
 
 import sys
 from math import pi
-from typing import List, Optional, Union
+from typing import List, Optional, Set, Union
 
-from .init import MFix, TrajState, Barcode, Trajectory, Connections
+from .init import (
+    ColorBlob,
+    ColorBlobE,
+    Connections,
+    MDBlob,
+    MFix,
+    TrajState,
+    Barcode,
+    Trajectory,
+)
 from .algo import get_distance, get_distance_at_position, is_point_inside_ellipse
 from .settings import TrajognizeSettingsBase
 
@@ -226,14 +235,14 @@ def barcode_fits_to_trajlast(
 
 
 def initialize_trajectories(
-    trajectories,
-    trajsonframe,
-    barcodes,
-    blobs,
-    currentframe,
-    project_settings,
-    md_blobs,
-    mdindices,
+    trajectories: List[List[Trajectory]],
+    trajsonframe: List[List[Set[int]]],
+    barcodes: List[List[List[Barcode]]],
+    blobs: List[List[Union[ColorBlob, ColorBlobE]]],
+    currentframe: int,
+    project_settings: TrajognizeSettingsBase,
+    md_blobs: List[List[MDBlob]],
+    mdindices: List[List[int]],
 ):
     """Initialize trajectories by adding barcodes of current frame
     to existing trajectories ending on last frame.
@@ -651,7 +660,7 @@ def connect_chosen_trajs(
     trajb: Union[Trajectory, str],
     k: int,
     trajectories: List[List[Trajectory]],
-    trajsonframe: List[List[int]],
+    trajsonframe: List[List[Set[int]]],
     barcodes: List[List[List[Barcode]]],
     project_settings: TrajognizeSettingsBase,
     framelimit: int = 1500,
@@ -1799,7 +1808,11 @@ def recalculate_score(traj, k, barcodes, blobs, project_settings):
 
 
 def find_best_trajectories(
-    trajectories, trajsonframe, barcodes, blobs, project_settings
+    trajectories: List[List[Trajectory]],
+    trajsonframe: List[List[Set[int]]],
+    barcodes: List[List[List[Barcode]]],
+    blobs: List[List[Union[ColorBlob, ColorBlobE]]],
+    project_settings: TrajognizeSettingsBase,
 ):
     """Sort all trajectories according to their score, keep the best, delete the rest.
     Do this iteratively until all trajs are done.
@@ -1841,26 +1854,21 @@ def find_best_trajectories(
 
     colorids = project_settings.colorids
     MCHIPS = project_settings.MCHIPS
-    best_scores = [0 for k in range(len(colorids))]
-    worst_scores = [0 for k in range(len(colorids))]
-    sum_scores = [0 for k in range(len(colorids))]
-    sum_good_scores = [0 for k in range(len(colorids))]
+    best_scores = [0] * len(colorids)
+    worst_scores = [0] * len(colorids)
+    sum_scores = [0] * len(colorids)
+    sum_good_scores = [0] * len(colorids)
     for k in range(len(colorids)):
         if trajectories[k]:
-            best_scores[k] = max(
+            traj_scores = [
                 traj_score(x, MCHIPS, project_settings.traj_score_method)
                 for x in trajectories[k]
-            )
-            worst_scores[k] = min(
-                traj_score(x, MCHIPS, project_settings.traj_score_method)
-                for x in trajectories[k]
-            )
-            sum_scores[k] = sum(
-                traj_score(x, MCHIPS, project_settings.traj_score_method)
-                for x in trajectories[k]
-            )
+            ]
+            best_scores[k] = max(traj_scores)
+            worst_scores[k] = min(traj_scores)
+            sum_scores[k] = sum(traj_scores)
             sum_good_scores[k] = sum(
-                traj_score(x, MCHIPS, project_settings.traj_score_method)
+                score
                 if is_traj_good(
                     x,
                     MCHIPS,
@@ -1868,7 +1876,7 @@ def find_best_trajectories(
                     project_settings.find_best_trajectories_settings.good_score_threshold,
                 )
                 else 0
-                for x in trajectories[k]
+                for x, score in zip(trajectories[k], traj_scores)
             )
     sortedk = sorted(
         list(range(len(colorids))), key=lambda x: sum_scores[x], reverse=True

@@ -658,9 +658,7 @@ def main(argv=[]):
                     phase.check_and_print_phase_status(
                         "forward", currentframe, framecount
                     )
-                # calculate total distance (and  max velocity) for all trajectories
-                # Depreciated
-                #            algo_trajectory.calculate_total_distance(v.trajectories, v.barcodes, v.colorids)
+
                 phase.end_phase(
                     "%d trajectories found with average length of %d frames"
                     % algo_trajectory.number_and_length_of_trajectories(v.trajectories)
