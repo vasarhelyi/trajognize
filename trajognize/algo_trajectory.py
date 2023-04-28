@@ -53,11 +53,11 @@ finalize_trajectories()
 
 import sys
 from math import pi
-from operator import attrgetter
+from typing import List, Optional, Union
 
 from .init import MFix, TrajState, Barcode, Trajectory, Connections
 from .algo import get_distance, get_distance_at_position, is_point_inside_ellipse
-from .util import mfix2str
+from .settings import TrajognizeSettingsBase
 
 from . import algo_barcode
 from . import algo_blob
@@ -239,12 +239,9 @@ def initialize_trajectories(
     to existing trajectories ending on last frame.
 
     Function should be called for each frame one by one to work properly.
-    If there are multiple ongoing paths for a trajectory, it is stopped
-    and new ones are created to avoid combinatorical explosion.
-    in other words, one barcode will be the member of only one trajectory. If
-    it is a branch, its trajectory will be 1 frame long and the two branches
-    will start on the next frame. Also, if two braches merge, they stop their
-    trajectories one frame before merging and the common path is a new traj.
+    If there are multiple ongoing paths (barcodes) for a trajectory, they are
+    branching, but one barcode can be part of only one trajectory to avoid
+    combinatorical explosion.
 
     Keyword arguments:
     trajectories -- global list of all trajectories
@@ -263,10 +260,8 @@ def initialize_trajectories(
     colorids = project_settings.colorids
     # if this is the first frame, initialize one trajectory with each barcode
     if currentframe == 0:
-        for k in range(len(colorids)):
-            strid = colorids[k]
-            for i in range(len(barcodes[currentframe][k])):
-                barcode = barcodes[currentframe][k][i]
+        for k, strid in enumerate(colorids):
+            for i, barcode in enumerate(barcodes[currentframe][k]):
                 if not barcode.mfix or (barcode.mfix & MFix.DELETED):
                     continue
                 start_new_traj(
@@ -282,14 +277,8 @@ def initialize_trajectories(
         return
 
     # if not first frame, try to append barcodes to existing trajectories
-    for k in range(len(colorids)):
-        strid = colorids[k]
-        # if strid == 'ORB' and currentframe > 820:
-        #    print currentframe, strid, 'trajsonlastframe', trajsonframe[currentframe-1][k]
-        for i in range(len(barcodes[currentframe][k])):
-            # if strid == 'ORB' and currentframe > 820:
-            #    print('  barcode', i)
-            barcode = barcodes[currentframe][k][i]
+    for k, strid in enumerate(colorids):
+        for i, barcode in enumerate(barcodes[currentframe][k]):
             if not barcode.mfix or (barcode.mfix & MFix.DELETED):
                 continue
             found = 0
@@ -297,8 +286,6 @@ def initialize_trajectories(
             for trajindex in trajsonframe[currentframe - 1][k]:
                 # if found a good one, add to existing trajectory
                 traj = trajectories[k][trajindex]
-                # if strid == 'ORB' and currentframe > 820:
-                #    print('    try trajindex', trajindex, 'with last b.ind.', traj.barcodeindices[-1], 'No. of last barc.', len(barcodes[currentframe-1][k]))
                 if trajindex in trajsonframe[currentframe][k]:
                     lastbarcode = barcodes[currentframe - 1][k][traj.barcodeindices[-2]]
                 else:
@@ -313,18 +300,9 @@ def initialize_trajectories(
                     project_settings,
                 ):
                     found += 1
-                    # if strid == 'ORB' and currentframe > 820:
-                    #    print('    found', found, 'trajindex', trajindex)
                     if trajindex not in trajsonframe[currentframe][k]:
                         # if not added yet (no split), add barcode to existing trajectory
-                        # if this barcode has already caused trouble, stop all trajs that could end with this
-                        if found > 1:
-                            # if strid == 'ORB' and currentframe > 820:
-                            #    print('    stopped trajindex', trajindex)
-                            traj.state = TrajState.FORCED_END
-                        else:
-                            # if strid == 'ORB' and currentframe > 820:
-                            #    print('    append to trajindex', trajindex)
+                        if found == 1:
                             append_barcode_to_traj(
                                 traj,
                                 trajsonframe[currentframe][k],
@@ -334,25 +312,18 @@ def initialize_trajectories(
                                 strid,
                                 blobs[currentframe],
                             )
-                    # if traj is already being appended by a barcode,
-                    # we treat it as a split in the trajectory, end it and start two new ones
+                        else:
+                            # if this barcode has already been added elsewhere,
+                            # we simply do not add it any more
+
+                            # TODO: check which traj is better for this barcode
+                            # and keep it only there
+                            pass
+                    # if traj is already being appended by another barcode,
+                    # we treat it as a split in the trajectory
                     else:
-                        # force to stop old trajectory
-                        trajsonframe[currentframe][k].remove(trajindex)
-                        old = traj.barcodeindices.pop()
-                        traj.state = TrajState.FORCED_END
-                        # start new trajectory from old index
-                        start_new_traj(
-                            trajectories,
-                            trajsonframe,
-                            currentframe,
-                            k,
-                            barcodes[currentframe][k][old],
-                            old,
-                            strid,
-                            blobs[currentframe],
-                        )
-                        # if this barcode has already caused trouble, stop all trajs that could end with this
+                        # if this barcode is not added anywhere yet,
+                        # we start a new branch on it
                         if found == 1:
                             # start new trajectory from new index
                             start_new_traj(
@@ -365,8 +336,10 @@ def initialize_trajectories(
                                 strid,
                                 blobs[currentframe],
                             )
-                            # if strid == 'ORB' and currentframe > 820:
-                            #    print('    delete trajindex', trajindex, 'and start two new trajindex', len(trajectories[k])-2, len(trajectories[k])-1)
+                        # if this barcode has already been used in another traj,
+                        # we simply do not add it again
+                        else:
+                            pass
 
             # if no trajectories found where this barcode can fit, start a new one
             if not found:
@@ -380,11 +353,16 @@ def initialize_trajectories(
                     strid,
                     blobs[currentframe],
                 )
-                # if strid == 'ORB' and currentframe > 820:
-                #    print('    not found, starting new one trajindex', len(trajectories[k])-1)
 
 
-def traj_score(traj, MCHIPS, method=1, k=None, kk=None, calculate_deleted=True):
+def traj_score(
+    traj: Trajectory,
+    MCHIPS: int,
+    method: int = 1,
+    k: Optional[int] = None,
+    kk: Optional[int] = None,
+    calculate_deleted: bool = True,
+):
     """Return final score of a trajectory.
 
     fullfound_count is the first approximation to a good score, taking into
@@ -401,10 +379,10 @@ def traj_score(traj, MCHIPS, method=1, k=None, kk=None, calculate_deleted=True):
     Parameters:
         traj: a trajectory
         MCHIPS: number of chips / bins in a barcode
-        method(int): 1 or 2, depending on what arbitrary method you need
-        k(int): dst coloridindex of scoring (same as kk in default)
-        kk(int): src coloridindex of the traj
-        calculate_deleted(bool): should we calculate score for deleted traj?
+        method: 1 or 2, depending on what arbitrary method you need
+        k: dst coloridindex of scoring (same as kk in default)
+        kk: src coloridindex of the traj
+        calculate_deleted: should we calculate score for deleted traj?
 
     """
     if not calculate_deleted and traj.state == TrajState.DELETED:
@@ -415,7 +393,7 @@ def traj_score(traj, MCHIPS, method=1, k=None, kk=None, calculate_deleted=True):
         if method == 1:
             return (
                 len(traj.barcodeindices)
-                + sum(traj.colorblob_count[i] for i in range(MCHIPS))
+                + sum(traj.colorblob_count)
                 + (
                     traj.fullfound_count
                     - traj.sharesblob_count
@@ -443,11 +421,9 @@ def traj_score(traj, MCHIPS, method=1, k=None, kk=None, calculate_deleted=True):
         # score is proportional to the average diff between least and others,
         # but should not be too high
         least = index_of_least_color(traj)
-        others = list(set(range(MCHIPS)).difference(set([least])))
-        score = 0
-        for i in others:
-            score += traj.colorblob_count[i] - traj.colorblob_count[least]
-        score /= len(others)
+        score = (sum(traj.colorblob_count) - MCHIPS * traj.colorblob_count[least]) / (
+            MCHIPS - 1
+        )
         if method == 1:
             return (
                 len(traj.barcodeindices)
@@ -570,8 +546,7 @@ def get_chosen_neighbor_traj(traj, trajs, forward=True, framelimit=1500):
         else:
             beststart = lastframe + framelimit
 
-        for i in range(len(trajs)):
-            trajx = trajs[i]
+        for i, trajx in enumerate(trajs):
             if trajx.state != TrajState.CHOSEN:
                 continue
             j = trajx.firstframe
@@ -590,8 +565,7 @@ def get_chosen_neighbor_traj(traj, trajs, forward=True, framelimit=1500):
             bestend = -1
         else:
             bestend = firstframe - framelimit
-        for i in range(len(trajs)):
-            trajx = trajs[i]
+        for i, trajx in enumerate(trajs):
             if trajx.state != TrajState.CHOSEN:
                 continue
             j = trajlastframe(trajx)
@@ -673,17 +647,17 @@ def max_allowed_dist_between_trajs(framea=0, frameb=0, samecolor=True):
 
 
 def connect_chosen_trajs(
-    traja,
-    trajb,
-    k,
-    trajectories,
-    trajsonframe,
-    barcodes,
-    project_settings,
-    framelimit=1500,
-    connections=None,
-    index=-1,
-    level=0,
+    traja: Trajectory,
+    trajb: Union[Trajectory, str],
+    k: int,
+    trajectories: List[List[Trajectory]],
+    trajsonframe: List[List[int]],
+    barcodes: List[List[List[Barcode]]],
+    project_settings: TrajognizeSettingsBase,
+    framelimit: int = 1500,
+    connections: Optional[Connections] = None,
+    index: int = -1,
+    level: int = 0,
 ):
     """Connect two neighboring chosen trajectories with not yet chosen ones,
     or simply extend a chosen traj with best not chosen chain of trajs
@@ -721,6 +695,28 @@ def connect_chosen_trajs(
     to be chosen or None if no such chain was found.
 
     """
+
+    # print(
+    #     "traja",
+    #     traja.firstframe,
+    #     len(traja.barcodeindices),
+    #     traja.state,
+    #     "trajb",
+    #     trajb,
+    #     "k",
+    #     k,
+    #     "trajs",
+    #     len(trajectories[k]),
+    #     "conns",
+    #     len(connections.data if connections is not None else []),
+    #     "index",
+    #     index,
+    #     "level",
+    #     level,
+    #     "framelimit",
+    #     framelimit,
+    # )
+
     # initialize
     colorids = project_settings.colorids
     MCHIPS = project_settings.MCHIPS
@@ -757,11 +753,14 @@ def connect_chosen_trajs(
             toframe = trajectories[k][neigh].firstframe - 1
         if fromframe > toframe:
             return None  # add no more to this
-    else:  # mode == 'c':
+    elif mode == "c":
+        assert not isinstance(trajb, str)
         fromframe = trajlastframe(traja) + 1
         toframe = trajb.firstframe - 1
         if fromframe > toframe:
             return None  # add no more to this
+    else:
+        raise NotImplementedError("Unknown mode: {}".format(mode))
     # TODO: traja.k is used which should be the k for a (and not yet changed)
     # but might be buggy if a later connection is different from a previous one
     barcodefrom = barcodes[fromframe - inc][traja.k][
@@ -905,7 +904,7 @@ def connect_chosen_trajs(
                 connections.data[index].append((kk, i))
 
                 # find connection between new one and last
-                #                print("  found", colorids[k], "level", level, "f%d-%d" % (trajx.firstframe, trajlastframe(trajx)), "newflimit", framelimit - inc*(toxframe - (fromframe - inc)), "fflimit", connections.fromframelimit, "Nconns", len(connections.data))
+                # print("  found", colorids[k], "level", level, "f%d-%d" % (trajx.firstframe, trajlastframe(trajx)), "newflimit", framelimit - inc*(toxframe - (fromframe - inc)), "fflimit", connections.fromframelimit, "Nconns", len(connections.data))
                 connect_chosen_trajs(
                     trajx,
                     trajb,
@@ -1959,7 +1958,13 @@ def find_best_trajectories(
             "  Extending chosen trajs with not yet chosen in both temporal directions..."
         )
         (virtual, rebirth) = extend_chosen_trajs(
-            trajectories, trajsonframe, project_settings, barcodes, blobs, k
+            trajectories,
+            trajsonframe,
+            project_settings,
+            barcodes,
+            blobs,
+            kkkk=k,
+            framelimit=project_settings.find_best_trajectories_settings.framelimit,
         )
         print("    new virtual barcodes:", virtual, " barcodes reanimated:", rebirth)
 
@@ -2005,7 +2010,7 @@ def extend_chosen_trajs(
     trajectories -- global list of all trajectories
     trajsonframe -- global list of trajectory indices per frame per coloridindex
     project_settings -- global project-specific settings
-    barcodes     -- blobal list of all barcodes
+    barcodes     -- global list of all barcodes
     blobs        -- global list of all color blobs
     kkkk         -- optional argument to extend only a given colorid
     framelimit   -- optional param to define frame limit of traj extentions
@@ -2022,11 +2027,7 @@ def extend_chosen_trajs(
     oldchosen = -1
     olddeleted = -1
     it = 0
-    if kkkk is None:
-        klist = range(len(colorids))
-    else:
-        klist = [kkkk]
-
+    klist = range(len(colorids)) if kkkk is None else [kkkk]
     # iteration is needed, because traj states change in between. (TODO: why exactly?)
     while oldchosen != chosen or olddeleted != deleted:
         changedcolor = []
@@ -2035,8 +2036,7 @@ def extend_chosen_trajs(
         print("   ", end=" ")
         for k in klist:
             print(colorids[k], end=" ")
-            for i in range(len(trajectories[k])):
-                traj = trajectories[k][i]
+            for i, traj in enumerate(trajectories[k]):
                 if traj.state != TrajState.CHOSEN:
                     continue
 
@@ -2677,7 +2677,13 @@ def finalize_trajectories(
 
     print("  Extending chosen trajs with not yet chosen in both temporal directions...")
     (virtual, rebirth) = extend_chosen_trajs(
-        trajectories, trajsonframe, project_settings, barcodes, blobs
+        trajectories,
+        trajsonframe,
+        project_settings,
+        barcodes,
+        blobs,
+        kkkk=None,
+        framelimit=project_settings.find_best_trajectories_settings.framelimit * 2,
     )
     print("    new virtual barcodes:", virtual, " barcodes reanimated:", rebirth)
 
