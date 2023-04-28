@@ -11,7 +11,7 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime
 import importlib.util
 from itertools import chain
-from typing import Iterable
+from typing import Any, Callable, Dict, Sequence
 import os
 
 from trajognize.init import Point
@@ -93,12 +93,16 @@ class FindBestTrajectoriesSettings:
 class ExperimentInitializer:
     """Class for initializing experiments."""
 
-    def __init__(self, experiments, get_wall_polygons):
+    def __init__(
+        self, experiments: Dict, get_wall_polygons: Callable[[Dict, Dict], Dict]
+    ):
         """Constructor. Experiments is a dict defined as in
         TrajognizeSettingsBase.experiment."""
         self._experiments = self._initialize_experiments(experiments, get_wall_polygons)
 
-    def _initialize_experiments(self, experiments, get_wall_polygons):
+    def _initialize_experiments(
+        self, experiments: Dict, get_wall_polygons: Callable[[Dict, Dict], Dict]
+    ) -> Dict:
         """This functions should be called once on init to add some important
         automatically calculated parameters to the experiments dictionary.
         """
@@ -181,7 +185,7 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         self._color2int_lookup = dict(
             [(self.color_names[i].upper()[0], i) for i in range(self._MBASE)]
         )
-        # initialize experiments
+        # re-initialize experiments
         self.experiments = ExperimentInitializer(
             self.experiments, self.get_wall_polygons
         ).asdict()
@@ -215,7 +219,7 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
     # large-scale rat experiment (2011) and are not relavant in other projects.
 
     @property
-    def colorids(self) -> Iterable[str]:
+    def colorids(self) -> Sequence[str]:
         """Define the colorids of your project as a list of barcode color
         abbreviations (first capital letter of each color in proper order).
         Example: ["RGB", "GRB"], if you are about to recognize two barcodes,
@@ -258,7 +262,7 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         return True
 
     @property
-    def all_light(self) -> Iterable[str]:
+    def all_light(self) -> Sequence[str]:
         """Define the names of all light conditions that are used in the
         experiments. Usually this should be a single 'NIGHTLIGHT' placeholder
         for convenience, we used multiple light conditions in our first
@@ -266,7 +270,7 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         return ["NIGHTLIGHT"]
 
     @property
-    def good_light(self) -> Iterable[str]:
+    def good_light(self) -> Sequence[str]:
         """Define the names of good light conditions that are used in the
         experiments. Usually this should be a single 'NIGHTLIGHT' placeholder
         for convenience, we used multiple light conditions in our first
@@ -295,7 +299,7 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
         }
 
     @property
-    def object_types(self) -> Iterable[str]:
+    def object_types(self) -> Sequence[str]:
         """Define names of interesting fixed objects on the scene."""
         return []
 
@@ -339,13 +343,13 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
             + ".txt",
         )
 
-    def get_wall_polygons(self, experiment: dict, group: str):
+    def get_wall_polygons(self, experiment: Dict, group: str):
         """Get two wall polygons for a given experiment, possibly using
         object definitions. This needed to be automated in our first long-term
         rat experiment, since then it is not really used...
 
         Parameters:
-            experiment(dict) - an experiment from self.experiments
+            experiment - an experiment from self.experiments
             group - the name of a group within the given experiment
 
         Return:
@@ -405,7 +409,7 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def color_names(self) -> Iterable[str]:
+    def color_names(self) -> Sequence[str]:
         """Define the name of your colors that are used in your barcodes.
         Be careful to have the same order as in ratognize and also be careful
         to define color names with different initials."""
@@ -516,7 +520,7 @@ class TrajognizeSettingsBase(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def experiments(self) -> dict:
+    def experiments(self) -> Dict[str, Dict[str, Any]]:
         """Experiment dictionary. Each key should be the name of the given
         experiment, each value is a sub-dictionary, containing the following
         required string key descriptors for each experiment:
