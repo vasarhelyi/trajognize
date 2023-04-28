@@ -7,10 +7,10 @@ license = "GPL-3.0-only"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-numpy = "^1.19.5"
-psutil = "^5.8.0"
+numpy = "^1.21.1"
+psutil = "^5.9.5"
 python-igraph = "^0.8.3"
-cairocffi = "^1.2.0"
+cairocffi = "^1.5.1"
 
 [tool.poetry.dev-dependencies]
 
