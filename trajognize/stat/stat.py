@@ -38,7 +38,7 @@ from . import util
 from . import experiments
 
 
-def subclasses_heatmap(colorids):
+def subclasses_heatmap(project_settings):
     """Return dict of heatmap virtual subclass names.
 
     We have one virtual subclass for each barcode and one for 'all' summary.
@@ -46,6 +46,7 @@ def subclasses_heatmap(colorids):
     calculation and summary takes too long.
 
     """
+    colorids = project_settings.colorids
     return [colorids[k] for k in range(len(colorids))] + ["all"]
 
 
@@ -170,7 +171,7 @@ def calculate_heatmap(
         return heatmaps[0]
 
 
-def subclasses_motionmap(colorids):
+def subclasses_motionmap(project_settings):
     """Return dict of motion heatmap virtual subclass names.
 
     We have one virtual subclass for each barcode and one for 'all' summary.
@@ -178,6 +179,7 @@ def subclasses_motionmap(colorids):
     calculation and summary takes too long.
 
     """
+    colorids = project_settings.colorids
     return [colorids[k] for k in range(len(colorids))] + ["all"]
 
 
