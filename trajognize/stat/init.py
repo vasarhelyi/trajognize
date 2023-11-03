@@ -66,9 +66,9 @@ class Stat(object):
         self.data = dict()
         # initialize data
         for light in good_light:
-            self.data[light] = numpy.zeros((len(mfix_types), 1, 1), dtype=numpy.int)
+            self.data[light] = numpy.zeros((len(mfix_types), 1, 1), dtype=numpy.int64)
             self.frames[light] = 0
-            self.points[light] = numpy.zeros((len(mfix_types)), dtype=numpy.int)
+            self.points[light] = numpy.zeros((len(mfix_types)), dtype=numpy.int64)
         raise NotImplementedError(
             "TODO: overload default function with proper settings."
         )
@@ -238,10 +238,10 @@ class HeatMap(Stat):
         # initialize data
         for light in good_light:
             self.data[light] = numpy.zeros(
-                (len(mfix_types), image_size.x, image_size.y), dtype=numpy.int
+                (len(mfix_types), image_size.x, image_size.y), dtype=numpy.int64
             )
             self.frames[light] = 0
-            self.points[light] = numpy.zeros((len(mfix_types)), dtype=numpy.int)
+            self.points[light] = numpy.zeros((len(mfix_types)), dtype=numpy.int64)
 
     def print_status(self):
         """Prints status info about the data to standard output."""
@@ -452,7 +452,7 @@ class HeatMap(Stat):
                     )
                 )
                 outputfile.write("%s_%s_%s\tvalue\n" % (substat, light.lower(), mft))
-                for (keylight, keymft, keydata) in keys:
+                for keylight, keymft, keydata in keys:
                     if keylight == light and keymft == mft:
                         outputfile.write(
                             "%s\t%g\n"
@@ -502,7 +502,7 @@ class MotionMap(Stat):
         # initialize data
         for light in good_light:
             self.data[light] = numpy.zeros(
-                (image_size.x, image_size.y), dtype=numpy.int
+                (image_size.x, image_size.y), dtype=numpy.int64
             )
             self.frames[light] = 0
             self.points[light] = 0
@@ -591,7 +591,7 @@ class AAMap(Stat):
         # initialize data
         for light in good_light:
             self.data[light] = numpy.zeros(
-                (image_size.x, image_size.y), dtype=numpy.int
+                (image_size.x, image_size.y), dtype=numpy.int64
             )
             self.frames[light] = 0
             self.points[light] = 0
@@ -669,17 +669,17 @@ class Dist24h(Stat):
         #: number of frames that were used to gather info for the statistic
         self.frames = 0
         #: number of data points in the statistic
-        self.points = numpy.zeros((len(mfix_types)), dtype=numpy.int)
+        self.points = numpy.zeros((len(mfix_types)), dtype=numpy.int64)
         #: number of minutes in a day (data is using minute bins over the day)
         self.minutes_per_day = 1440
         # initialize data
         #: one bin for real/virt, all minutes, all colorids + sum
         self.avg = numpy.zeros(
-            (id_count + 1, len(mfix_types), self.minutes_per_day), dtype=numpy.float
+            (id_count + 1, len(mfix_types), self.minutes_per_day), dtype=numpy.float64
         )
         #: one bin for real/virt, all minutes, all colorids + sum
         self.stv = numpy.zeros(
-            (id_count + 1, len(mfix_types), self.minutes_per_day), dtype=numpy.float
+            (id_count + 1, len(mfix_types), self.minutes_per_day), dtype=numpy.float64
         )
         #: one bin for real/virt, all minutes, all colorids + sum
         self.num = numpy.zeros(
@@ -689,7 +689,7 @@ class Dist24h(Stat):
                 len(mfix_types),
                 self.minutes_per_day,
             ),
-            dtype=numpy.int,
+            dtype=numpy.int64,
         )
 
     def __add__(self, X):
@@ -906,11 +906,11 @@ class Dist24hObj(Stat):
         # initialize data
         #: one bin for all minutes, all objects, all colorids + sum
         self.avg = numpy.zeros(
-            (id_count + 1, len(object_types), self.minutes_per_day), dtype=numpy.float
+            (id_count + 1, len(object_types), self.minutes_per_day), dtype=numpy.float64
         )
         #: one bin for all minutes, all objects, all colorids + sum
         self.stv = numpy.zeros(
-            (id_count + 1, len(object_types), self.minutes_per_day), dtype=numpy.float
+            (id_count + 1, len(object_types), self.minutes_per_day), dtype=numpy.float64
         )
         #: one bin for all minutes, all objects, all colorids + sum
         self.num = numpy.zeros(
@@ -920,7 +920,7 @@ class Dist24hObj(Stat):
                 len(object_types),
                 self.minutes_per_day,
             ),
-            dtype=numpy.int,
+            dtype=numpy.int64,
         )
 
     def __add__(self, X):
@@ -1134,11 +1134,11 @@ class DailyObj(Stat):
         for light in good_light:
             #: one bin for all days, all objects, all colorids + group sum
             self.avg[light] = numpy.zeros(
-                (id_count + 1, len(object_types), max_day), dtype=numpy.float
+                (id_count + 1, len(object_types), max_day), dtype=numpy.float64
             )
             #: one bin for all days, all objects, all colorids + group sum
             self.stv[light] = numpy.zeros(
-                (id_count + 1, len(object_types), max_day), dtype=numpy.float
+                (id_count + 1, len(object_types), max_day), dtype=numpy.float64
             )
             #: one bin for all days, all objects, all colorids + group sum
             self.num[light] = numpy.zeros(
@@ -1148,7 +1148,7 @@ class DailyObj(Stat):
                     len(object_types),
                     max_day,
                 ),
-                dtype=numpy.int,
+                dtype=numpy.int64,
             )
             self.frames[light] = 0
             self.points[light] = 0
@@ -1364,7 +1364,7 @@ class SameIDDist(Stat):
         # initialize data
         for light in good_light:
             self.data[light] = numpy.zeros(
-                (id_count + 1, 2, self.max_same_id + 1), dtype=numpy.int
+                (id_count + 1, 2, self.max_same_id + 1), dtype=numpy.int64
             )
             self.points[light] = [0, 0]  # [deleted, notdeleted]
             self.frames[light] = 0
@@ -1481,7 +1481,7 @@ class NearestNeighbor(Stat):
         for light in good_light:
             self.data[light] = numpy.zeros(
                 (3, id_count, id_count),  # bothreal=0/bothvirtual=1/any=2
-                dtype=numpy.int,
+                dtype=numpy.int64,
             )
             self.frames[light] = 0
             self.points[light] = 0
@@ -1651,7 +1651,7 @@ class Neighbor(Stat):
         for light in good_light:
             self.data[light] = numpy.zeros(
                 (2, max_day, id_count, id_count),  # 0: j (network), 1: n (number)
-                dtype=numpy.int,
+                dtype=numpy.int64,
             )
             self.frames[light] = 0
             self.points[light] = 0
@@ -1786,11 +1786,11 @@ class FQObj(Stat):
         self.qorq = dict()
         for light in good_light:
             self.fandq[light] = numpy.zeros(
-                (len(object_types), id_count, id_count), dtype=numpy.float
+                (len(object_types), id_count, id_count), dtype=numpy.float64
             )
             #: represents number of frames when i or j was queuing (or feeding)
             self.qorq[light] = numpy.zeros(
-                (len(object_types), id_count, id_count), dtype=numpy.float
+                (len(object_types), id_count, id_count), dtype=numpy.float64
             )
             self.frames[light] = 0
             self.points[light] = 0
@@ -1996,11 +1996,11 @@ class DailyFQObj(Stat):
         self.qorq = dict()
         for light in good_light:
             self.fandq[light] = numpy.zeros(
-                (len(object_types), id_count, id_count, max_day), dtype=numpy.float
+                (len(object_types), id_count, id_count, max_day), dtype=numpy.float64
             )
             #: represents number of frames when i or j was queuing (or feeding)
             self.qorq[light] = numpy.zeros(
-                (len(object_types), id_count, id_count, max_day), dtype=numpy.float
+                (len(object_types), id_count, id_count, max_day), dtype=numpy.float64
             )
             self.frames[light] = 0
             self.points[light] = 0
@@ -2220,9 +2220,9 @@ class FQFood(Stat):
         self.fandq = dict()
         self.qorq = dict()
         for light in good_light:
-            self.fandq[light] = numpy.zeros((id_count, id_count), dtype=numpy.float)
+            self.fandq[light] = numpy.zeros((id_count, id_count), dtype=numpy.float64)
             #: represents number of frames when i or j was queuing (or feeding)
-            self.qorq[light] = numpy.zeros((id_count, id_count), dtype=numpy.float)
+            self.qorq[light] = numpy.zeros((id_count, id_count), dtype=numpy.float64)
             self.frames[light] = 0
             self.points[light] = 0
 
@@ -2407,7 +2407,7 @@ class FQWhileF(Stat):
                     id_count,  # who is feeding
                     id_count,
                 ),  # how many others are feeding or queuing
-                dtype=numpy.float,
+                dtype=numpy.float64,
             )
             self.frames[light] = 0
             self.points[light] = 0
@@ -2671,7 +2671,7 @@ class AA(Stat):
         self.data = dict()
         # initialize data
         for light in good_light:
-            self.data[light] = numpy.zeros((id_count, id_count), dtype=numpy.int)
+            self.data[light] = numpy.zeros((id_count, id_count), dtype=numpy.int64)
             self.frames[light] = 0
             self.points[light] = 0
 
@@ -2845,7 +2845,7 @@ class ButtHead(Stat):
         self.data = dict()
         # initialize data
         for light in good_light:
-            self.data[light] = numpy.zeros((id_count, id_count), dtype=numpy.int)
+            self.data[light] = numpy.zeros((id_count, id_count), dtype=numpy.int64)
             self.frames[light] = 0
             self.points[light] = 0
 
@@ -3071,7 +3071,9 @@ class VelDist(Stat):
         self.data = dict()
         # initialize data
         for light in good_light:
-            self.data[light] = numpy.zeros((id_count + 1, self.maxvel), dtype=numpy.int)
+            self.data[light] = numpy.zeros(
+                (id_count + 1, self.maxvel), dtype=numpy.int64
+            )
             self.frames[light] = 0
             self.points[light] = 0
 
@@ -3144,7 +3146,9 @@ class AccDist(Stat):
         self.data = dict()
         # initialize data
         for light in good_light:
-            self.data[light] = numpy.zeros((id_count + 1, self.maxacc), dtype=numpy.int)
+            self.data[light] = numpy.zeros(
+                (id_count + 1, self.maxacc), dtype=numpy.int64
+            )
             self.frames[light] = 0
             self.points[light] = 0
 
@@ -3426,7 +3430,7 @@ class DistFromWall(Stat):
                     max_day,
                     int(image_size.y / 4),
                 ),
-                dtype=numpy.int,
+                dtype=numpy.int64,
             )
             self.frames[light] = 0
             self.points[light] = 0

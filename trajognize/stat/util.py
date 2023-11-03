@@ -157,6 +157,7 @@ def get_stat_dict():
     'writedaily' contains name of writing dailyoutput function (if present) and its parameters
 
     """
+
     # get all corresponding functions
     def is_statfunc(f):
         return (
@@ -195,7 +196,10 @@ def get_stat_dict():
         if x in subclassfunction_names:
             # get params
             y = subclassfunction_names.index(x)
-            subclassfunction = [x, inspect.getargspec(subclassfunction_list[y][1])[0]]
+            subclassfunction = [
+                x,
+                list(inspect.signature(subclassfunction_list[y][1]).parameters.keys()),
+            ]
         else:
             subclassfunction = None
         # add entry to stats dict
@@ -203,22 +207,33 @@ def get_stat_dict():
             i = classnames_lower.index(classname_lower)
             c = class_list[i]
             stats[stat] = {
-                "init": [classnames[i], inspect.getargspec(c[1].__init__)[0][1:]],
+                "init": [
+                    classnames[i],
+                    list(inspect.signature(c[1].__init__).parameters.keys())[1:],
+                ],  # skip self
                 "calc": [
                     f[0],
-                    inspect.getargspec(f[1])[0]
-                    if inspect.getargspec(f[1])[3] is None
-                    else inspect.getargspec(f[1])[0][
-                        : -len(inspect.getargspec(f[1])[3])
-                    ],
+                    [
+                        p.name
+                        for p in inspect.signature(f[1]).parameters.values()
+                        if p.kind == p.POSITIONAL_OR_KEYWORD
+                    ],  # skip keyword arguments
                 ],
                 "write": [
                     "write_results",
-                    inspect.getargspec(c[1].write_results)[0][1:],
+                    list(inspect.signature(c[1].write_results).parameters.keys())[
+                        1:
+                    ],  # skip self
                 ],
                 "writedaily": [
                     "write_dailyoutput_results",
-                    inspect.getargspec(c[1].write_dailyoutput_results)[0][1:],
+                    list(
+                        inspect.signature(
+                            c[1].write_dailyoutput_results
+                        ).parameters.keys()
+                    )[
+                        1:
+                    ],  # skip self
                 ],
                 "subf": subclassfunction,
             }

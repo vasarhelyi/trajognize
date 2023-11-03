@@ -79,11 +79,11 @@ class AvgDist24hObj:
         # initialize data
         #: one bin for all minutes, all objects, all colorids + sum
         self.avg = numpy.zeros(
-            (id_count + 1, self.minutes_of_feeding), dtype=numpy.float
+            (id_count + 1, self.minutes_of_feeding), dtype=numpy.float64
         )
         #: one bin for all minutes, all objects, all colorids + sum
         self.stv = numpy.zeros(
-            (id_count + 1, self.minutes_of_feeding), dtype=numpy.float
+            (id_count + 1, self.minutes_of_feeding), dtype=numpy.float64
         )
         #: one bin for all minutes, all objects, all colorids + sum
         self.num = numpy.zeros(
@@ -92,7 +92,7 @@ class AvgDist24hObj:
                 + 1,  # note that num is the same for all IDs, but matrix manipulation is simpler like this.
                 self.minutes_of_feeding,
             ),
-            dtype=numpy.int,
+            dtype=numpy.int64,
         )
 
     def __add__(self, X):
