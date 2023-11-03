@@ -79,7 +79,7 @@ class SettingsForRatMaze(TrajognizeSettingsBase):
         head, tail = os.path.split(filename)
         return datetime.datetime.strptime(tail.split("_")[1], "%Y%m%d")
 
-    def get_unique_output_filename(outputpath, inputfile):
+    def get_unique_output_filename(self, outputpath, inputfile):
         return os.path.join(
             outputpath, os.path.splitext(os.path.split(inputfile)[1])[0] + ".txt"
         )
