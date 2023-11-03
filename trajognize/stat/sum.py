@@ -28,7 +28,6 @@ def write_results(
     exp,
     day,
     dailyoutput,
-    colorids,
     project_settings,
 ):
     """Helper function to write results to file."""
@@ -437,7 +436,6 @@ def main(argv=[]):
                             exp,
                             day,
                             dailyoutput,
-                            colorids,
                             project_settings,
                         )
 
@@ -483,7 +481,6 @@ def main(argv=[]):
                     exp,
                     day,
                     dailyoutput,
-                    colorids,
                     project_settings,
                 )
                 # save output in object format as well for later analysis, post processing, etc.
