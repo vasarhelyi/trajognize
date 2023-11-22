@@ -216,8 +216,8 @@ def get_stat_dict():
                     [
                         p.name
                         for p in inspect.signature(f[1]).parameters.values()
-                        if p.kind == p.POSITIONAL_OR_KEYWORD
-                    ],  # skip keyword arguments
+                        if p.default == inspect.Parameter.empty
+                    ],  # skip arguments with given defaults
                 ],
                 "write": [
                     "write_results",

@@ -1484,7 +1484,6 @@ def calculate_aamap(
     WARNING: no cage correction is defined on aamap yet
 
     """
-    colorids = project_settings.colorids
     aamap = init.AAMap(project_settings.good_light, project_settings.image_size)
     calculate_aa(
         barcodes,
