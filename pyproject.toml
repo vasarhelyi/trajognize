@@ -6,10 +6,10 @@ authors = ["Gabor Vasarhelyi <gabor.vasarhelyi@ttk.elte.hu>"]
 license = "GPL-3.0-only"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-numpy = "^1.21.1"
+python = "^3.9"
+numpy = "^1.25"
 psutil = "^5.9.5"
-python-igraph = "^0.8.3"
+python-igraph = "^0.10"
 cairocffi = "^1.5.1"
 
 [tool.poetry.dev-dependencies]
