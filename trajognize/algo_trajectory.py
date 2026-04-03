@@ -567,7 +567,7 @@ def get_chosen_neighbor_traj(traj, trajs, forward=True, framelimit=1500):
     # backward in time
     else:
         if traj is None:
-            raise ValueError("traj=None not compatible with backward mode." "")
+            raise ValueError("traj=None not compatible with backward mode.")
         firstframe = traj.firstframe
         bestindex = -1
         if framelimit is None:
@@ -869,7 +869,7 @@ def connect_chosen_trajs(
                         m = conn.index((kk, i))
                         # calculate old score
                         scoreold = 0
-                        for (kkk, jj) in conn[0:m]:
+                        for kkk, jj in conn[0:m]:
                             scoreold += traj_score(
                                 trajectories[kkk][jj],
                                 MCHIPS,
@@ -879,7 +879,7 @@ def connect_chosen_trajs(
                             )
                         # calculate new score
                         scorenew = 0
-                        for (kkk, jj) in tempconn:
+                        for kkk, jj in tempconn:
                             scorenew += traj_score(
                                 trajectories[kkk][jj],
                                 MCHIPS,
@@ -959,7 +959,7 @@ def connect_chosen_trajs(
             if not conn:
                 scores[i] = -1
                 continue
-            for (kk, j) in conn:
+            for kk, j in conn:
                 trajx = trajectories[kk][j]
                 if mode == "b":
                     if trajlastframe(trajx) < connections.fromframelimit:
@@ -1047,7 +1047,7 @@ def connect_chosen_trajs(
         if not conn:
             scores[i] = -1
             continue
-        for (kk, j) in conn:
+        for kk, j in conn:
             scores[i] += traj_score(
                 trajectories[kk][j], MCHIPS, project_settings.traj_score_method, k, kk
             )
@@ -1156,7 +1156,7 @@ def mark_traj_chosen(
 
     # check for overlapping already chosen
     if chosenoverlap:
-        for (kkk, j) in chosenoverlap:
+        for kkk, j in chosenoverlap:
             trajx = trajectories[kkk][j]
             print(
                 "  Warning: overlapping chosen trajs found (dst %s)." % colorids[kk],
@@ -1178,7 +1178,7 @@ def mark_traj_chosen(
 
     # check for overlapping others that are to be deleted
     if deleteoverlap:
-        for (kkk, j) in deleteoverlap:
+        for kkk, j in deleteoverlap:
             trajx = trajectories[kkk][j]
             trajx.state = TrajState.DELETED
             deleted += 1
@@ -1342,7 +1342,7 @@ def fill_connection_with_nub(
     count_virtual = 0
     (oldkk, oldj) = (conn[0][0], conn[0][1])
     oldtraj = trajectories[oldkk][oldj]
-    for (kk, j) in conn[1:]:
+    for kk, j in conn[1:]:
         traj = trajectories[kk][j]
         endframe = trajlastframe(oldtraj)
         startframe = traj.firstframe
@@ -1697,7 +1697,7 @@ def choose_and_connect_trajs(
                 rebirth += a
                 virtual += b
                 # set CHOSEN property if good connection was found
-                for (kk, j) in conn:
+                for kk, j in conn:
                     a = mark_traj_chosen(
                         trajectories, kk, j, trajsonframe, colorids, barcodes, blobs, k
                     )
@@ -1739,7 +1739,7 @@ def choose_and_connect_trajs(
                 rebirth += a
                 virtual += b
                 # set CHOSEN property if good connection was found
-                for (kk, j) in conn:
+                for kk, j in conn:
                     a = mark_traj_chosen(
                         trajectories, kk, j, trajsonframe, colorids, barcodes, blobs, k
                     )
@@ -1766,7 +1766,7 @@ def choose_and_connect_trajs(
 
     # change colorids on marked ones
     print("  Changing colorid of some (possibly false detected) trajs...")
-    for (k, i) in changedcolor:
+    for k, i in changedcolor:
         change_colorid(
             trajectories, k, i, trajsonframe, barcodes, project_settings, blobs
         )
@@ -2073,7 +2073,7 @@ def extend_chosen_trajs(
                     rebirth += a
                     virtual += b
                     # set CHOSEN property if good connection was found
-                    for (kk, j) in conn:
+                    for kk, j in conn:
                         #                        print("forward", colorids[kk], trajectories[kk][j].firstframe, trajlastframe(trajectories[kk][j]))
                         a = mark_traj_chosen(
                             trajectories,
@@ -2118,7 +2118,7 @@ def extend_chosen_trajs(
                     rebirth += a
                     virtual += b
                     # set CHOSEN property if good connection was found
-                    for (kk, j) in conn:
+                    for kk, j in conn:
                         #                       print("backward", colorids[kk], trajectories[kk][j].firstframe, trajlastframe(trajectories[kk][j]))
                         a = mark_traj_chosen(
                             trajectories,
@@ -2139,7 +2139,7 @@ def extend_chosen_trajs(
                             deleted += a
 
         # change colorids on marked ones
-        for (k, i) in changedcolor:
+        for k, i in changedcolor:
             change_colorid(
                 trajectories, k, i, trajsonframe, barcodes, project_settings, blobs
             )
@@ -2162,7 +2162,9 @@ def extend_chosen_trajs(
     return (virtual, rebirth)
 
 
-def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes):
+def add_virtual_barcodes_to_gaps(
+    trajectories, trajsonframe, colorids, barcodes, startframe: int = 0
+):
     """Fill all remaining gaps between chosen trajectories with virtual barcodes.
 
     Adds MFix.DEBUG on possible conflicts (too large gap between chosens).
@@ -2172,6 +2174,7 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
     trajsonframe -- global list of trajectory indices per frame per coloridindex
     colorids     -- global colorid database
     barcodes     -- blobal list of all barcodes
+    startframe   -- optional nonzero starting frame
 
     Return number of virtual barcodes added.
 
@@ -2197,8 +2200,8 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
         # add virtual barcodes to the beginning
         traj = trajectories[k][i]
         barcode = barcodes[traj.firstframe][k][traj.barcodeindices[0]]
-        if not simulate:
-            for frame in range(traj.firstframe):
+        if not simulate and startframe < traj.firstframe:
+            for frame in range(startframe, traj.firstframe):
                 barcodes[frame][k].append(
                     Barcode(
                         barcode.centerx,
@@ -2207,13 +2210,13 @@ def add_virtual_barcodes_to_gaps(trajectories, trajsonframe, colorids, barcodes)
                         MFix.VIRTUAL | MFix.CHOSEN,
                         MCHIPS,
                     )
-                ),
+                )
                 trajsonframe[frame][k].add(i)
                 virtual += 1
             traj.barcodeindices = [
-                len(barcodes[x][k]) - 1 for x in range(traj.firstframe)
+                len(barcodes[x][k]) - 1 for x in range(startframe, traj.firstframe)
             ] + traj.barcodeindices
-            traj.firstframe = 0
+            traj.firstframe = startframe
 
         ######################################################
         # connect all chosen trajs in the middle with virtuals
@@ -2648,7 +2651,7 @@ def mark_barcodes_from_trajs(trajectories, barcodes, colorids, kkkk=None):
 
 
 def finalize_trajectories(
-    trajectories, trajsonframe, barcodes, blobs, project_settings
+    trajectories, trajsonframe, barcodes, blobs, project_settings, startframe: int = 0
 ):
     """Finalize trajectories, make them continuous throughout the whole video.
 
@@ -2671,6 +2674,7 @@ def finalize_trajectories(
         barcodes     -- global list of all barcodes
         blobs        -- global list of all blobs
         project_settings -- global project-specific settings
+        startframe -- optional nonzero starting frame
 
         Function returns number of (chosen, deleted) barcodes
         and writes to keyword parameters barcodes and trajectories.
@@ -2701,7 +2705,7 @@ def finalize_trajectories(
 
     print("  Filling gaps between chosen trajectories with virtual barcodes...")
     virtual = add_virtual_barcodes_to_gaps(
-        trajectories, trajsonframe, colorids, barcodes
+        trajectories, trajsonframe, colorids, barcodes, startframe
     )
     print("    virtual barcodes:", virtual)
 

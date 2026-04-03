@@ -86,7 +86,7 @@ def barcode_textfile_writeframe(barcodes, framenum, colorids, deleted=True):
     oft.write("\n")
 
 
-def barcode_textfile_writeall(barcodes, colorids, deleted=True):
+def barcode_textfile_writeall(barcodes, colorids, deleted=True, startframe: int = 0):
     """Write all barcodes from all frames to textfile.
 
     Keyword arguments:
@@ -94,9 +94,10 @@ def barcode_textfile_writeall(barcodes, colorids, deleted=True):
                 structured like this: [framenum][coloridindex][index]
     colorids -- global colorid database
     deleted  -- should we write deleted barcodes as well?
+    startframe -- the first frame to write
 
     """
-    for framenum in range(len(barcodes)):
+    for framenum in range(startframe, len(barcodes)):
         barcode_textfile_writeframe(barcodes[framenum], framenum, colorids, deleted)
 
 

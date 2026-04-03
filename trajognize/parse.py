@@ -86,11 +86,12 @@ def parse_entry_times(inputfile):
     return entrytimes
 
 
-def parse_blob_file(inputfile, lastframe=None):
+def parse_blob_file(inputfile, firstframe=None, lastframe=None):
     """Parse a full .blobs file created by ratognize.
 
     Keyword arguments:
     inputfile -- any *.blobs file created by ratognize
+    firstframe -- debug option not to parse the whole file, only the end
     lastframe -- debug option not to parse the whole file, only the beginning
 
     Return value:
@@ -112,6 +113,8 @@ def parse_blob_file(inputfile, lastframe=None):
     except IndexError:
         print("ERROR: could not read frame number from blob file.")
         return (None, None, None)
+    if firstframe is None or firstframe < 0:
+        firstframe = 0
     if lastframe is None or lastframe < 0 or lastframe > i:
         lastframe = i
 
@@ -132,6 +135,8 @@ def parse_blob_file(inputfile, lastframe=None):
             print("WARNING - too few blocks in line #%d:\n%s" % (linenum, line))
             continue
         framenum = int(linesplit[0])
+        if framenum < firstframe:
+            continue
         if framenum > lastframe:
             break
         linetype = linesplit[1]

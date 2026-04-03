@@ -99,12 +99,21 @@ def main(argv=[]):
         help="define output path for .barcodes output file",
     )
     argparser.add_argument(
+        "-s",
+        "--startframe",
+        metavar="NUM",
+        dest="startframe",
+        type=int,
+        default=0,
+        help="define min framenum to read (used for debug reasons)",
+    )
+    argparser.add_argument(
         "-n",
         "--framenum",
         metavar="NUM",
         dest="framenum",
         type=int,
-        help="define max frames to read (used for debug reasons)",
+        help="define max framenum to read (used for debug reasons)",
     )
     argparser.add_argument(
         "-nt",
@@ -184,9 +193,15 @@ def main(argv=[]):
             print("  ERROR: Output file already exists, add '-f' to force overwrite.")
             return
     # frame num
+    options.startframe = max(0, options.startframe)
+    if options.startframe > 0:
+        print(
+            "  WARNING: debug option '-s' specified, reading blob file from frame %d."
+            % options.startframe
+        )
     if options.framenum is not None:
         print(
-            "  WARNING: debug option '-n' specified, reading only %d frames."
+            "  WARNING: debug option '-n' specified, reading blob file up to frame %d."
             % options.framenum
         )
     # no trajectory part
@@ -241,7 +256,7 @@ def main(argv=[]):
         # parse input blob file
         phase.start_phase("Reading input blob file...")
         (v.color_blobs, v.md_blobs, v.rat_blobs) = parse.parse_blob_file(
-            options.inputfile, options.framenum
+            options.inputfile, options.startframe, options.framenum
         )
         if v.color_blobs is None and v.md_blobs is None and v.rat_blobs is None:
             return
@@ -301,7 +316,7 @@ def main(argv=[]):
         phase.start_phase(
             "Initialize calculated variables (sdistlists, clusterlists, md blobs over blobs, etc.)..."
         )
-        for currentframe in range(framecount):
+        for currentframe in range(options.startframe, framecount):
             # calculate spatial distances between blobs
             v.sdistlists[currentframe] = algo_blob.create_spatial_distlists(
                 v.color_blobs[currentframe], v.project_settings.MAX_INRAT_DIST
@@ -342,7 +357,7 @@ def main(argv=[]):
         # find full barcodes
         phase.start_phase("Find full IDs based on spatial closeness chains...")
         count = 0
-        for currentframe in range(framecount):
+        for currentframe in range(options.startframe, framecount):
             # find colorid chains
             chainlists = algo_blob.find_chains_in_sdistlists(
                 v.color_blobs[currentframe],
@@ -405,7 +420,7 @@ def main(argv=[]):
             )
             count_sharesid = 0
             count_overlapped = 0
-            for currentframe in range(framecount):
+            for currentframe in range(options.startframe, framecount):
                 # remove close sharesid ones
                 count_sharesid += algo_barcode.remove_close_sharesid(
                     v.barcodes[currentframe],
@@ -465,7 +480,7 @@ def main(argv=[]):
             count = 0
             count_adjusted = 0
             count_notused = 0
-            for currentframe in range(1, framecount):
+            for currentframe in range(options.startframe + 1, framecount):
                 # main algo is in algo.py, all function params are lists so they are modified in the call
                 (a, b, c) = algo_barcode.find_partlyfound_from_tdist(
                     "forward",
@@ -523,7 +538,7 @@ def main(argv=[]):
             count = 0
             count_adjusted = 0
             count_notused = 0
-            for currentframe in range(framecount - 2, -1, -1):
+            for currentframe in range(framecount - 2, options.startframe - 1, -1):
                 # main algo is in algo.py, all function params are lists so they are modified in the call
                 (a, b, c) = algo_barcode.find_partlyfound_from_tdist(
                     "backward",
@@ -581,7 +596,7 @@ def main(argv=[]):
                 "Remove partial barcodes that have shared id properties..."
             )
             count_sharesid = 0
-            for currentframe in range(framecount):
+            for currentframe in range(options.startframe, framecount):
                 # remove close sharesid ones
                 count_sharesid += algo_barcode.remove_close_sharesid(
                     v.barcodes[currentframe],
@@ -615,7 +630,7 @@ def main(argv=[]):
         ############################################################################
         # set sharesid/sharesblob mfix
         phase.start_phase("Set sharesid/sharesblob mfix flags...")
-        for currentframe in range(framecount):
+        for currentframe in range(options.startframe, framecount):
             # set mfix flags temporarily (we might use this info later
             algo_barcode.set_shared_mfix_flags(
                 v.barcodes[currentframe],
@@ -641,7 +656,7 @@ def main(argv=[]):
                 ########################################################################
                 # create trajectory database
                 phase.start_phase("Creating trajectory database...")
-                for currentframe in range(framecount):
+                for currentframe in range(options.startframe, framecount):
                     algo_trajectory.initialize_trajectories(
                         v.trajectories,
                         v.trajsonframe,
@@ -735,6 +750,7 @@ def main(argv=[]):
                     v.barcodes,
                     v.color_blobs,
                     v.project_settings,
+                    options.startframe,
                 )
                 phase.end_phase()
             elif options.debugload == 10:
@@ -759,7 +775,7 @@ def main(argv=[]):
             ########################################################################
             # set sharesid/sharesblob mfix
             phase.start_phase("Refresh sharesid/sharesblob mfix flags...")
-            for currentframe in range(framecount):
+            for currentframe in range(options.startframe, framecount):
                 # set mfix flags temporarily (we might use this info later
                 algo_barcode.set_shared_mfix_flags(
                     v.barcodes[currentframe],
@@ -793,7 +809,7 @@ def main(argv=[]):
     phase.start_phase("Write results to output text files...")
     # barcode file
     output.barcode_textfile_writeall(
-        v.barcodes, v.colorids, not options.nodeleted
+        v.barcodes, v.colorids, not options.nodeleted, options.startframe
     )  # TODO: change nodeleted to writedeleted if that is a better default
     output.barcode_textfile_close()
     # log file
