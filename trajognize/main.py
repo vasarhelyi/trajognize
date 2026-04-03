@@ -196,7 +196,7 @@ def main(argv=[]):
     options.startframe = max(0, options.startframe)
     if options.startframe > 0:
         print(
-            "  WARNING: debug option '-s' specified, reading blob file from frame %d."
+            "  WARNING: debug option '-m' specified, reading blob file from frame %d."
             % options.startframe
         )
     if options.framenum is not None:
