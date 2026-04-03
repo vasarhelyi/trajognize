@@ -162,7 +162,7 @@ def logfile_writeframe(blobs, barcodes, framenum):
     oftlog.write("\n")
 
 
-def logfile_writeall(blobs, barcodes):
+def logfile_writeall(blobs, barcodes, startframe: int = 0):
     """Write log data from all frames to log file
 
     Keyword arguments:
@@ -170,9 +170,11 @@ def logfile_writeall(blobs, barcodes):
                 structured like this: [framenum][index]
     barcodes -- global list of all barcodes (Barcode)
                 structured like this: [framenum][coloridindex][index]
+    startframe -- the first frame to write
+
 
     """
-    for framenum in range(len(blobs)):
+    for framenum in range(startframe, len(blobs)):
         logfile_writeframe(blobs[framenum], barcodes[framenum], framenum)
 
 

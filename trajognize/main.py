@@ -99,7 +99,7 @@ def main(argv=[]):
         help="define output path for .barcodes output file",
     )
     argparser.add_argument(
-        "-s",
+        "-m",
         "--startframe",
         metavar="NUM",
         dest="startframe",
@@ -813,7 +813,7 @@ def main(argv=[]):
     )  # TODO: change nodeleted to writedeleted if that is a better default
     output.barcode_textfile_close()
     # log file
-    output.logfile_writeall(v.color_blobs, v.barcodes)
+    output.logfile_writeall(v.color_blobs, v.barcodes, options.startframe)
     output.logfile_close()
     phase.end_phase()
 

@@ -109,11 +109,20 @@ def main(argv=[]):
         help="define output path for .barcodes.stat_*.zip output files",
     )
     argparser.add_argument(
+        "-m",
+        "--startframe",
+        metavar="NUM",
+        dest="startframe",
+        type=int,
+        default=0,
+        help="define min framenum to read (used for debug reasons)",
+    )
+    argparser.add_argument(
         "-n",
         "--framenum",
         metavar="NUM",
         dest="framenum",
-        help="define max frames to read (used for debug reasons)",
+        help="define max framenum to read (used for debug reasons)",
     )
     argparser.add_argument(
         "-s",
@@ -221,10 +230,16 @@ def main(argv=[]):
     if options.force:
         print("  WARNING: option '-f' specified, forcing overwrite of output files.")
     # frame num
+    options.startframe = max(0, options.startframe)
+    if options.startframe > 0:
+        print(
+            "  WARNING: debug option '-s' specified, reading blob file from frame %d."
+            % options.startframe
+        )
     if options.framenum is not None:
         options.framenum = int(options.framenum)
         print(
-            "  WARNING: debug option '-n' specified, reading only %d frames."
+            "  WARNING: debug option '-n' specified, reading blob file up to frame %d."
             % options.framenum
         )
     # subtitles
@@ -289,7 +304,7 @@ def main(argv=[]):
     # parse input barcode file
     phase.start_phase("Reading input barcode file...")
     barcodes = trajognize.parse.parse_barcode_file(
-        options.inputfile, colorids, 0, options.framenum
+        options.inputfile, colorids, options.startframe, options.framenum
     )
     if barcodes is None:
         print("  empty barcode file found. Exiting.")
@@ -306,7 +321,9 @@ def main(argv=[]):
     inputfile_log = inputfile[:-15]  # remove '.blobs.barcodes'
     inputfile_log += ".log"
     if len(project_settings.all_light) > 1:
-        (light_log, cage_log) = trajognize.parse.parse_log_file(inputfile_log)
+        (light_log, cage_log) = trajognize.parse.parse_log_file(
+            inputfile_log, options.startframe, options.framenum
+        )
     else:
         # in most projects we use only a single lighting condition, let it be NIGHTLIGHT
         # in most projects we do not use cage correction, let it be the center value
@@ -320,7 +337,7 @@ def main(argv=[]):
             ]
         }
     if light_log is None and cage_log is None:
-        print("  reading input log file failed. Exiting." "")
+        print("  reading input log file failed. Exiting.")
         return
     print("  %d LED switches parsed" % len(light_log))
     print("  %d CAGE coordinates parsed" % len(cage_log))

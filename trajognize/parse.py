@@ -228,11 +228,12 @@ def parse_blob_file(inputfile, firstframe=None, lastframe=None):
     return (color_blobs, md_blobs, rat_blobs)
 
 
-def parse_log_file(inputfile, lastframe=None):
+def parse_log_file(inputfile, firstframe: int = 0, lastframe=None):
     """Parse a full .log file and extract light condition and cage center list (so far).
 
     Keyword arguments:
     inputfile -- any *.log file created by ratognize
+    firstframe -- debug option not to parse the whole file, only the end
     lastframe -- debug option not to parse the whole file, only the beginning
 
     Return value:
@@ -267,6 +268,8 @@ def parse_log_file(inputfile, lastframe=None):
         if len(linesplit) < 2:
             continue
         framenum = int(linesplit[0])
+        if framenum < firstframe:
+            continue
         if framenum > lastframe:
             break
         # parse LED lines
@@ -285,7 +288,7 @@ def parse_barcode_file(inputfile, colorids, firstframe=0, lastframe=None):
     Keyword arguments:
     inputfile -- any *.blobs.barcodes file created by trajognize
     colorids  -- global colorid database
-    firstframe -- debug option not to parse wht whole file, only the end
+    firstframe -- debug option not to parse the whole file, only the end
     lastframe -- debug option not to parse the whole file, only the beginning
 
     Return value:
