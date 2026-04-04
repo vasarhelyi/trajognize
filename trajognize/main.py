@@ -795,7 +795,11 @@ def main(argv=[]):
             # get conflicts
             phase.start_phase("Check, list and (solve) remaining conflicts...")
             algo_conflict.create_conflict_database_and_try_resolve(
-                v.trajectories, v.barcodes, v.color_blobs, v.project_settings
+                v.trajectories,
+                v.barcodes,
+                v.color_blobs,
+                v.project_settings,
+                options.startframe,
             )
             phase.end_phase()
 
